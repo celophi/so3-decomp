@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/tracks.h"
 #include "clamp.h"
 #include "overlays/lib/vector_inlines.h"
@@ -19,6 +20,8 @@
 #include "overlays/lib/vector.h"
 #include "overlays/lib/grid_emission.h"
 #include "overlays/lib/text_0043BD00.h"
+#include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/particle_step_vu0.h"
 
 extern LibTrackPool<LibPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
 
@@ -2529,14 +2532,581 @@ void LibClass174120::copy_settings(const LibClass173A40* source)
     // TODO: As in LibClass177090::copy_settings, the copy marks its own storage borrowed by storing the same pointers
     // back; I haven't found a helper form that loads unkb0 and unkb4 in this order.
     u8* first = unkb0;
-    FieldVec4A* second = unkb4;
+    LibClass173490Entry* second = unkb4;
     unkc9 = 1;
     unkb0 = first;
     unkb4 = second;
     unkc4 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445950);
+/**
+ * @brief Add up the force a grid's force field gives at a point.
+ * @param force Force field.
+ * @param point Point.
+ * @param velocity Velocity at the point.
+ * @param result Receives the force.
+ */
+extern "C" void func_004348E0(void* force, const LibVector4* point, const LibVector4* velocity, LibVector4* result);
+
+extern "C" void func_004471B0(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale);
+
+extern "C" void func_00447330(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale);
+
+/**
+ * @brief Run each live particle's script and step it (force field, colliders, swirl, color jitter, trails) into
+ *        draw records.
+ * @param object Grid.
+ * @param capacity Draw records available.
+ * @param output Draw records; each live particle fills one row of the grid's columns.
+ * @return Draw records used.
+ */
+extern "C" s32 func_00445950(LibClass174120* object, s32 capacity, LibGridParticleOutput20* output)
+{
+    s32 consumed = 0;
+    LibVector4 scratch;
+    LibVector4 corrected;
+    s32 index = object->unk2c;
+    s32 columns = object->unk10;
+    u64* words = object->unk1c->bits;
+    u64 mask = (u64)1 << (index & 63);
+    s32 word_index = index / 64;
+    u64 active_word;
+    s32 cells;
+    active_word = words[word_index++];
+    cells = object->unk0c;
+    float limit = object->unk30;
+    bool trail = object->unk38 != 0.0f ? true : false;
+
+    while (consumed < capacity && index < cells)
+    {
+        u64 active = active_word & mask;
+        mask <<= 1;
+
+        if (mask == 0)
+        {
+            mask = 1;
+            active_word = words[word_index++];
+        }
+
+        if (active == 0)
+        {
+            index++;
+            continue;
+        }
+
+        LibVector4 second;
+        LibVector4 first;
+        LibVector4 delta;
+        u8 stop_on_hit = 0;
+        LibGridCell170* element = &object->unk14[index];
+        LibGridParticleCell* cell = reinterpret_cast<LibGridParticleCell*>(element);
+        void* acceleration = &cell->acceleration;
+        void* position = &cell->position;
+        s32 state = 0;
+        void* velocity = &cell->velocity;
+        void* travel = &cell->travel;
+        void* color = &cell->color;
+
+        while (state != 2)
+        {
+            s32 wait = cell->wait_mode;
+
+            if (wait == 0)
+            {
+                s32 pc = cell->script_pc;
+
+                while (state == 0)
+                {
+                    LibClass173490Entry* arg = &object->unkb4[pc];
+
+                    switch (object->unkb0[pc])
+                    {
+                    case 1:
+                        cell->velocity.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 2:
+                        cell->acceleration.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 3:
+                        cell->angle_velocity.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 4:
+                        cell->angle_acceleration.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 5:
+                        cell->radius_velocity.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 6:
+                        cell->radius_acceleration.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 7:
+                        cell->acceleration.floats[0] = arg->x * cell->velocity.floats[0];
+                        cell->acceleration.floats[1] = arg->y * cell->velocity.floats[1];
+                        cell->acceleration.floats[2] = arg->z * cell->velocity.floats[2];
+                        break;
+                    case 8:
+                        cell->angle_acceleration.floats[0] = arg->x * cell->angle_velocity.floats[0];
+                        cell->angle_acceleration.floats[1] = arg->y * cell->angle_velocity.floats[1];
+                        cell->angle_acceleration.floats[2] = arg->z * cell->angle_velocity.floats[2];
+                        break;
+                    case 9:
+                        cell->radius_acceleration.floats[0] = arg->x * cell->radius_velocity.floats[0];
+                        cell->radius_acceleration.floats[1] = arg->y * cell->radius_velocity.floats[1];
+                        cell->radius_acceleration.floats[2] = arg->z * cell->radius_velocity.floats[2];
+                        break;
+                    case 10:
+                        cell->flags |= 2;
+                        break;
+                    case 11:
+                        cell->flags &= ~2;
+                        break;
+                    case 12:
+                        cell->color_velocity.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 13:
+                        cell->color_acceleration.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 14:
+                        cell->color_acceleration.floats[0] = arg->x * cell->color_velocity.floats[0];
+                        cell->color_acceleration.floats[1] = arg->y * cell->color_velocity.floats[1];
+                        cell->color_acceleration.floats[2] = arg->z * cell->color_velocity.floats[2];
+                        cell->color_acceleration.floats[3] = arg->w * cell->color_velocity.floats[3];
+                        break;
+                    case 15:
+                        cell->color_mode = 0;
+                        break;
+                    case 16:
+                        cell->color_mode = 1;
+                        cell->unkf0.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 17:
+                        cell->color_mode = 2;
+                        cell->unkf0.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 18:
+                    {
+                        cell->color_mode = 2;
+                        cell->unk100.packed = *(unsigned __int128*)arg;
+                        lib_grid_clear_vector(&cell->unk110);
+                        lib_grid_clear_vector(&cell->unk120);
+                        break;
+                    }
+                    case 19:
+                        state = 2;
+                        break;
+                    case 20:
+                        state = 1;
+                        cell->wait_mode = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 21:
+                        cell->wait_mode = 2;
+                        state = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 22:
+                        state = 1;
+                        cell->wait_mode = 3;
+                        break;
+                    case 23:
+                        state = 1;
+                        cell->wait_mode = 4;
+                        break;
+                    case 24:
+                        cell->wait_mode = 5;
+                        state = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 25:
+                        state = 1;
+                        cell->wait_mode = 6;
+                        break;
+                    case 26:
+                        state = 1;
+                        cell->wait_mode = 7;
+                        break;
+                    case 27:
+                        cell->wait_mode = 8;
+                        state = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 28:
+                        cell->wait_mode = 9;
+                        state = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 29:
+                        if (object->unk48)
+                        {
+                            object->unk4f = (s32)arg->w;
+                            func_004471B0(reinterpret_cast<LibGridEmitter*>(object), (LibVector4*)position, (LibVector4*)velocity,
+                                          (LibVector4*)acceleration, (LibVector4*)color);
+                        }
+
+                        break;
+                    case 30:
+                        static_cast<LibGridFrameMotion*>(element)->rate.floats[0] = arg->w;
+                        break;
+                    case 31:
+                    {
+                        LibGridFrameMotion* motion = static_cast<LibGridFrameMotion*>(element);
+                        motion->rate.floats[1] = arg->x;
+                        motion->rate.floats[2] = arg->y;
+                        break;
+                    }
+                    case 32:
+                    {
+                        LibGridVector4* target = &cell->velocity;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 33:
+                    {
+                        LibGridVector4* target = &cell->acceleration;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 34:
+                    {
+                        LibGridVector4* target = &cell->angle_velocity;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 35:
+                    {
+                        LibGridVector4* target = &cell->angle_acceleration;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 36:
+                    {
+                        LibGridVector4* target = &cell->radius_velocity;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 37:
+                    {
+                        LibGridVector4* target = &cell->radius_acceleration;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 38:
+                    {
+                        LibGridVector4* target = &cell->color_velocity;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        target->floats[3] += arg->w * (vu0_random_next() - 1.0f) - 0.5f * arg->w;
+                        break;
+                    }
+                    case 39:
+                    {
+                        LibGridVector4* target = &cell->color_acceleration;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        target->floats[3] += arg->w * (vu0_random_next() - 1.0f) - 0.5f * arg->w;
+                        break;
+                    }
+                    case 40:
+                    {
+                        LibGridFrameMotion* motion = static_cast<LibGridFrameMotion*>(element);
+                        LibGridVector4* target = &motion->rate;
+                        target->floats[0] += arg->w * (vu0_random_next() - 1.0f) - 0.5f * arg->w;
+                        break;
+                    }
+                    case 41:
+                    {
+                        LibGridFrameMotion* motion = static_cast<LibGridFrameMotion*>(element);
+                        LibGridVector4* target = &motion->rate;
+                        target->floats[1] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[2] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        break;
+                    }
+                    }
+
+                    if (state == 2)
+                    {
+                        object->unk1c->clear_bit(index);
+                    }
+                    else
+                    {
+                        pc++;
+                    }
+                }
+
+                cell->script_pc = pc;
+            }
+            else
+            {
+                state = 0;
+
+                if (!(reinterpret_cast<float*>(travel)[3] < limit))
+                {
+                    wait = 0;
+                }
+
+                switch (wait)
+                {
+                case 1:
+                {
+                    float value = cell->wait_value;
+
+                    if (!(reinterpret_cast<float*>(travel)[3] < value))
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                }
+                case 2:
+                {
+                    LibVector4 length;
+                    vu0_particle_load_travel(travel);
+                    vu0_particle_squared_travel();
+                    vu0_particle_store_squared_travel(&length);
+
+                    if (!(length.x < cell->wait_value))
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                }
+                case 3:
+                    if (reinterpret_cast<float*>(color)[3] < 1.0f)
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                case 4:
+                    if (reinterpret_cast<float*>(color)[0] < 1.0f && reinterpret_cast<float*>(color)[1] < 1.0f &&
+                        reinterpret_cast<float*>(color)[2] < 1.0f)
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                case 5:
+                    if (reinterpret_cast<s32*>(position)[3] > (s32)cell->wait_value)
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                case 6:
+                    stop_on_hit = 1;
+                    break;
+                case 7:
+                {
+                    LibVector4 local;
+                    vu0_particle_point_through(position, object->unk60, &local);
+
+                    if (D_001B654C->height(&local, 0) <= local.y)
+                    {
+                        wait = 0;
+                    }
+
+                    vu0_particle_restore_time_step(g_frame_seconds);
+                    break;
+                }
+                case 8:
+                {
+                    LibVector4 local;
+                    vu0_particle_point_through(position, object->unk60, &local);
+
+                    if (!(local.y < cell->wait_value))
+                    {
+                        wait = 0;
+                    }
+
+                    vu0_particle_restore_time_step(g_frame_seconds);
+                    break;
+                }
+                case 9:
+                    if (D_001B6540 && D_001B6540->collide(object->unk60, reinterpret_cast<const LibVector4*>(position), lib_grid_particle_color(cell), travel, limit))
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                }
+
+                if (wait != 0)
+                {
+                    break;
+                }
+
+                cell->wait_mode = 0;
+            }
+        }
+
+        if (object->unkc8)
+        {
+            LibGridVector4* radius = &cell->radius;
+            LibGridVector4* angle = &cell->angle;
+            vu0_particle_load_radius(radius);
+            vu0_particle_load_angle(angle);
+            LibGridVector4* radius_velocity = &cell->radius_velocity;
+            vu0_particle_load_radius_velocity(radius_velocity);
+            LibGridVector4* angle_velocity = &cell->angle_velocity;
+            vu0_particle_load_angle_velocity(angle_velocity);
+            LibGridVector4* swirl = &cell->swirl;
+            vu0_particle_swirl_advance(&cell->velocity);
+            vu0_particle_store_radius(radius);
+            vu0_particle_store_angle(angle);
+            lib_compute_sine_cosine_pair(angle->floats[0], &first);
+            lib_compute_sine_cosine_pair(angle->floats[1], &second);
+            float x = first.z * (radius->floats[0] * second.z);
+            delta.x = x - swirl->floats[0];
+            swirl->floats[0] = x;
+            float y = radius->floats[1] * first.w;
+            delta.y = y - swirl->floats[1];
+            swirl->floats[1] = y;
+            float z = first.z * (radius->floats[2] * second.w);
+            delta.z = z - swirl->floats[2];
+            swirl->floats[2] = z;
+            vu0_particle_load_swirl_delta(&delta);
+            vu0_particle_load_radius_velocity(radius_velocity);
+            vu0_particle_load_radius_acceleration(&cell->radius_acceleration);
+            vu0_particle_load_angle_velocity(angle_velocity);
+            vu0_particle_load_angle_acceleration(&cell->angle_acceleration);
+            vu0_particle_swirl_accelerate();
+            vu0_particle_store_radius_velocity(radius_velocity);
+            vu0_particle_store_angle_velocity(angle_velocity);
+        }
+        else
+        {
+            vu0_particle_clear_swirl_delta();
+        }
+
+        s32 mode = cell->color_mode;
+
+        if (mode)
+        {
+            LibGridVector4* range = &cell->unkf0;
+
+            if (mode == 1)
+            {
+                LibVector4 offset;
+                offset.x = range->floats[0] * (vu0_random_next() - 1.0f) - 0.5f * range->floats[0];
+                offset.y = range->floats[1] * (vu0_random_next() - 1.0f) - 0.5f * range->floats[1];
+                offset.z = range->floats[2] * (vu0_random_next() - 1.0f) - 0.5f * range->floats[2];
+                offset.w = range->floats[3] * (vu0_random_next() - 1.0f) - 0.5f * range->floats[3];
+                vu0_particle_load_color_offset(&offset);
+            }
+            else
+            {
+                LibVector4 rotation;
+                LibVector4 saved;
+                LibGridVector4* base = &cell->unk100;
+                LibGridVector4* angles = &cell->unk120;
+                vu0_particle_load_spin_angles(angles);
+                vu0_particle_save_swirl_delta(&saved);
+                func_004CA090((FieldVec4A*)&rotation, angles->floats[0], angles->floats[1], angles->floats[2]);
+                rotation.w = lib_sine_degree9(angles->floats[3]);
+                vu0_particle_load_swirl_delta(&saved);
+                vu0_particle_clear_script_force();
+                vu0_particle_load_spin_rate(range);
+                vu0_particle_load_spin_rotation(&rotation);
+                vu0_particle_load_spin_offset(base);
+                LibGridVector4* rotated = &cell->unk110;
+                vu0_particle_load_spin_previous(rotated);
+                vu0_particle_spin();
+                vu0_particle_store_spin_angles(angles);
+                vu0_particle_store_spin_offset(rotated);
+            }
+        }
+        else
+        {
+            vu0_particle_clear_color_offset();
+        }
+
+        vu0_particle_load_position(position);
+        vu0_particle_load_velocity(velocity);
+        vu0_particle_load_acceleration(acceleration);
+        vu0_particle_load_travel(travel);
+        vu0_particle_load_color(color);
+        void* color_velocity = &cell->color_velocity;
+        vu0_particle_load_color_velocity(color_velocity);
+        void* color_acceleration = &cell->color_acceleration;
+        vu0_particle_load_color_acceleration(color_acceleration);
+
+        if (object->unkb8 && static_cast<u8*>(object->unkb8)[0x20])
+        {
+            func_004348E0(object->unkb8, (LibVector4*)position, (LibVector4*)velocity, &scratch);
+            vu0_particle_load_script_force(&scratch);
+        }
+
+        vu0_particle_step_scripted(color_acceleration);
+        vu0_particle_store_position(output);
+
+        if (object->unkbc)
+        {
+            vu0_particle_store_velocity(velocity);
+
+            if (func_0043CBF0(static_cast<LibColliderList*>(object->unkbc), (LibVector4*)position, (LibVector4*)output,
+                              (LibVector4*)velocity, &scratch, &corrected))
+            {
+                if (stop_on_hit)
+                {
+                    cell->wait_mode = 0;
+                }
+
+                vu0_particle_load_bounce(&scratch);
+                vu0_particle_load_position(&corrected);
+                output->position.packed = *(unsigned __int128*)&corrected;
+                vu0_particle_add_bounce();
+            }
+        }
+
+        vu0_particle_store_output_color(output);
+        vu0_particle_store_travel(travel);
+        vu0_particle_store_position(position);
+        vu0_particle_store_velocity(velocity);
+        vu0_particle_store_acceleration(acceleration);
+        vu0_particle_store_color(color);
+        vu0_particle_store_color_velocity(color_velocity);
+
+        if (trail)
+        {
+            vu0_particle_load_position(output);
+            vu0_particle_trail_start(object->unk38);
+
+            for (s32 i = 1; i < columns; i++)
+            {
+                vu0_particle_trail_step(&output[i]);
+            }
+        }
+
+        if (object->unk50 && reinterpret_cast<float*>(velocity)[3] <= 0.0f)
+        {
+            func_00447330(reinterpret_cast<LibGridEmitter*>(object), (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, 0);
+        }
+
+        output += columns;
+        consumed += columns;
+        index++;
+    }
+
+    object->unk2c = index;
+    return consumed;
+}
 
 extern "C" void func_0043CCE0(LibColliderList* list, LibTransform* source);
 
@@ -3206,11 +3776,45 @@ LibColorModel::~LibColorModel()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448360);
-
-void* func_00448690(void* value)
+/** @brief Initialize the color state and clear the draw packet. */
+LibColorModel::LibColorModel()
 {
-    return value;
+    LibModelPacket* packet = reinterpret_cast<LibModelPacket*>(reinterpret_cast<u32>(&draw_packet) & 0x0FFFFFFF);
+
+    memset_guess(packet, 0, sizeof(LibModelPacket));
+    set_vector(reinterpret_cast<LibVector4*>(&packet->unk10), 255.0f, 255.0f, 255.0f, 255.0f);
+    set_vector(reinterpret_cast<LibVector4*>(&packet->unke0), 1.0f, 1.0f, 1.0f, 1.0f);
+    unk65 = 0;
+    packet->unk00[0] = 0;
+    packet->unk00[1] = 0;
+    packet->unk00[2] = 0;
+    packet->unpack = VIF_UNPACK(VIF_UNPACK_V4_32, 0x2F, 0);
+    packet->mscal = VIF_MSCAL(reinterpret_cast<u32>(D_238) >> 3);
+    packet->unk304[0] = 0;
+    packet->unk304[1] = 0;
+    packet->unk304[2] = 0;
+    packet->frame_alpha = 0;
+    packet->frame_alpha_address = GS_REGISTER_FBA_1;
+    packet->unkf0 = 0;
+    packet->test = *reinterpret_cast<u32*>(&g_display->buffers[0].environment.context1.test) & ~0xC000;
+    packet->test_address = GS_REGISTER_TEST_1;
+    func_004CFF80(reinterpret_cast<LibMatrix44Value*>(&packet->unka0));
+    set_vector(&base_color_factor, 1.0f, 1.0f, 1.0f, 1.0f);
+    set_vector(&combined_color_factor, 1.0f, 1.0f, 1.0f, 1.0f);
+    set_vector(&color_modulation, 1.0f, 1.0f, 1.0f, 1.0f);
+    unk59d_0 = 1;
+    color_dirty = 1;
+    fog_enabled = 0;
+    light_mask = 0;
+    unk59c = 0;
+    unk59d_1 = D_001B6550;
+    original = 0;
+    next_clone = 0;
+}
+
+/** @brief Leave the matrix uninitialized. */
+inline LibModelPacketMatrix::LibModelPacketMatrix()
+{
 }
 
 extern "C" LibImageRegistry* g_image_registry;
@@ -4339,34 +4943,6 @@ void LibQuaternionCurveTrackBase::set_single_key(const void* value, const void* 
     on_set_single_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
 }
 
-/** Transform owner with vtable D_00174570 in main data that sends its display manager's effect packet. */
-class LibClass174570 : public LibTransformOwner
-{
-public:
-    virtual ~LibClass174570();
-
-    /** @brief Send the effect display's ready packet and finish this object's packet. */
-    virtual void render();
-
-    /** @brief Draw in bucket 8. */
-    virtual void set_default_draw_bucket();
-
-    /**
-     * @brief Return a bounding sphere at the origin with a huge radius, so the object is never culled.
-     * @return Bounding sphere; it lives on this function's stack.
-     */
-    virtual const LibVector4* get_bounding_sphere();
-
-    /**
-     * @brief Promote the effect display's pending packet to the ready one when the effect is on.
-     * @param matrix Unused.
-     * @param context Unused.
-     */
-    virtual void build_packet(const void* matrix, void* context);
-
-    LibDisplayManager* manager;
-};
-
 /** @brief Draw in bucket 8. */
 void LibClass174570::set_default_draw_bucket()
 {
@@ -4428,4 +5004,4 @@ s32 func_0044A5E0(void* object)
     return 14;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_0044A5F0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", update__14LibClass1745F0Fv);

@@ -254,6 +254,57 @@ public:
     virtual void on_set_single_key(const FieldVec4A* value, float key);
 };
 
+/** Two-sample quaternion history that slerps, with vtable D_1781C0 in main data; its data comes before the vptr. */
+class LibSlerpQuaternionHistory
+{
+public:
+    FieldVec4B unk00;
+    s16 sample_count;
+    s16 next_index;
+    u32 unk14;
+    u32 unk18;
+
+    /** @brief Forget the stored samples. */
+    void reset();
+
+    /**
+     * @brief Find the two stored samples and how far a key lies between them.
+     * @param key Key to place.
+     * @param lower Receives the index of the older sample.
+     * @param upper Receives the index of the newer sample.
+     * @return Blend factor from the older sample to the newer one; zero until both samples are stored.
+     */
+    float find_blend(float key, s32* lower, s32* upper) const;
+
+    /** @brief Slot 8; empty in every copy, so its purpose is unknown. */
+    virtual void func_slot08();
+
+    /**
+     * @brief Slerp the two stored quaternions at a key.
+     * @param key Evaluation key.
+     * @return Interpolated quaternion.
+     */
+    virtual FieldVec4B sample(float key);
+
+    /**
+     * @brief Store a value and key in the two-entry history and count it, up to two.
+     * @param key Key to store.
+     * @param value Value to store.
+     */
+    virtual void push_sample(float key, const FieldVec4A* value);
+
+    /**
+     * @brief Slerp the two stored quaternions at a key and report the blend.
+     * @param key Evaluation key.
+     * @param blend Receives the blend factor when not null.
+     * @return Interpolated quaternion.
+     */
+    virtual FieldVec4B sample_with_blend(float key, float* blend);
+
+    FieldVec4B values[2];
+    float keys[2];
+};
+
 /** 0xC0-byte pooled LibSlerpQuaternionKeyTrack with vtable D_177EE0 in main data, allocated from g_slerp_quaternion_track_pool. */
 class LibPooledSlerpQuaternionTrack : public LibSlerpQuaternionKeyTrack
 {
@@ -272,10 +323,10 @@ public:
 
     virtual void return_to_pool();
 
-    u8 unk50[0x50];
-    u8 unkA0[0x10];
-    u32 unkB0;
-    u32 unkB4;
+    LibSlerpQuaternionHistory sample_history;
+    FieldVec4B cycle_offset;
+    s32 offset_cycle;
+    float last_blend;
     float value_rate;
     u8 unkBC[4];
 };
@@ -531,57 +582,6 @@ public:
      * @param value Value to store.
      */
     virtual void push_sample(float key, const FieldVec4A* value);
-
-    FieldVec4B values[2];
-    float keys[2];
-};
-
-/** Two-sample quaternion history that slerps, with vtable D_1781C0 in main data; its data comes before the vptr. */
-class LibSlerpQuaternionHistory
-{
-public:
-    FieldVec4B unk00;
-    s16 sample_count;
-    s16 next_index;
-    u32 unk14;
-    u32 unk18;
-
-    /** @brief Forget the stored samples. */
-    void reset();
-
-    /**
-     * @brief Find the two stored samples and how far a key lies between them.
-     * @param key Key to place.
-     * @param lower Receives the index of the older sample.
-     * @param upper Receives the index of the newer sample.
-     * @return Blend factor from the older sample to the newer one; zero until both samples are stored.
-     */
-    float find_blend(float key, s32* lower, s32* upper) const;
-
-    /** @brief Slot 8; empty in every copy, so its purpose is unknown. */
-    virtual void func_slot08();
-
-    /**
-     * @brief Slerp the two stored quaternions at a key.
-     * @param key Evaluation key.
-     * @return Interpolated quaternion.
-     */
-    virtual FieldVec4B sample(float key);
-
-    /**
-     * @brief Store a value and key in the two-entry history and count it, up to two.
-     * @param value Value to store.
-     * @param key Key to store.
-     */
-    virtual void push_sample(const FieldVec4A* value, float key);
-
-    /**
-     * @brief Slerp the two stored quaternions at a key and report the blend.
-     * @param key Evaluation key.
-     * @param blend Receives the blend factor when not null.
-     * @return Interpolated quaternion.
-     */
-    virtual FieldVec4B sample_with_blend(float key, float* blend);
 
     FieldVec4B values[2];
     float keys[2];
@@ -1933,10 +1933,11 @@ public:
 
     float last_fraction;
     float value_rate;
-    u32 unk58;
+    s32 offset_cycle;
     LibFloatQuaternionTrackKey* lower_key;
     LibFloatQuaternionTrackKey* upper_key;
-    u8 unk64[0x1C];
+    u8 unk64[0xC];
+    FieldVec4B cycle_offset;
 };
 
 
@@ -1964,6 +1965,15 @@ struct LibQuaternionTrackKey
     float get_key() const
     {
         return key;
+    }
+
+    /**
+     * @brief Store the key, truncated to a halfword.
+     * @param value Key.
+     */
+    void set_key(float value)
+    {
+        key = value;
     }
 
     s16 packed_rotation[3];

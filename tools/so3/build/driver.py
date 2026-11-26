@@ -283,8 +283,8 @@ def link_rules(module, objects):
     linked = f'{module.output}/linked.elf'
     linker = working_compiler_folder() / LINKER_EXE
     return [f'build {module.command_file}: command_file {module.layout} {" ".join(symbol_scripts)} | '
-            f'{" ".join([*module.symbol_maps, *COMMAND_FILE_INPUTS])}',
-            f'  symbol_maps = {symbol_maps}',
+            f'{" ".join([*module.symbol_maps, str(module.config_path), *COMMAND_FILE_INPUTS])}',
+            f'  symbol_maps = {symbol_maps} --config {module.config_path}',
             f'build {linked}: link {" ".join(objects)} | {module.command_file} {linker}',
             f'  command_file = {module.command_file}', f'  linker = {linker}']
 

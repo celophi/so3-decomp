@@ -251,6 +251,81 @@ u8 func_00444D60(const void* object);
 /** Clear the byte at receiver offset 0x480. */
 void func_0043AFC0(void* object);
 
+/** Set a receiver flag and store two float values. */
+void func_0043A930(void* object, float first, float second);
+
+/** Set a receiver flag and store one float value. */
+void func_0043A950(void* object, float value);
+
+/** Set a receiver flag and store two float values. */
+void func_0043A960(void* object, float first, float second);
+
+/** Set a receiver flag and store one float value. */
+void func_0043A980(void* object, float value);
+
+/** Set a receiver flag and store two float values. */
+void func_0043A990(void* object, float first, float second);
+
+/** Set a receiver flag and store two float values. */
+void func_0043AA60(void* object, float first, float second);
+
+/** Set a receiver flag and store one float value. */
+void func_0043AA80(void* object, float value);
+
+/** Set a receiver flag and store two float values. */
+void func_0043AA90(void* object, float first, float second);
+
+/** Set a receiver flag and store one float value. */
+void func_0043AAB0(void* object, float value);
+
+/** Set a receiver flag and store two float values. */
+void func_0043AB10(void* object, float first, float second);
+
+/** Set a receiver flag and store two float values. */
+void func_0043AB70(void* object, float first, float second);
+
+/** Set a receiver flag and store two float values. */
+void func_0043ABD0(void* object, float first, float second);
+
+/** Set a receiver flag and store five float values. */
+void func_0043AD00(void* object, float first, float second, float third, float fourth, float fifth);
+
+/** Set a receiver flag and store two float values. */
+void func_0043AD40(void* object, float first, float second);
+
+/** Set a receiver flag and store two float values. */
+void func_0043AD80(void* object, float first, float second);
+
+/** Store a 128-bit value, a word, a flag and two float values. */
+void func_0043AE20(void* object, const unsigned __int128* value, s32 word, s32 flag, float first, float second);
+
+/** Store a 128-bit vector and an amount. */
+void func_0043AE80(void* object, const unsigned __int128* vector, float amount);
+
+/** Store a 128-bit vector and an amount. */
+void func_0043AEA0(void* object, const unsigned __int128* vector, float amount);
+
+/** Store a 128-bit vector and an amount. */
+void func_0043AEC0(void* object, const unsigned __int128* vector, float amount);
+
+/** Store a 128-bit vector and an amount. */
+void func_0043AEE0(void* object, const unsigned __int128* vector, float amount);
+
+/** Store a 128-bit vector and an amount. */
+void func_0043AF00(void* object, const unsigned __int128* vector, float amount);
+
+/** Store a 128-bit vector and an amount. */
+void func_0043AF20(void* object, const unsigned __int128* vector, float amount);
+
+/** Store a 128-bit vector and an amount. */
+void func_0043AF60(void* object, const unsigned __int128* vector, float amount);
+
+/** Store a 128-bit vector and an amount. */
+void func_0043AF80(void* object, const unsigned __int128* vector, float amount);
+
+/** Store a 128-bit vector and an amount. */
+void func_0043AFA0(void* object, const unsigned __int128* vector, float amount);
+
 /** Return whether the receiver's word at offset 0x14 is nonzero. */
 s32 func_0043DA00(void* receiver);
 
@@ -312,9 +387,6 @@ void func_00447190(void* object);
 void func_00447C60(void* object);
 
 void func_00447C80(void* object);
-
-/** Return the first pointer argument unchanged. */
-void* func_00448690(void* value);
 
 /** Return the first pointer argument unchanged. */
 void* func_0044A330(void* value);

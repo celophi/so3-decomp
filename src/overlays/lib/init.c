@@ -61,10 +61,6 @@ extern u8 D_0050CD50[];
 extern void* __vt__15LibPacketBuffer[];
 extern float D_0050CD80[4];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/init", func_00507380);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/init", func_005074A0);
-
 /** @brief Point D_001B6544 at D_00173F68. */
 void func_00507560(void)
 {

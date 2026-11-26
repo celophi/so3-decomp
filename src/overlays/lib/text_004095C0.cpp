@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/scratchpad_texture_cache.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/text_0045AD10.h"
@@ -7,6 +8,9 @@
 #include "main/resident_data.h"
 #include "overlays/lib/item_allocation.h"
 #include "overlays/lib/movie_player.h"
+#include "main/sound.h"
+#include "main/sound_stream.h"
+#include "main/stream_thread.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_0013C948.h"
@@ -2531,7 +2535,51 @@ extern "C" s16 lib_allocation_get_identifier(const ItemCreationAllocationRecord*
     return id;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D930);
+/** One packed word of an allocation record seen as three 10-bit fields. */
+typedef struct LibAllocationFactorWord
+{
+    u32 low : 10;
+    u32 middle : 10;
+    u32 high : 10;
+    u32 unused : 2;
+} LibAllocationFactorWord;
+
+// TODO: Only matches with common subexpressions off; the factor reads otherwise reuse the checksum's loads.
+#pragma push
+#pragma opt_common_subs off
+/**
+ * @brief Read one of an allocation's eight factor codes after validating its checksum.
+ * @param record Allocation record.
+ * @param index Factor slot, 0 to 7.
+ * @return Factor code, or zero when the checksum differs or the slot is out of range.
+ */
+extern "C" u16 func_0040D930(const ItemCreationAllocationRecord* record, u32 index)
+{
+    const LibAllocationFactorWord* words = reinterpret_cast<const LibAllocationFactorWord*>(record);
+
+    switch (index)
+    {
+        case 0:
+            return record->invalid() ? 0 : (u16)words[0].middle;
+        case 1:
+            return record->invalid() ? 0 : record->definition_factors.bits.factor1;
+        case 2:
+            return record->invalid() ? 0 : record->factors_234.bits.factor2;
+        case 3:
+            return record->invalid() ? 0 : (u16)words[1].middle;
+        case 4:
+            return record->invalid() ? 0 : record->factors_234.bits.factor4;
+        case 5:
+            return record->invalid() ? 0 : record->factors_567.bits.factor5;
+        case 6:
+            return record->invalid() ? 0 : (u16)words[2].middle;
+        case 7:
+            return record->invalid() ? 0 : record->factors_567.bits.factor7;
+    }
+
+    return 0;
+}
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040DD20);
 
@@ -3398,11 +3446,751 @@ void func_0040FB00(void* object, u8 value)
     receiver->unk90a = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", update__14LibClass1721B0Fv);
+extern "C" s16 func_004110C0(LibClass1721B0* object);
 
-/** @brief Destroy the flags. */
-LibTrophyFlags::~LibTrophyFlags()
+extern "C" s16 func_00411250(LibClass1721B0* object);
+
+/** Directory name the save data lives in. */
+extern "C" const char D_004EC2C0[];
+
+/** Suffix appended to the directory name. */
+extern "C" const char D_00505700[];
+
+/** Suffix appended to the directory name for the save check. */
+extern "C" const char D_00505708[];
+
+/**
+ * @brief Join two strings into a buffer when they fit, leaving the buffer alone otherwise.
+ * @param buffer Destination.
+ * @param size Size of the destination.
+ * @param first First string, or null to do nothing.
+ * @param second String appended to the first, or null.
+ */
+static inline void lib_join_name(char* buffer, u32 size, const char* first, const char* second)
 {
+    if (first != 0 && strlen(first) + strlen(second) + 1 <= size)
+    {
+        memset_guess(buffer, 0, size);
+        strcpy_guess(buffer, first);
+
+        if (second != 0)
+        {
+            strcat(buffer, second);
+        }
+    }
+}
+
+/**
+ * @brief Run the next step of the card file transfer: start it, then poll for its result.
+ * @param object Save data manager.
+ * @return One once the transfer has finished, zero while it runs, -1 without a card or between steps.
+ */
+static inline s16 lib_save_transfer(LibClass1721B0* object)
+{
+    s16 status = -1;
+
+    if (object->card)
+    {
+        switch (object->unk1a)
+        {
+        case 0:
+            status = lib_memory_card_start_transfer(object->card, object->unk1c, &object->request);
+
+            if (status == 0)
+            {
+                object->unk1a++;
+            }
+
+            break;
+        case 1:
+            status = lib_memory_card_get_result(object->card, object->unk1c, &object->result);
+
+            if (status != 0 && status == 1)
+            {
+                object->unk1a = -1;
+            }
+
+            break;
+        }
+    }
+
+    return status;
+}
+
+/**
+ * @brief Point the write request at the save directory and the save file, when there's a card.
+ * @param object Save data manager.
+ * @return Whether the request was set up.
+ */
+static inline bool lib_save_prepare_write(LibClass1721B0* object)
+{
+    if (!object->card)
+    {
+        return false;
+    }
+
+    func_0040E3B0(object);
+    object->files[0].name = object->directory;
+    object->files[0].data = object->unk910;
+    object->files[0].size = object->unk96c;
+    object->files[0].offset = 0;
+    object->request.directory = object->directory;
+    object->request.file_count = 1;
+    object->request.unk08 = 0;
+    object->request.files = object->files;
+    object->unk1a = 0;
+    return true;
+}
+
+/** @brief Run the save. */
+void LibClass1721B0::update()
+{
+    if (settings && card && card->ready && unk1c != -1)
+    {
+        s32 state = unk1e;
+
+        if (unk87a != 1)
+        {
+            state = (s16)card->slots[unk1c].card_state;
+
+            if (unk1e != state)
+            {
+                unk1e = state;
+                unk18 = 1;
+                return;
+            }
+        }
+
+        switch ((u16)unk18)
+        {
+        case 0:
+            break;
+        case 1:
+            if (state != 2)
+            {
+                func_0040F210(this, -10);
+                break;
+            }
+
+            // TODO: Casting the s16 slot index is what makes the reused index sign-extend; find the original form.
+            unk22 = card->slots[(s16)unk1c].formatted;
+
+            if (unk22 == 0)
+            {
+                if (unk878 == 0xE)
+                {
+                    unk1a = 0;
+                    unk18 = 0xE;
+                    break;
+                }
+
+                func_0040F210(this, -2);
+                break;
+            }
+
+            unk24 = card->slots[unk1c].free_space;
+            unk18 = 2;
+            unk8d0 = 0;
+            break;
+        case 2:
+            if (unk90b == 1)
+            {
+                lib_join_name(directory, sizeof(directory), D_004EC2C0, D_00505708);
+            }
+
+            if ((s16)lib_memory_card_probe_file(card, unk1c, directory, 0, 1, reinterpret_cast<u8*>(entry)) != -1)
+            {
+                unk18 = 3;
+            }
+
+            break;
+        case 3:
+        {
+            s16 status = lib_memory_card_get_result(card, unk1c, &result);
+
+            if (status == 0)
+            {
+                break;
+            }
+
+            if (status != 1)
+            {
+                break;
+            }
+
+            if (unk90b == 0)
+            {
+                if (result >= 0)
+                {
+                    unk8d0 = result;
+
+                    if (unk878 == 6)
+                    {
+                        if (result == 0)
+                        {
+                            if (!unk880)
+                            {
+                                if (unk24 < 0x4B0)
+                                {
+                                    func_0040F210(this, -3);
+                                    break;
+                                }
+
+                                func_0040F210(this, 1);
+                                break;
+                            }
+
+                            func_0040F740(this);
+                            unk18 = 8;
+                            break;
+                        }
+
+                        if (!unk880)
+                        {
+                            func_0040F2E0(this);
+                            func_00431730(card);
+                            func_004317B0(card, 1);
+                            unk18 = 0x90;
+                            break;
+                        }
+
+                        unk18 = 0xA;
+                        break;
+                    }
+
+                    if (unk878 == 0xA)
+                    {
+                        if (result == 0)
+                        {
+                            s32 count = 0;
+
+                            for (s32 i = 0; i < 300; i++)
+                            {
+                                if ((settings->trophy_flags.flags.bytes[(u32)i >> 3] >> (i & 7)) & 1)
+                                {
+                                    count++;
+                                }
+
+                                if (count > 2)
+                                {
+                                    func_0040F210(this, -11);
+                                    return;
+                                }
+                            }
+
+                            if (!unk880)
+                            {
+                                func_0040F210(this, 1);
+                                break;
+                            }
+
+                            func_0040F740(this);
+                            unk18 = 8;
+                            break;
+                        }
+
+                        if (!unk880)
+                        {
+                            func_0040F210(this, 2);
+                            break;
+                        }
+
+                        unk18 = 0xA;
+                        break;
+                    }
+
+                    if (unk878 == 0xC)
+                    {
+                        if (result == 0)
+                        {
+                            func_0040F210(this, -12);
+                            break;
+                        }
+
+                        if (!unk880)
+                        {
+                            func_0040F2E0(this);
+                            unk18 = 0x60;
+                            break;
+                        }
+
+                        func_0040F3E0(this);
+                        unk18 = 0x1A;
+                        break;
+                    }
+
+                    if (unk878 == 8)
+                    {
+                        if (!unk8cd[unk1c])
+                        {
+                            if (!unk880)
+                            {
+                                func_0040F210(this, 1);
+                                break;
+                            }
+
+                            func_0040F740(this);
+                            unk18 = 8;
+                            break;
+                        }
+
+                        func_0040F740(this);
+                        unk18 = 8;
+                    }
+
+                    break;
+                }
+
+                if (unk24 < 0x4B0)
+                {
+                    func_0040F210(this, -3);
+                }
+                else if (result == -2)
+                {
+                    func_0040F210(this, -3);
+                }
+                else if (result == -4)
+                {
+                    func_0040F210(this, -4);
+                }
+                else if (result == -5)
+                {
+                    func_0040F210(this, -5);
+                }
+                else
+                {
+                    func_0040F210(this, -10);
+                }
+
+                break;
+            }
+
+            if (unk90b != 1)
+            {
+                break;
+            }
+
+            if (result >= 0)
+            {
+                if (result == 0)
+                {
+                    func_0040F210(this, 1);
+                    break;
+                }
+
+                if (unk970)
+                {
+                    unk18 = 0x10;
+                    break;
+                }
+
+                if ((u8)func_0040E7F0(this))
+                {
+                    unk18 = 0x16;
+                    break;
+                }
+
+                func_0040F210(this, -10);
+                break;
+            }
+
+            if (result == -2)
+            {
+                func_0040F210(this, -3);
+            }
+            else if (result == -4)
+            {
+                func_0040F210(this, -4);
+            }
+            else if (result == -5)
+            {
+                func_0040F210(this, -5);
+            }
+            else
+            {
+                func_0040F210(this, -10);
+            }
+
+            break;
+        }
+        case 8:
+        {
+            s16 status = func_00411250(this);
+
+            if (status != 1)
+            {
+                break;
+            }
+
+            if (result >= 0)
+            {
+                set_trophy_flags_valid(this, true);
+                unk18 = 0xA;
+            }
+            else
+            {
+                func_0040F210(this, result);
+            }
+
+            break;
+        }
+        case 0xA:
+            func_0040F2E0(this);
+            unk18 = 0x70;
+        case 0x70:
+            if (lib_save_transfer(this) == 1)
+            {
+                if ((u8)func_0040F4F0(this))
+                {
+                    unk18 = 0x40;
+                }
+                else
+                {
+                    func_0040F210(this, -13);
+                }
+            }
+
+            break;
+        case 0x60:
+            if (lib_save_transfer(this) == 1)
+            {
+                if (*reinterpret_cast<s32*>(unk88c) == 0)
+                {
+                    func_0040F210(this, -13);
+                }
+                else
+                {
+                    func_0040F210(this, 3);
+                }
+            }
+
+            break;
+        case 0xE:
+        {
+            s16 status = -1;
+
+            if (card)
+            {
+                switch (unk1a)
+                {
+                case 0:
+                    status = func_004325A0(card, unk1c);
+
+                    if (status == 0)
+                    {
+                        unk1a++;
+                    }
+
+                    break;
+                case 1:
+                    status = lib_memory_card_get_result(card, unk1c, &result);
+
+                    if (status != 0 && status == 1)
+                    {
+                        unk1a = -1;
+                    }
+
+                    break;
+                }
+            }
+
+            if (status == 1)
+            {
+                if (result == 0)
+                {
+                    unk8cd[unk1c] = 1;
+                }
+
+                func_0040F210(this, result);
+            }
+
+            break;
+        }
+        case 0x40:
+            if (func_00411250(this) == 1)
+            {
+                func_0040F210(this, result);
+            }
+
+            break;
+        case 0x30:
+            if (lib_save_transfer(this) == 1)
+            {
+                if (result == -200)
+                {
+                    func_0040F3E0(this);
+                    unk18 = 0x30;
+                }
+                else
+                {
+                    func_0040F210(this, result);
+                }
+            }
+
+            break;
+        case 0x1A:
+            if (lib_save_transfer(this) != 1)
+            {
+                break;
+            }
+
+            // TODO: These two return where the others break; that keeps their exit branches unchained.
+            if (result < -10)
+            {
+                func_0040F210(this, -10);
+                set_trophy_flags_valid(this, false);
+                return;
+            }
+
+            if (result == -4)
+            {
+                func_0040F210(this, -14);
+                set_trophy_flags_valid(this, false);
+                return;
+            }
+
+            if (result == -200)
+            {
+                func_0040F3E0(this);
+                unk18 = 0x1A;
+                break;
+            }
+
+            if ((u8)func_0040EC10(this) == 1)
+            {
+                func_0040F210(this, result);
+                break;
+            }
+
+            func_0040F210(this, -14);
+            set_trophy_flags_valid(this, false);
+            break;
+        case 0x10:
+            if (lib_save_prepare_write(this) == false)
+            {
+                func_0040F210(this, -1);
+                break;
+            }
+
+            unk18 = 0x18;
+        case 0x18:
+        {
+            s16 status = -1;
+
+            if (card)
+            {
+                switch (unk1a)
+                {
+                case 0:
+                    status = func_004324D0(card, unk1c, &request);
+
+                    if (status == 0)
+                    {
+                        unk1a++;
+                    }
+
+                    break;
+                case 1:
+                    status = lib_memory_card_get_result(card, unk1c, &result);
+
+                    if (status != 0 && status == 1)
+                    {
+                        unk1a = -1;
+                    }
+
+                    break;
+                }
+            }
+
+            if (status == 1)
+            {
+                func_0040F210(this, result);
+            }
+
+            break;
+        }
+        case 0x16:
+            if (lib_save_transfer(this) == 1)
+            {
+                if (result == -200)
+                {
+                    unk18 = 0x30;
+                }
+                else if (result >= 0)
+                {
+                    if ((u8)func_0040E930(this))
+                    {
+                        func_0040F210(this, 4);
+                    }
+                    else
+                    {
+                        func_0040F210(this, -13);
+                    }
+                }
+                else
+                {
+                    func_0040F210(this, result);
+                }
+            }
+
+            break;
+        case 0x90:
+        {
+            if (func_004110C0(this) != 1)
+            {
+                break;
+            }
+
+            if (result < -10)
+            {
+                func_0040F210(this, -10);
+                break;
+            }
+
+            bool failed = false;
+
+            if (result < 0 && result >= -10)
+            {
+                failed = true;
+            }
+
+            s32 first = func_00431770(card, 1);
+            s32 second = func_00431770(card, 2);
+
+            if (first != 0x40)
+            {
+                failed = true;
+            }
+
+            if (second != 0x3C4)
+            {
+                failed = true;
+            }
+            else
+            {
+                if (!(entry->attributes & 8))
+                {
+                    failed = true;
+                }
+
+                if (failed == false && reinterpret_cast<u8*>(icon_sys)[0] != 'P')
+                {
+                    failed = true;
+                }
+
+                if (failed == false && reinterpret_cast<u8*>(icon_sys)[1] != 'S')
+                {
+                    failed = true;
+                }
+
+                if (failed == false && reinterpret_cast<u8*>(icon_sys)[2] != '2')
+                {
+                    failed = true;
+                }
+
+                if (failed == false && reinterpret_cast<u8*>(icon_sys)[3] != 'D')
+                {
+                    failed = true;
+                }
+
+                if (failed == false)
+                {
+                    u8* data = unk88c;
+
+                    if (*reinterpret_cast<s32*>(data) == 0)
+                    {
+                        failed = true;
+                    }
+                    else
+                    {
+                        LibTrophyFlags check;
+                        check.flags.resize(LIB_TROPHY_COUNT);
+                        check.flags.clear();
+                        u8 bits[(LIB_TROPHY_COUNT + 7) / 8];
+
+                        for (s32 i = 0; i < (s32)sizeof(bits); i++)
+                        {
+                            bits[i] = 0;
+                        }
+
+                        for (s32 i = 0; i < (s32)sizeof(bits); i++)
+                        {
+                            bits[i] = unk8dc[i];
+                        }
+
+                        for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
+                        {
+                            u32 byte = (u32)i >> 3;
+                            u32 bit = i & 7;
+
+                            if (bits[i / 8] & (1 << (i % 8)))
+                            {
+                                check.flags.bytes[byte] |= 1LL << bit;
+                            }
+                            else
+                            {
+                                check.flags.bytes[byte] &= ~(1LL << bit);
+                            }
+                        }
+
+                        check.trophy_key = *reinterpret_cast<s32*>(data);
+                        // TODO: &check.checksum_seed gets reused for the seed read; find the original form.
+                        memcpy_guess(reinterpret_cast<u8*>(&check) + 0x18, &unk8dc[sizeof(bits)], 8);
+
+                        if (!lib_trophy_flags_checksum_holds(&check))
+                        {
+                            failed = true;
+                        }
+                    }
+                }
+            }
+
+            if (failed == false)
+            {
+                func_0040F210(this, 2);
+                break;
+            }
+
+            if ((s32)unk8d0 <= 0)
+            {
+                if (unk24 < 0x4B0)
+                {
+                    func_0040F210(this, -3);
+                }
+                else
+                {
+                    func_0040F210(this, 4);
+                }
+
+                break;
+            }
+
+            if (unk90a == 1)
+            {
+                func_0040F210(this, -16);
+                break;
+            }
+
+            if (unk24 < 0x4B0)
+            {
+                if (unk8d4)
+                {
+                    func_0040F210(this, 4);
+                }
+                else
+                {
+                    func_0040F210(this, -3);
+                }
+
+                break;
+            }
+
+            // TODO: Returning here instead of breaking keeps the last branch to the exit.
+            func_0040F210(this, 4);
+            return;
+        }
+        }
+    }
 }
 
 /**
@@ -3697,33 +4485,6 @@ void LibClass1721B0::destroy()
 /** @brief Free the flag storage and the value list, then detach. */
 LibClass1721B0::~LibClass1721B0()
 {
-}
-
-/** Directory name the save data lives in. */
-extern "C" const char D_004EC2C0[];
-
-/** Suffix appended to the directory name. */
-extern "C" const char D_00505700[];
-
-/**
- * @brief Join two strings into a buffer when they fit, leaving the buffer alone otherwise.
- * @param buffer Destination.
- * @param size Size of the destination.
- * @param first First string, or null to do nothing.
- * @param second String appended to the first, or null.
- */
-static inline void lib_join_name(char* buffer, u32 size, const char* first, const char* second)
-{
-    if (first != 0 && strlen(first) + strlen(second) + 1 <= size)
-    {
-        memset_guess(buffer, 0, size);
-        strcpy_guess(buffer, first);
-
-        if (second != 0)
-        {
-            strcat(buffer, second);
-        }
-    }
 }
 
 LibClass1721B0::LibClass1721B0()
@@ -4785,7 +5546,62 @@ extern "C" LibTextExtent* func_00413D30(LibObject172410* object)
     return &object->extent;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D90);
+/**
+ * @brief Lay the item code out in the scratchpad and draw it, once; when fitting is on, a code wider or taller than the
+ *        widget is laid out again at a smaller scale, and the scale is put back after drawing.
+ */
+void LibObject172410::draw()
+{
+    if (unkfc == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        LibDrawRecord* records = reinterpret_cast<LibDrawRecord*>(0x70000000);
+        float scale_x = draw_scale;
+        float scale_y = draw_scale_y;
+        begin_layout(records, 0.0f);
+        func_00463DD0(this, unkfc, unkfe);
+        func_004637A0(records, record_count);
+        align_records_vertically(records, record_count);
+
+        if (unkfa)
+        {
+            bool fitted = false;
+            LibUiRect16* box = &unk18;
+            LibTextExtent* size = &extent;
+
+            if (!(size->width <= box->unk08))
+            {
+                draw_scale = scale_x * (box->unk08 / size->width);
+                fitted = true;
+            }
+
+            if (!(size->height <= box->unk0c))
+            {
+                draw_scale_y = scale_y * (box->unk0c / size->height);
+                fitted = true;
+            }
+
+            if (fitted)
+            {
+                begin_layout(records, 0.0f);
+                func_00463DD0(this, unkfc, unkfe);
+                func_004637A0(records, record_count);
+                align_records_vertically(records, record_count);
+            }
+        }
+
+        draw_records(records, record_count);
+        draw_scale = scale_x;
+        draw_scale_y = scale_y;
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Initialize the item code widget's rectangle and drawing storage.
@@ -4936,7 +5752,35 @@ LibObject172440::~LibObject172440()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004142E0);
+/**
+ * @brief Lay out the text for a 16-bit ID glyph by glyph.
+ * @param widget Widget to lay out into.
+ * @param id ID passed to the code lookup.
+ * @param variant Second lookup argument.
+ */
+extern "C" void func_00463C00(LibDrawWidget* widget, s32 id, u8 variant);
+
+/** @brief Lay the detail code out in the scratchpad and draw it, once. */
+void LibObject172440::draw()
+{
+    if (unkfc == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        LibDrawRecord* records = reinterpret_cast<LibDrawRecord*>(0x70000000);
+        begin_layout(records, 0.0f);
+        func_00463C00(this, unkfc, unkfe);
+        func_004637A0(records, record_count);
+        align_records_vertically(records, record_count);
+        draw_records(records, record_count);
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Initialize the detail code widget's rectangle and drawing storage.
@@ -4986,7 +5830,198 @@ void LibMovieStream::stop_sound()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004144F0);
+/**
+ * @brief Hand words of movie sound to the music stream, unless music is disabled.
+ * @param sound Sound system.
+ * @param data Words to write.
+ * @param size Size in bytes.
+ * @return Bytes taken; all of them when music is disabled.
+ */
+static inline s32 lib_movie_sound_write(ResidentSound* sound, const void* data, s32 size)
+{
+    if (sound->music_disabled)
+    {
+        return size;
+    }
+
+    return resident_stream_thread_write_words(sound->stream->thread, static_cast<const u32*>(data), size);
+}
+
+/**
+ * @brief Append movie sound to the music stream, unless music is disabled.
+ * @param sound Sound system.
+ * @param data Data to append.
+ * @param size Size in bytes.
+ * @return Bytes taken; all of them when music is disabled.
+ */
+static inline s32 lib_movie_sound_append(ResidentSound* sound, const void* data, s32 size)
+{
+    if (sound->music_disabled)
+    {
+        return size;
+    }
+
+    return resident_stream_thread_append(sound->stream->thread, data, size);
+}
+
+/**
+ * @brief Keep the movie's sound stream fed.
+ * @param stream Movie stream.
+ * @return Bytes handed to the sound stream.
+ */
+extern "C" s32 func_004144F0(LibMovieStream* stream)
+{
+    if (!stream->kind)
+    {
+        return 0;
+    }
+
+    s32 written = 0;
+    s32 position = stream->position;
+    s32 fill = stream->fill;
+    s32 size = stream->size;
+    u8* read;
+    u8* start = stream->data;
+    read = start + (size + (position - fill)) % size;
+    s32 total = fill / 1024 * 1024;
+    s32 first = stream->data + stream->size - read;
+
+    first = first < total ? first : total;
+
+    s32 second = total - first;
+
+    if (stream->kind == LIB_MOVIE_STREAM_KIND_1)
+    {
+        if (stream->unk24 == 0)
+        {
+            stream->unk24 = 0x14000;
+        }
+
+        LibMoviePlayer* player = stream->player;
+
+        if (player->decoder.state->current_frame == 0)
+        {
+            if (!stream->unk33)
+            {
+                LibMovieDecoder* decoder = &player->decoder;
+                LibMovieState* state = decoder->state;
+                state->unk80B8 -= 8;
+                state->unk80B8 = clamp_low(state->unk80B8, 0);
+                stream->unk33 = 1;
+            }
+
+            return 0;
+        }
+
+        if (first + second >= 0x400 && !stream->unk31 && stream->fill > stream->unk24)
+        {
+            ResidentSound* sound = stream->sound;
+
+            if (!sound->music_disabled)
+            {
+                resident_stream_thread_request_2(sound->stream->thread, 0, (void*)resident_sound_set_stream_second_state, 0, 0);
+            }
+
+            stream->unk31 = 1;
+        }
+    }
+    else
+    {
+        if (stream->unk24 == 0)
+        {
+            stream->unk24 = 0x4800;
+        }
+
+        if ((first + second >= 0x400 && !stream->unk31 && stream->fill < stream->unk24) || !stream->player->decoder.get_picture_count())
+        {
+            return 0;
+        }
+    }
+
+    if (first + second >= 0x400)
+    {
+        if (stream->kind == LIB_MOVIE_STREAM_KIND_1)
+        {
+            if (!stream->unk32)
+            {
+                stream->unk32 = 1;
+
+                ResidentSound* sound = g_sound;
+
+                if (!sound->music_disabled)
+                {
+                    resident_stream_thread_reset_blocks(sound->stream->thread);
+                }
+            }
+
+            written = lib_movie_sound_write(stream->sound, read, first);
+
+            if (second && written == first)
+            {
+                second = lib_movie_sound_write(stream->sound, start, second);
+                written += second;
+            }
+        }
+        else
+        {
+            if (!stream->unk31)
+            {
+                if (resident_sound_is_stream_state_set(stream->sound))
+                {
+                    return 0;
+                }
+
+                u8* buffer = stream->buffer->aligned_data();
+                ResidentSound* sound = stream->sound;
+                s32 started;
+
+                if (sound->music_disabled)
+                {
+                    started = 0;
+                }
+                else if (sound->unk38 >= 0)
+                {
+                    started = 0;
+                }
+                else
+                {
+                    resident_stream_set_volume(sound->stream, 0, 0, 0, 0x7FFF);
+                    sound->unk350 = 1;
+                    started = resident_stream_thread_request_4(sound->stream->thread, 0, (void*)resident_sound_push_stream_answer, 0, (u32*)buffer, 0);
+                }
+
+                if (started)
+                {
+                    stream->unk31 = 1;
+                }
+            }
+
+            written = lib_movie_sound_append(stream->sound, read, first);
+
+            if (second && written == first)
+            {
+                written += lib_movie_sound_append(stream->sound, start, second);
+            }
+
+            if (written == 0)
+            {
+                if (++stream->unk28 >= 120)
+                {
+                    written = first + second;
+                    stream->unk28 = 0;
+                }
+            }
+            else
+            {
+                stream->unk28 = 0;
+            }
+        }
+    }
+
+    stream->fill -= written;
+    stream->unk20 += written;
+    return written;
+}
 
 /** Stream data libmpeg hands to a stream callback: the payload sits in the demultiplexer's ring. */
 struct LibMpegStreamData
@@ -5521,7 +6556,7 @@ extern "C" s32 func_004152C0(LibMovieDecoder* decoder)
     D_001B6604->stop();
     D_001B6608->stop();
     sceMpegGetPicture(decoder->mpeg, image, 0x460);
-    decoder->unk15E658++;
+    decoder->picture_count++;
     EnableDmac(D_001B6604->channel);
     EnableDmac(D_001B6608->channel);
     s32 limit = 0x106;
@@ -5584,7 +6619,7 @@ extern "C" void func_00419110(LibMovieState* state);
 extern "C" s32 func_004159E0(LibMovieDecoder* decoder)
 {
     sceMpegReset(decoder->mpeg);
-    decoder->unk15E658 = 0;
+    decoder->picture_count = 0;
     func_00418020(decoder);
     func_00419110(decoder->state);
     decoder->input.position = 0;
@@ -5908,7 +6943,7 @@ LibMovieDecoder::LibMovieDecoder()
     input.size = LIB_MOVIE_STREAM_BUFFER_SIZE;
     unk15E645 = 1;
     TIMER0_MODE = TIMER_MODE_CLOCK_HBLANK | TIMER_MODE_COUNT_ENABLE;
-    unk15E658 = 0;
+    picture_count = 0;
     unk15E644 = 1;
     stopped = 0;
     state = new (0) LibMovieState;
@@ -6433,8 +7468,12 @@ extern "C"
      */
     s32 sceMpegDemuxPssRing(void* mpeg, u8* data, s32 size, u8* ring, s32 ring_size);
 
-    /** @brief Keep the movie's sound stream fed. */
-    void func_004144F0(LibMovieStream* stream);
+    /**
+     * @brief Keep the movie's sound stream fed.
+     * @param stream Movie stream.
+     * @return Bytes handed to the sound stream.
+     */
+    s32 func_004144F0(LibMovieStream* stream);
 }
 
 /**

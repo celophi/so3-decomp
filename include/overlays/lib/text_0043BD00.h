@@ -29,6 +29,13 @@ public:
 class LibClass173BB0 : public LibTransform
 {
 public:
+    /** @brief Clear the two leading floats. */
+    LibClass173BB0()
+    {
+        unk210 = 0.0f;
+        unk214 = 0.0f;
+    }
+
     virtual ~LibClass173BB0()
     {
     }
@@ -65,6 +72,14 @@ public:
 class LibClass173B10 : public LibClass173BB0
 {
 public:
+    /** @brief Start as a type-0x601 collider at rest that has not started. */
+    LibClass173B10()
+    {
+        type_id = 0x601;
+        started = 0;
+        *(unsigned __int128*)&velocity = 0;
+    }
+
     virtual ~LibClass173B10();
 
     virtual void update();
@@ -86,6 +101,15 @@ public:
 class LibClass173C40 : public LibClass173BB0
 {
 public:
+    /** @brief Start as a type-0x600 collider that has not started. */
+    LibClass173C40()
+    {
+        type_id = 0x600;
+        started = 0;
+        unk221 = 0;
+        unk222[0] = 0;
+    }
+
     virtual ~LibClass173C40();
 
     virtual void update();
@@ -124,7 +148,13 @@ struct LibColliderList
 class LibClass173CD0 : public LibClass173DA0
 {
 public:
+    LibClass173CD0()
+    {
+    }
+
     virtual ~LibClass173CD0();
+
+    virtual void func_slot18();
 };
 #endif
 

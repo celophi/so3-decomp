@@ -115,6 +115,12 @@ extern "C" {
 s32 resident_dma_queue_push(ResidentDmaQueue* queue, DmaSubmission* submission);
 
 /**
+ * @brief Clear the queue's unk1012 pause flag and restart it, if it was paused.
+ * @param queue DMA queue.
+ */
+void resident_dma_queue_resume(ResidentDmaQueue* queue);
+
+/**
  * @brief Set the queue's unk1012 flag.
  * @param queue DMA queue.
  */

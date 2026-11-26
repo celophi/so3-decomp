@@ -12,6 +12,7 @@
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/palette_blend_channel.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/scene_objects.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/text_004BD360.h"
@@ -24,6 +25,7 @@
 #include "overlays/lib/direction_vu0.h"
 #include "overlays/lib/quaternion_inlines.h"
 #include "ee.h"
+#include "overlays/lib/scratchpad_texture_cache.h"
 #include "clamp.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004DD440.h"
@@ -35,6 +37,7 @@
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/model.h"
 #include "overlays/lib/transform_vu0.h"
+#include "overlays/lib/palette_blend_vu0.h"
 
 #define TEXTURE_TRANSFER_GIF_TAG 0x1000000000008004ULL
 #define LIB_TEXTURE_TAG_MLPS 0x4D6C5073
@@ -944,9 +947,35 @@ LibMatrix44Value func_004CF580(const LibMatrix44Value& input)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", lib_normalize_vector3);
+/**
+ * @brief Normalize the first three floating-point components in place.
+ * @param value At least three components with nonzero squared length.
+ */
+void lib_normalize_vector3(float* value)
+{
+    float scale = ee_rsqrt(1.0f, value[0] * value[0] + value[1] * value[1] + value[2] * value[2]);
+    value[0] *= scale;
+    value[1] *= scale;
+    value[2] *= scale;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CF640);
+/**
+ * @brief Normalize four floating-point components in place, leaving a zero vector unchanged.
+ * @param value Four components, such as a quaternion.
+ */
+void func_004CF640(float* value)
+{
+    float length = value[0] * value[0] + value[1] * value[1] + value[2] * value[2] + value[3] * value[3];
+
+    if (length != 0.0f)
+    {
+        float scale = ee_rsqrt(1.0f, length);
+        value[0] *= scale;
+        value[1] *= scale;
+        value[2] *= scale;
+        value[3] *= scale;
+    }
+}
 
 /**
  * @brief Multiply a matrix by a column vector.
@@ -985,7 +1014,7 @@ LibMatrix44Value func_004CF7C0(const LibMatrix44Value& left, const LibMatrix44Va
  * @param matrix Source matrix.
  * @return Transformed vector.
  */
-extern "C" FieldVec4A func_004CF830(const FieldVec4A& value, const LibMatrix44Value& matrix)
+extern "C" FieldVec4A func_004CF830(const FieldVec4B& value, const LibMatrix44Value& matrix)
 {
     FieldVec4A result;
     result.x = value.x * matrix.m[0][0] + value.y * matrix.m[1][0] + value.z * matrix.m[2][0] + value.w * matrix.m[3][0];
@@ -2983,7 +3012,156 @@ void LibRenderer::func_004D4560()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4700__11LibRendererFv);
+extern "C" void func_004D90B0(void* address, void* scratchpad);
+
+/**
+ * @brief Build the frame's packets: copy the texture cache to the scratchpad, build every object's packet in two
+ *        passes (on VU0 while the microcode upload runs, then on the CPU with camera switches), start the objects that
+ *        render their own main packet, and copy the cache back.
+ */
+void LibRenderer::func_004D4700()
+{
+    unk40d4 = g_texture_cache;
+    g_texture_cache = new (EE_SCRATCHPAD) LibTextureCache;
+    FlushCache(0);
+    func_004D90B0(unk40d4, g_texture_cache);
+    unk40cf = 1;
+    s32 count = current_count;
+    unk4090 = -1;
+    u8 timed = 0;
+    LibListObject* camera = manager->current_display;
+    LibListObject* current = camera;
+
+    {
+        LibInterruptLock interrupts;
+        unk40ca = 1;
+    }
+
+    for (s32 i = 0; i < count; i++)
+    {
+        reinterpret_cast<LibTransformOwner**>(cursor)[i]->unk62 = 0;
+    }
+
+    if (g_microcode_loader->unk06)
+    {
+        ee_wait_dma_condition();
+        EnableDmac(D_001B6608->channel);
+
+        for (s32 pass = 0; pass < 2; pass++)
+        {
+            for (s32 i = 0; i < count; i++)
+            {
+                if (!g_microcode_loader->unk06)
+                {
+                    break;
+                }
+
+                LibTransformOwner* object = reinterpret_cast<LibTransformOwner**>(cursor)[i];
+
+                if (object->unk65 == pass && !object->unk63)
+                {
+                    if (object->display_manager != 0)
+                    {
+                        object->build_packet(object->display_manager->current_display, light_list);
+                    }
+                    else
+                    {
+                        object->build_packet(current, light_list);
+                    }
+
+                    if (object->unk69 & 8)
+                    {
+                        g_texture_cache->expire_texture(object->layer);
+                    }
+                }
+            }
+        }
+
+        LibMicrocodeLoader* loader = g_microcode_loader;
+
+        while (*(volatile u8*)&loader->unk06)
+        {
+        }
+
+        manager->submit_camera();
+    }
+    else
+    {
+        manager->submit_camera();
+        ee_wait_dma_condition();
+        EnableDmac(D_001B6608->channel);
+    }
+
+    func_004DBEE0(g_packet_queue, 0);
+    resident_sync_gs_path(g_input_system, 0, 0);
+
+    for (s32 pass = 0; pass < 2; pass++)
+    {
+        for (s32 i = 0; i < count; i++)
+        {
+            LibTransformOwner* object = reinterpret_cast<LibTransformOwner**>(cursor)[i];
+
+            if (object->unk65 != pass)
+            {
+                continue;
+            }
+
+            if (object->display_manager != 0)
+            {
+                LibListObject* display = object->display_manager->current_display;
+
+                if (current != display)
+                {
+                    if (!object->display_manager->unk94)
+                    {
+                        object->display_manager->prepare_camera();
+                    }
+
+                    object->display_manager->submit_camera();
+                }
+
+                current = display;
+            }
+            else if (current != camera)
+            {
+                current = camera;
+
+                if (!g_microcode_loader->unk06)
+                {
+                    manager->func_004DB0F0();
+                    manager->submit_camera();
+                }
+            }
+
+            if (!object->unk63)
+            {
+                u8 flags = object->unk69;
+                object->build_packet(current, light_list);
+
+                if (flags & 8)
+                {
+                    g_texture_cache->expire_texture(object->layer);
+                }
+            }
+
+            if (pass == 0 && object->unk63)
+            {
+                if (!timed)
+                {
+                    timed = 1;
+                    packet_start_time = TIMER0_COUNT;
+                }
+
+                main_packet = object;
+                main_packet_busy = 1;
+                object->render();
+                unk408c = i + 1;
+            }
+        }
+    }
+
+    lib_restore_texture_cache(this);
+}
 
 /** @brief Start a frame: swap packet buffers and, with a list and a camera, build the frame's packets. */
 void LibRenderer::begin_frame()
@@ -3134,14 +3312,7 @@ LibRenderer::LibRenderer(LibCameraContext* target)
     FlushCache(0);
 }
 
-/** @brief Start with nothing displayed and object kind bit 2 set. */
-LibClass178F30::LibClass178F30()
-{
-    unk94 = 0;
-    current_display = 0;
-    effect_enabled = 0;
-    object_kind |= 4;
-}
+#include "overlays/lib/display_manager_inlines.h"
 
 /** @brief Forget the owning list, then destroy through the base. */
 void LibClass178B70::destroy()
@@ -3637,10 +3808,10 @@ void LibModelBase::set_fog_enabled(u8 enabled)
     }
 }
 
-extern "C" void func_004D6230(void* receiver, u32 arg1, u32 arg2)
+extern "C" void* func_004D6230(void* receiver, u32 arg1, u32 arg2)
 {
     LibFieldPointer634* object = (LibFieldPointer634*)receiver;
-    func_00448A10(object->unk634, arg1, arg2);
+    return func_00448A10(object->unk634, arg1, arg2);
 }
 
 /** @brief Delete the resource when the model owns it, then forget it. */
@@ -3800,7 +3971,97 @@ void lib_update_list_update_node(void* list, void* node)
     static_cast<LibListObject*>(node)->update();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update_nodes__13LibUpdateListFv);
+/**
+ * @brief Update every node of this list and the lists chained after it: collect them into one buffer grouped by
+ *        kind, then update each listed node in order. A node whose object_kind has bit 1 set is skipped, bit 2 clears
+ *        its matrix state first, and bit 4 runs its update on the scratchpad stack.
+ */
+void LibUpdateList::update_nodes()
+{
+    ee_clear_breakpoints();
+    active_node_count = node_count;
+
+    if (next_list)
+    {
+        active_node_count += func_004D69A0(next_list);
+    }
+
+    if (active_node_count == 0)
+    {
+        return;
+    }
+
+    if (owned_node_buffer)
+    {
+        active_node_buffer = owned_node_buffer;
+    }
+    else
+    {
+        active_node_buffer = new (0) void*[active_node_count];
+    }
+
+    if (active_node_buffer == 0)
+    {
+        return;
+    }
+
+    lib_list_collect_nodes_by_kind(this, active_node_buffer);
+
+    if (next_list)
+    {
+        func_004D68F0(next_list, this);
+    }
+
+    for (active_node_index = 0; active_node_index < active_node_count; active_node_index++)
+    {
+        LibListObject* node = static_cast<LibListObject*>(active_node_buffer[active_node_index]);
+
+        if (node == 0 || !node->is_listed)
+        {
+            continue;
+        }
+
+        u8 kind = node->object_kind;
+
+        if (kind)
+        {
+            if (kind & 2)
+            {
+                static_cast<LibTransformOwner*>(node)->matrix_ready = 0;
+                static_cast<LibTransformOwner*>(node)->unk51 = 0;
+            }
+
+            if (kind & 1)
+            {
+                continue;
+            }
+
+            if (kind & 4)
+            {
+                ee_enter_scratchpad_stack();
+                node->update();
+                ee_leave_scratchpad_stack();
+                continue;
+            }
+        }
+
+        node->update();
+    }
+
+    active_node_index = -1;
+
+    if (owned_node_buffer == 0)
+    {
+        delete[] active_node_buffer;
+    }
+
+    active_node_buffer = 0;
+
+    if (next_list)
+    {
+        func_004D68F0(next_list, 0);
+    }
+}
 
 // TODO: The target unrolls the recursion eight calls deep, which only happens with auto inlining and an inline depth
 // of eight around it.
@@ -4054,11 +4315,75 @@ extern "C" void lib_list_change_node_kind_counts(LibUpdateList* owner, const Lib
     ++owner->node_counts_by_kind[new_kind];
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", insert_node_after__13LibUpdateListFPvPvi);
+/**
+ * @brief Register a node after a list position.
+ * @param position Insertion position.
+ * @param object Node to insert.
+ * @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind.
+ */
+void LibUpdateList::insert_node_after(void* position, void* object, s32 kind)
+{
+    LibListObject* node = static_cast<LibListObject*>(object);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", prepend_node__13LibUpdateListFPvi);
+    if (kind < NODE_KIND_COUNT)
+    {
+        if (node->owner == 0)
+        {
+            node->owner = this;
+            kind = kind == DEFAULT_NODE_KIND ? (s16)node->get_default_list_kind() : kind;
+            node->list_kind = kind;
+            node->is_listed = 1;
+            node_counts_by_kind[kind]++;
+            LibListReceiver::insert_after(position, node);
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", append_node__13LibUpdateListFPvi);
+/**
+ * @brief Register and prepend a node.
+ * @param object Node to prepend.
+ * @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind.
+ */
+void LibUpdateList::prepend_node(void* object, s32 kind)
+{
+    LibListObject* node = static_cast<LibListObject*>(object);
+
+    if (kind < NODE_KIND_COUNT)
+    {
+        if (node->owner == 0)
+        {
+            node->owner = this;
+            kind = kind == DEFAULT_NODE_KIND ? (s16)node->get_default_list_kind() : kind;
+            node->list_kind = kind;
+            node->is_listed = 1;
+            node_counts_by_kind[kind]++;
+            LibListReceiver::prepend(node);
+        }
+    }
+}
+
+/**
+ * @brief Register and append a node.
+ * @param object Node to append.
+ * @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind.
+ */
+void LibUpdateList::append_node(void* object, s32 kind)
+{
+    LibListObject* node = static_cast<LibListObject*>(object);
+
+    if (kind < NODE_KIND_COUNT)
+    {
+        if (node->owner == 0)
+        {
+            node->owner = this;
+            kind = kind == DEFAULT_NODE_KIND ? (s16)node->get_default_list_kind() : kind;
+            node->list_kind = kind;
+            node->is_listed = 1;
+            node_counts_by_kind[kind]++;
+            LibListReceiver::append(node);
+        }
+    }
+}
 
 /** @brief Destroy the list receiver and its sentinel. */
 inline LibListReceiver::~LibListReceiver()
@@ -4174,7 +4499,28 @@ void LibScreenText::load_font()
     begin(0, 0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update__22LibPaletteBlendChannelFv);
+/** @brief Blend each selected palette entry between its start and end color by the blend weight, on VU0. */
+void LibPaletteBlendChannel::update()
+{
+    if (target != 0)
+    {
+        LibImageHeader* image = target;
+        float weights[4] __attribute__((aligned(16)));
+        LibImagePalette* palette = reinterpret_cast<LibImagePalette*>(reinterpret_cast<u8*>(image) + image->palette_offset);
+        weights[0] = blend;
+        u32* colors = reinterpret_cast<u32*>(reinterpret_cast<u32>(palette->colors) | EE_UNCACHED_ACCELERATED);
+        weights[1] = 1.0f - blend;
+        vu0_load_vf3(weights);
+
+        for (s32 i = 0; i < entry_count; i++)
+        {
+            u32* slot = &colors[palette_indices[i]];
+            const LibVector4* start = &start_colors[i];
+            const LibVector4* end = &end_colors[i];
+            *slot = vu0_blend_color(start, end);
+        }
+    }
+}
 
 /**
  * @brief Bind the selected image from the source resource.
@@ -4206,11 +4552,11 @@ bool LibPaletteBlendChannel::load_resource(LibModel* model)
                 {
                     if (record->data)
                     {
-                        target = static_cast<LibImageDataHeader*>(record->data);
+                        target = static_cast<LibImageHeader*>(record->data);
                     }
                     else
                     {
-                        target = reinterpret_cast<LibImageDataHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
+                        target = reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
                     }
 
                     break;
@@ -4808,21 +5154,18 @@ s32 func_004D8D20(u8* image, s32 slot)
     return index | palette_index << 16;
 }
 
-extern "C" ResidentDmaQueue* D_001B6604;
-extern "C" ResidentDmaQueue* D_001B6608;
-
 /**
  * @brief Stop the channel 8 queue and start a 0x291-quadword transfer from the scratchpad.
  * @param address Main memory address.
  * @param scratchpad Scratchpad address.
  */
-extern "C" void func_004D9030(void* address, u32 scratchpad)
+extern "C" void func_004D9030(void* address, void* scratchpad)
 {
     ResidentDmaQueue* queue = D_001B6604;
     queue->current = 0;
     DisableDmac(queue->channel);
     *D8_MADR = (u32)address;
-    *D8_SADR = scratchpad;
+    *D8_SADR = (u32)scratchpad;
     *D8_QWC = 0x291;
     *D_STAT = D_STAT_CIS8;
     *D_PCR = D_PCR_CPC8;
@@ -4834,13 +5177,13 @@ extern "C" void func_004D9030(void* address, u32 scratchpad)
  * @param address Main memory address.
  * @param scratchpad Scratchpad address.
  */
-extern "C" void func_004D90B0(void* address, u32 scratchpad)
+extern "C" void func_004D90B0(void* address, void* scratchpad)
 {
     ResidentDmaQueue* queue = D_001B6608;
     queue->current = 0;
     DisableDmac(queue->channel);
     *D9_MADR = (u32)address;
-    *D9_SADR = scratchpad;
+    *D9_SADR = (u32)scratchpad;
     *D9_QWC = 0x291;
     *D_STAT = D_STAT_CIS9;
     *D_PCR = D_PCR_CPC9;
@@ -4993,7 +5336,7 @@ u64 LibTextureCache::get_clut_tex0(s16 slot, s16 entry, s32 load_mode)
  * @param user Object whose priority a hit on a user-owned texture lowers.
  * @return VRAM word address of the texture, or 0.
  */
-u32 LibTextureCache::find_texture(LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 unk5, s32 want_address, LibTextureUser* user)
+u32 LibTextureCache::find_texture(LibTextureRequest* request, u32 tag, s32 id, s32 slot, u16 unk5, s32 want_address, LibTextureUser* user)
 {
     u32 index;
 
@@ -5192,9 +5535,8 @@ LibTextureCache::LibTextureCache(s32 size, s32 count)
     }
 }
 
-extern "C" void* func_004D99A0(void* object)
+LibTextureCache::LibTextureCache()
 {
-    return object;
 }
 
 extern "C" void func_004D99B0(LibBusyObject* object)
@@ -5206,36 +5548,6 @@ extern "C" void func_004D99B0(LibBusyObject* object)
 
 /** Global VIF0 tag chains for the low channel numbers. */
 extern "C" u32 D_001B62A0[2];
-
-/**
- * DMA submission that sends a VIF0 tag chain, picked by its channel byte from the global table or, from 0x80 up, from
- * its own; the queue helpers above use it through LibBusyObject. Vtable D_178E70 in main data.
- */
-class LibVif0Channel : public DmaSubmission
-{
-public:
-    /** @brief Start idle with no channel and seed VU0's random register. */
-    LibVif0Channel();
-
-    /**
-     * @brief Mark the transfer done.
-     * @param dma_channel DMA channel; unused.
-     */
-    virtual void complete_dma(u32 dma_channel);
-
-    /**
-     * @brief Start the channel's VIF0 tag chain.
-     * @param dma_channel DMA channel; unused.
-     */
-    virtual void submit_dma(u32 dma_channel);
-
-    u8 unk04[0x4C];
-    volatile u8 busy;
-    u8 channel;
-    u8 unk52[2];
-    u32 unk54;
-    u32 tags[1];
-};
 
 /**
  * @brief Mark the transfer done.
@@ -6347,10 +6659,10 @@ void LibCameraContext::get_area_scale(float* x, float* y)
  * @param display Display to read.
  * @return FRAME base pointer of the second drawing context of draw buffer 0 or 1.
  */
-extern "C" u16 func_004DBC70(LibCameraContext* display)
+extern "C" s32 func_004DBC70(LibCameraContext* display)
 {
-    return display->current_buffer == 0 ? display->buffers[0].environment.context2.frame.base_pointer :
-                                          display->buffers[1].environment.context2.frame.base_pointer;
+    return display->current_buffer == 0 ? (s32)display->buffers[0].environment.context2.frame.base_pointer :
+                                          (s32)display->buffers[1].environment.context2.frame.base_pointer;
 }
 
 /**
@@ -6923,7 +7235,43 @@ extern "C" s16 func_004DCA70(LibVramAllocator* vram, u32 size, u32 alignment, s1
     return index;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCB30);
+/**
+ * @brief Reserve VRAM for a width x height image and record it in the image table.
+ *
+ * An image slot holds the lower word of TEX0: TBP0 (the address in 64-word blocks), TBW and PSM.
+ * @param vram VRAM allocator.
+ * @param format Pixel format (PSM).
+ * @param width Image width in pixels.
+ * @param height Image height in pixels.
+ * @param slot Slot to record the allocation in, or LIB_VRAM_NEW_SLOT for the next free one.
+ * @return The slot, or -1 when there's no slot or room left.
+ */
+extern "C" s16 func_004DCB30(LibVramAllocator* vram, s16 format, s16 width, s16 height, s32 slot)
+{
+    s32 index = (s16)slot;
+
+    if (index == LIB_VRAM_NEW_SLOT)
+    {
+        index = vram->unk04_count++;
+
+        if (vram->unk04_count >= vram->unk04_capacity)
+        {
+            return -1;
+        }
+    }
+
+    u32 size = width * height;
+
+    if (vram->base_address + size >= vram->unk14)
+    {
+        return -1;
+    }
+
+    vram->unk04[index] = (u64)((format << 20) | ((vram->base_address >> 6) | ((width & ~63) << 8)));
+    size = (size + 0x3F) & ~0x3F;
+    vram->base_address += size;
+    return index;
+}
 
 /**
  * @brief Empty the allocator and make it start allocating at a VRAM page.

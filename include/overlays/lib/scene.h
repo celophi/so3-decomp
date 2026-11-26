@@ -77,10 +77,12 @@ public:
     virtual void* func_0046C540(void* record);
 
     /**
-     * @brief Create an object of kind 0x11.
+     * @brief Create an object of kind 0x11; the base scene ignores the shape and data.
+     * @param shape Emitter shape.
+     * @param data Shape data.
      * @return The new object, or null.
      */
-    virtual void* func_0046BA00();
+    virtual void* func_0046BA00(u8 shape, void* data);
 
     /** @brief Virtual slot 0x30. */
     virtual void* func_0046C180(void* unk1, void* unk2, void* record);
@@ -89,14 +91,17 @@ public:
     LibManagedEntry* entries;
     u32 unk1c;
     LibEntryTableHeader* header;
-    u8 unk24[0x10];
+    LibRenderer* renderer;
+    LibUpdateList* update_list;
+    LibLightList* light_list;
+    LibDisplayManager* display_manager;
     LibAnimation* unk34[LIB_ENTRY_MANAGER_SLOT_COUNT];
     char (*link_names)[LIB_ENTRY_NAME_COMPARE_LENGTH];
-    void* unk78;
+    s32 link_count;
     LibEntryManager* linked;
     LibListReceiver unk80;
     s32 cached_entry_index;
-    u8 unk98[4];
+    u32 unk98;
     u8 data_borrowed;
     u8 unk9D;
     u8 unk9E;
@@ -111,9 +116,10 @@ public:
  * @param lights Light list (g_light_list) the scene's lights are appended to.
  * @param manager Display manager.
  * @param renderer Renderer.
- * @param flag Boot always passes one.
+ * @param flag Nonzero to build the model packets straight away; boot always passes one.
+ * @return One, or zero when the data has no object block or an object couldn't be created.
  */
-extern "C" void lib_scene_build_objects(LibScene* scene, LibCameraContext* display, LibUpdateList* list, LibLightList* lights,
-                                        LibDisplayManager* manager, LibRenderer* renderer, s32 flag);
+extern "C" s32 lib_scene_build_objects(LibScene* scene, LibCameraContext* display, LibUpdateList* list, LibLightList* lights,
+                                        LibDisplayManager* manager, LibRenderer* renderer, u8 flag);
 
 #endif

@@ -16,6 +16,12 @@ typedef struct LibEntryManager LibEntryManager;
 /** Opaque metadata for one resource entry. */
 typedef struct LibEntryMetadata LibEntryMetadata;
 
+/** One 16-byte value, copied as a quadword. */
+typedef struct LibQuadword
+{
+    unsigned __int128 value;
+} LibQuadword;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -214,6 +220,14 @@ void* lib_find_transform_entry(LibEntryManager* manager, const char* name);
 void func_00479090(void* output, const void* input);
 
 /**
+ * @brief Copy one 16-byte value and return the copy.
+ * @param destination Destination value.
+ * @param source Source value.
+ * @return The copied value.
+ */
+LibQuadword func_004790D0(LibQuadword* destination, const LibQuadword* source);
+
+/**
  * @brief Set the inherited transform dirty flag.
  * @param object Transform receiver.
  * @param value Dirty flag to store.
@@ -403,9 +417,6 @@ u8 func_0047ADE0(const void* object);
 /** Return the unsigned byte at receiver offset 0x56. */
 u8 func_0047AE10(const void* object);
 
-
-/** Store the low halfword at receiver offset 0x6C. */
-void func_00472100(void* object, u32 value);
 
 /** Return the fixed integer value 1. */
 s32 func_00479FC0(void* object);

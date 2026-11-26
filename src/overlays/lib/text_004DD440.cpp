@@ -1,6 +1,8 @@
 #include "angle.h"
 #include "include_asm.h"
 #include "overlays/lib/vector_inlines.h"
+#include "overlays/lib/transform_owner_inlines.h"
+#include "overlays/lib/look_at_transform_inlines.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/camera_vu0.h"
 #include "overlays/lib/light_vu0.h"
@@ -12,6 +14,11 @@
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/dma_callbacks_inlines.h"
+#include "overlays/lib/display_manager_inlines.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_00429B00.h"
+#include "overlays/lib/text_0049B820.h"
+#include "main/debug.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "sdk/main/libkernl_00121940.h"
@@ -21,7 +28,7 @@
 #include "main/resident_data.h"
 
 extern "C" {
-extern LibDisplayManager* D_001B6660;
+extern LibResidentUpdateList* D_001B6660;
 extern LibListObject* D_001B665C;
 extern LibListObject* g_image_registry;
 extern LibScreenText* g_screen_text;
@@ -38,7 +45,6 @@ extern LibUpdateList* g_update_list;
 extern LibDisplayManager* g_scene_display_manager;
 extern LibDisplayManager* g_default_display_manager;
 extern LibListObject* D_001B6634;
-extern LibListObject D_00507CB8;
 extern LibTrackPool<LibPooledFloatTrack>* g_float_track_pool;
 extern LibTrackPool<LibPooledVectorTrack>* g_vector_track_pool;
 extern LibTrackPool<LibPooledSlerpQuaternionTrack>* g_slerp_quaternion_track_pool;
@@ -323,7 +329,268 @@ void LibCameraContext::vblank(s32 field)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", flip__16LibCameraContextFiP14LibPacketQueue);
+/**
+ * @brief Check whether a screen shows the other field.
+ * @param screen Screen.
+ * @param field Field being drawn.
+ * @return True when the screen's field differs.
+ */
+static inline bool lib_screen_off_field(const LibDisplayScreen* screen, s32 field)
+{
+    return !(screen->field == field);
+}
+
+/**
+ * @brief Finish a render iteration: send its draw packets to the queue and pick the buffers to show.
+ * @param frame Render iteration.
+ * @param queue Packet queue the frame's packets go to.
+ */
+void LibCameraContext::flip(s32 frame, LibPacketQueue* queue)
+{
+    s32 field;
+
+    packet_queue = queue;
+
+    if (display_area.scaled)
+    {
+        unk3E6A = 0;
+        unk3E6B = 0;
+        field = resident_input_wait_vblank(resident_system_get_input(&g_system), -1);
+
+        if (resident_get_system()->progressive)
+        {
+            field = 0;
+        }
+
+        if (unk3E67)
+        {
+            func_004DC4F0(queue, 4, 0, &buffers[1], 0, 0);
+            func_004DC4F0(queue, 2, 0, packets[packet_set][field] + 0x40, packet_sizes[packet_set][field], 0);
+
+            if (unk3E78)
+            {
+                for (s32 i = 0; i < unk3E78; i++)
+                {
+                    s32 slot = field + i * 2 + 6;
+
+                    func_004DC4F0(queue, 2, 0, packets[unk3E7A][slot] + 0x40, packet_sizes[unk3E7A][slot], 0);
+                }
+            }
+
+            if (unk3E48)
+            {
+                func_004DC4F0(queue, 2, 0, unk3E34, unk3E3C, 0);
+            }
+        }
+
+        if (list_buffers[0] != 0)
+        {
+            send_list_set = unk3E18;
+            send_list_count = unk3E14;
+            send_packet_list(field, false);
+        }
+
+        sceGsPutDispEnv(&display_environments[0]);
+
+        if (unk3E67)
+        {
+            for (s32 i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+            {
+                if (screens[i].enabled && screens[i].circuit2 && lib_screen_off_field(&screens[i], field))
+                {
+                    func_004DC4F0(queue, 4, 0, &screens[i].buffers[0], 0, 0);
+                    func_004DC4F0(queue, 2, 0, packets[packet_set][i + 2] + 0x40, packet_sizes[packet_set][i + 2], 0);
+
+                    if (unk3E78)
+                    {
+                        for (s32 j = 0; j < unk3E78; j++)
+                        {
+                            s32 slot = (field ^ 1) + j * 2 + 6;
+
+                            func_004DC4F0(queue, 2, 0, packets[unk3E7A][slot] + 0x40, packet_sizes[unk3E7A][slot], 0);
+                        }
+                    }
+
+                    if (unk3E48)
+                    {
+                        func_004DC4F0(queue, 2, 0, unk3E34, unk3E3C, 0);
+                    }
+
+                    screens[i].unkA57 = 1;
+                }
+                else
+                {
+                    screens[i].unkA57 = 0;
+                }
+            }
+        }
+        else
+        {
+            for (s32 i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+            {
+                if (screens[i].enabled && screens[i].circuit2 && lib_screen_off_field(&screens[i], field))
+                {
+                    screens[i].unkA57 = 1;
+                }
+                else
+                {
+                    screens[i].unkA57 = 0;
+                }
+            }
+        }
+
+        if (list_buffers[0] != 0)
+        {
+            if (unk3E30 == 1)
+            {
+                send_packet_list(field ^ 1, true);
+            }
+
+            unk3E18 ^= 1;
+            unk3E14 = 0;
+            unk3E20 = list_buffers[unk3E18 * 2] + 0x40;
+            unk3E24 = list_buffers[unk3E18 * 2 + 1] + 0x40;
+
+            for (s32 i = 0; i < unk3E10; i++)
+            {
+                list_sizes[unk3E18 * 2][i] = 0;
+                list_sizes[unk3E18 * 2 + 1][i] = 0;
+            }
+        }
+
+        func_004DC4F0(queue, 4, 0, &buffers[0], 0, 0);
+        current_buffer = 0;
+
+        for (s32 i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+        {
+            if (screens[i].enabled && screens[i].field == field && screens[i].unkA51)
+            {
+                GS_DISPFB1 = *(u64*)&screens[i].display_environment.framebuffer;
+                GS_DISPLAY1 = *(u64*)&screens[i].display_environment.display;
+            }
+        }
+
+        return;
+    }
+
+    FlushCache(0);
+
+    if (frame_buffer_count == 2)
+    {
+        if (frame & 1)
+        {
+            current_buffer = 1;
+            sceGsPutDrawEnv(&buffers[1].environment.gif_tag);
+
+            if (!unk3E65)
+            {
+                sceGsPutDispEnv(&display_environments[1]);
+            }
+        }
+        else
+        {
+            current_buffer = 0;
+            sceGsPutDrawEnv(&buffers[0].environment.gif_tag);
+
+            if (!unk3E65)
+            {
+                sceGsPutDispEnv(&display_environments[0]);
+            }
+        }
+    }
+    else
+    {
+        s32 index = frame % 3;
+
+        if (unk3E65)
+        {
+            switch (index)
+            {
+                case 0:
+                    sceGsPutDrawEnv(&buffers[0].environment.gif_tag);
+                    break;
+                case 1:
+                    sceGsPutDrawEnv(&buffers[1].environment.gif_tag);
+                    break;
+                case 2:
+                    sceGsPutDrawEnv(&buffers[2].environment.gif_tag);
+                    break;
+            }
+        }
+        else if (unk3E66 && !unk3E68)
+        {
+            switch (index)
+            {
+                case 0:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = blend_registers[0].framebuffer;
+                        GS_DISPLAY1 = blend_registers[0].display;
+                    }
+
+                    sceGsPutDispEnv(&blend_environments[0]);
+                    sceGsPutDrawEnv(&buffers[1].environment.gif_tag);
+                    break;
+                case 1:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = blend_registers[1].framebuffer;
+                        GS_DISPLAY1 = blend_registers[1].display;
+                    }
+
+                    sceGsPutDispEnv(&blend_environments[1]);
+                    sceGsPutDrawEnv(&buffers[2].environment.gif_tag);
+                    break;
+                case 2:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = blend_registers[2].framebuffer;
+                        GS_DISPLAY1 = blend_registers[2].display;
+                    }
+
+                    sceGsPutDispEnv(&blend_environments[2]);
+                    sceGsPutDrawEnv(&buffers[0].environment.gif_tag);
+                    break;
+            }
+        }
+        else
+        {
+            switch (index)
+            {
+                case 0:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = circuit1_registers[2].framebuffer;
+                        GS_DISPLAY1 = circuit1_registers[2].display;
+                    }
+
+                    sceGsPutDispEnv(&display_environments[0]);
+                    sceGsPutDrawEnv(&buffers[1].environment.gif_tag);
+                    break;
+                case 1:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = circuit1_registers[0].framebuffer;
+                        GS_DISPLAY1 = circuit1_registers[0].display;
+                    }
+
+                    sceGsPutDispEnv(&display_environments[1]);
+                    sceGsPutDrawEnv(&buffers[2].environment.gif_tag);
+                    break;
+                case 2:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = circuit1_registers[1].framebuffer;
+                        GS_DISPLAY1 = circuit1_registers[1].display;
+                    }
+
+                    sceGsPutDispEnv(&display_environments[2]);
+                    sceGsPutDrawEnv(&buffers[0].environment.gif_tag);
+                    break;
+            }
+        }
+    }
+}
 
 /**
  * @brief Send one field's packet list from send_list_set. Entries flagged in unk3E08 are drawn with
@@ -1273,7 +1540,53 @@ void LibCamera::upload_clip_geometry() const
     vu0_upload_clip_geometry(clip_points, clip_normals);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1670);
+/**
+ * @brief Load the camera's transform into VU0 (microprogram 0x1F0) and build its screen clip data.
+ * @param camera Camera to upload.
+ */
+extern "C" void func_004E1670(LibCamera* camera)
+{
+    vu0_start_microprogram_1f0_vf5_vf8(&camera->transform);
+    FieldVec4B points[10];
+    float inverse_aspect = 1.0f / camera->pixel_aspect;
+    float half_width = 0.5f * (camera->screen_max.x - camera->screen_min.x);
+    float half_height = inverse_aspect * (0.5f * (camera->screen_max.y - camera->screen_min.y));
+    float edge = 2040.0f * inverse_aspect;
+
+    points[0].x = -half_width;
+    points[0].y = -half_height;
+    points[0].z = camera->projection_distance;
+    points[1].x = half_width;
+    points[1].y = -half_height;
+    points[1].z = camera->projection_distance;
+    points[2].x = half_width;
+    points[2].y = half_height;
+    points[2].z = camera->projection_distance;
+    points[3].x = -half_width;
+    points[3].y = half_height;
+    points[3].z = camera->projection_distance;
+    points[4].set(points[0]);
+    points[4].z = camera->screen_min.z;
+    points[5].x = 0.0f;
+    points[5].y = 0.0f;
+    points[5].z = camera->screen_max.z;
+    points[6].x = -2040.0f;
+    points[6].y = -edge;
+    points[6].z = camera->projection_distance;
+    points[7].x = 2040.0f;
+    points[7].y = -edge;
+    points[7].z = camera->projection_distance;
+    points[8].x = 2040.0f;
+    points[8].y = edge;
+    points[8].z = camera->projection_distance;
+    points[9].x = -2040.0f;
+    points[9].y = edge;
+    points[9].z = camera->projection_distance;
+    vu0_transform_clip_points(points);
+    vu0_store_clip_points(camera->clip_points);
+    vu0_build_side_clip_normals(camera->clip_normals);
+    vu0_build_end_clip_normals(camera->clip_normals);
+}
 
 /**
  * @brief Build the local perspective volume for visibility tests.
@@ -1646,7 +1959,124 @@ LibCamera::~LibCamera()
     delete unk860;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", __ct__9LibCameraFPv);
+/** Camera packet that resets the context-1 drawing state, sent on VIF1. */
+struct LibCameraSetupPacket
+{
+    u64 dma_tag;
+    union
+    {
+        u64 vif;
+        u32 vif_codes[2];
+    };
+    GsGifTag tag;
+    GsRegisterValue registers[9];
+};
+
+/**
+ * @brief Initialize the camera from the resident context.
+ * @param context Resident context.
+ */
+LibCamera::LibCamera(void* context)
+{
+    const LibCameraContext* display = static_cast<const LibCameraContext*>(context);
+    LibCameraSetupPacket* packet;
+
+    centre_y = 0.0f;
+    centre_x = 0.0f;
+    set_type_id(4);
+    unk248 = 1.0f;
+    unk24c = 11.0f;
+    unk240 = 64.0f;
+    unk244 = 1000.0f;
+    unk270 = 1.0f;
+    unk3d3 = 1;
+    unk3d2 = 0;
+    unk260 = 1.0f;
+    unk264 = 1.0f;
+    unk268 = 1.0f;
+    unk26c = 1.0f;
+    far_fog_fraction = 1.0f;
+    near_fog_fraction = 0.0f;
+    far_fog_distance = 10000.0f;
+    near_fog_distance = 1000.0f;
+    near_fog_factor = 255.0f;
+    near_fog_distance = 255.0f;
+    roll = 0.0f;
+    unk3d1 = 0;
+    width_scale = 1.0f;
+    unk254 = 1.0f;
+    unk270 = 1.0f;
+    set_centre(2048.0f, 2048.0f);
+    unk5c0.unk090.set_identity();
+    unk5c0.unk120 = *reinterpret_cast<const u32*>(&display->buffers[0].environment.context1.depth_buffer);
+    unk5c0.unk124 = 0;
+    unk5c0.unk128 = GS_REGISTER_ZBUF_1;
+    unk5c0.unk12c = 0;
+    unk5c0.unk130 = *reinterpret_cast<const u32*>(&display->buffers[0].environment.context1.depth_buffer);
+    unk5c0.unk134 = 1;
+    unk5c0.unk138 = GS_REGISTER_ZBUF_1;
+    unk5c0.unk13c = 0;
+    unk5c0.vif[0] = VIF_FLUSH;
+    unk5c0.vif[1] = 0;
+    unk5c0.vif[2] = 0;
+    unk5c0.vif[3] = VIF_UNPACK(VIF_UNPACK_V4_32, 0x1B, 0x30);
+    unk5c0.unk140.tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    unk5c0.unk140.registers = GIF_REGISTER_AD;
+    unk5c0.unk160.tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | 2;
+    unk5c0.unk160.registers = GIF_REGISTER_AD;
+    unk5c0.unk170.data = 0xFFFFFFF0ULL;
+    unk5c0.unk170.address = GS_REGISTER_CLAMP_1;
+    unk5c0.unk180.data = 0xFFFFFFFF5ULL;
+    unk5c0.unk180.address = GS_REGISTER_CLAMP_1;
+    dma_chain.control = (u64)(u32)&unk5c0 << 32 | 0x1C;
+    unk5c0.step.projection_vif[0] = VIF_FLUSH;
+    unk5c0.step.projection_vif[1] = 0;
+    unk5c0.step.projection_vif[2] = 0;
+    unk5c0.step.projection_vif[3] = VIF_UNPACK(VIF_UNPACK_V4_32, 4, 0x34);
+    unk5c0.step.clip_vif[0] = VIF_FLUSH;
+    unk5c0.step.clip_vif[1] = 0;
+    unk5c0.step.clip_vif[2] = 0;
+    unk5c0.step.clip_vif[3] = VIF_UNPACK(VIF_UNPACK_V4_32, 4, 0x3D);
+    test = 0x5000D;
+    unk3e0 = 0.0f;
+    unk3e4 = 0.0f;
+    *reinterpret_cast<u32*>(&unk3e8[0]) = 0;
+    *reinterpret_cast<u32*>(&unk3e8[4]) = 0;
+    fog_color = 0;
+    fog_enabled = 0;
+    mode = 0;
+    anchor = 0;
+
+    unk860 = new (0) LibClass179130;
+    resident_packet_rewind(unk860->packet);
+    packet = reinterpret_cast<LibCameraSetupPacket*>(resident_packet_reserve(unk860->packet, 0));
+    packet->dma_tag = 0;
+    packet->vif = 0;
+    unk558 = reinterpret_cast<u8*>(&packet->tag);
+    packet->tag.tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | 9;
+    packet->tag.registers = 0;
+    packet->tag.fields.register0 = GIF_REGISTER_AD;
+    packet->registers[0].data = 4;
+    packet->registers[0].address = GS_REGISTER_TEXCLUT;
+    packet->registers[1].data = 0x61;
+    packet->registers[1].address = GS_REGISTER_TEX1_1;
+    packet->registers[2].data = GS_ALPHA_NORMAL;
+    packet->registers[2].address = GS_REGISTER_ALPHA_1;
+    packet->registers[3].data = test;
+    packet->registers[3].address = GS_REGISTER_TEST_1;
+    packet->registers[4].data = 0;
+    packet->registers[4].address = GS_REGISTER_PABE;
+    packet->registers[5].data = 1;
+    packet->registers[5].address = GS_REGISTER_PRMODECONT;
+    packet->registers[6].data = 0x8000008080ULL;
+    packet->registers[6].address = GS_REGISTER_TEXA;
+    packet->registers[7].data = 0xFFFFFFF0ULL;
+    packet->registers[7].address = GS_REGISTER_CLAMP_1;
+    packet->registers[8].address = GS_REGISTER_FOGCOL;
+    resident_packet_align_cursor(unk860->packet, reinterpret_cast<u8*>(packet + 1));
+    unk860->qwc = resident_packet_end(unk860->packet);
+    packet->vif_codes[1] = VIF_DIRECTHL(unk860->qwc - 1);
+}
 
 /**
  * @brief Send the packet on VIF1 in normal mode.
@@ -1824,7 +2254,7 @@ extern "C" void lib_shutdown(void)
     g_scene_camera->destroy();
     D_001B6634->destroy();
     lib_object_detach_owner(g_resource_queue);
-    lib_detach(D_00507CB8);
+    lib_detach(D_507C40);
     g_scene_camera = 0;
     D_001B6634 = 0;
 
@@ -1870,8 +2300,6 @@ extern "C" void lib_shutdown(void)
     g_display_callbacks = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_initialize);
-
 /** List object with vtable D_1791E0 in main data; its update flips a parity flag every frame. */
 class LibClass1791E0 : public LibListObject
 {
@@ -1895,6 +2323,133 @@ class LibClass1791E0 : public LibListObject
 
         u32 parity;
 };
+
+/**
+ * @brief Create Lib's global objects, link them into the update lists and set up the scene camera.
+ * @param display Display Lib draws to.
+ * @param depth_far Integer depth at the scene camera's far plane.
+ * @param texture_cache_size Texture cache size in bytes.
+ * @param texture_cache_blocks Texture cache block count.
+ * @param node_count Node pointers the temporary node buffer holds.
+ * @param first First extra renderer argument; with second, both nonzero turn the extra renderer state on.
+ * @param second Second extra renderer argument.
+ */
+extern "C" void lib_initialize(LibCameraContext* display, s32 depth_far, s32 texture_cache_size, s32 texture_cache_blocks,
+                               s32 node_count, s32 first, s32 second)
+{
+    ResidentSystem* system = resident_get_system();
+    g_resource_archive = resident_get_archive(system);
+    g_resident_resource_decoder = resident_system_get_decoder(system);
+    g_input_system = resident_system_get_input(system);
+    g_resident_release_queues = resident_system_get_release_queues(system);
+    g_resource_queue = resident_system_get_resource_queue(system);
+    g_sound = resident_system_get_sound(system);
+    system->unk15C80 = reinterpret_cast<u32>(g_display_callbacks = new (0) LibDebugListener(display));
+    g_display = display;
+    resident_display_set_hook(display);
+    *(volatile u32*)0x1000E000 = 0x503;
+    g_update_list = new (0) LibUpdateList;
+    func_004D66F0(g_update_list);
+    D_001B6604 = new (0) ResidentDmaQueue(8);
+    D_001B6608 = new (0) ResidentDmaQueue(9);
+    D_001B660C = new (0) ResidentDmaQueue(0);
+    g_vif1_dma_queue = new (0) ResidentDmaQueue(1);
+    D_001B65FC = reinterpret_cast<LibBusyObject*>(new (0) LibVif0Channel);
+    g_microcode_loader = new (0) LibMicrocodeLoader;
+    g_microcode_loader->start_upload();
+    func_004D9AB0(D_001B65FC, 0);
+    g_packet_queue = new (0) LibPacketQueue(0x400);
+    g_vram_allocator = new (0) LibVramAllocator(0x20, 0x20);
+    func_004D99B0(D_001B65FC);
+    g_renderer = new (0) LibRenderer(display);
+    lib_vram_reset(g_vram_allocator, display->vram_free_page);
+    D_001B6620 = new (0) LibClass178C90(static_cast<LibRenderer*>(g_renderer));
+    g_light_list = new (0) LibLightList;
+    g_display_manager = g_default_display_manager = reinterpret_cast<LibDisplayManager*>(new (0) LibClass178F30);
+    g_scene_display_manager = reinterpret_cast<LibDisplayManager*>(new (0) LibClass178F30);
+    D_001B6648 = new (0) LibClass177940;
+    D_001B664C = new (0) LibClass1791E0;
+    g_scene_camera = new (0) LibCamera(display);
+    D_001B6634 = new (0) LibClass174D70;
+    D_001B665C = new (0) LibClass174570;
+    D_001B6660 = new (0) LibResidentUpdateList;
+    g_sound->unk0c = static_cast<ResidentSoundRenderer*>(g_renderer);
+    g_float_track_pool = new (0) LibTrackPool<LibPooledFloatTrack>;
+    g_vector_track_pool = new (0) LibTrackPool<LibPooledVectorTrack>;
+    g_slerp_quaternion_track_pool = new (0) LibTrackPool<LibPooledSlerpQuaternionTrack>;
+    g_float_curve_track_pool = new (0) LibTrackPool<LibPooledFloatCurveTrack>;
+    g_vector_curve_track_pool = new (0) LibTrackPool<LibPooledVectorCurveTrack>;
+    g_float_quaternion_track_pool = new (0) LibTrackPool<LibPooledFloatQuaternionTrack>;
+    g_quaternion_curve_track_pool = new (0) LibTrackPool<LibPooledQuaternionCurveTrack>;
+    g_quaternion_track_pool = new (0) LibTrackPool<LibPooledQuaternionTrack>;
+    g_field_allocation_heap = 0;
+    static_cast<LibCamera*>(g_scene_camera)->horizontal_fov = 1.5707964f;
+    s32 half_width = display->display_area.width / 2;
+    s32 half_height = display->display_area.height / 2;
+    LibVector4 position;
+    position.x = 0.0f;
+    position.y = 0.0f;
+    position.z = -320.0f;
+    position.w = 1.0f;
+    static_cast<LibCamera*>(g_scene_camera)->set_translation_vector(&position);
+    LibCamera* camera = static_cast<LibCamera*>(g_scene_camera);
+    camera->screen_min.x = 0x800 - half_width;
+    camera->screen_min.y = 0x800 - half_height;
+    camera->screen_min.z = 100.0f;
+    camera->screen_min.w = 1.0f;
+    camera->screen_max.x = 0x800 + half_width;
+    camera->screen_max.y = 0x800 + half_height;
+    camera->screen_max.z = 1800.0f;
+    camera->screen_max.w = 1.0f;
+    static_cast<LibCamera*>(g_scene_camera)->set_depth_range(depth_far - 100, depth_far);
+    static_cast<LibCamera*>(g_scene_camera)->pixel_aspect = 1.3333334f * (1.0714285f * display->display_area.height) / display->display_area.width;
+    static_cast<LibCamera*>(g_scene_camera)->unk3d1 = 1;
+    g_scene_display_manager->append_node(g_scene_camera, -1);
+    g_scene_display_manager->current_display = g_scene_camera;
+    static_cast<LibClass174D70*>(D_001B6634)->managers[0] = g_display_manager;
+    static_cast<LibClass177940*>(D_001B6648)->renderer = static_cast<LibRenderer*>(g_renderer);
+    g_update_list->set_next_list(g_renderer);
+    g_update_list->append_node(static_cast<LibListObject*>(g_light_list), -1);
+    g_update_list->append_node(static_cast<LibListObject*>(g_display_manager), -1);
+    g_update_list->append_node(static_cast<LibListObject*>(g_scene_display_manager), -1);
+    g_update_list->append_node(D_001B6648, -1);
+    g_update_list->append_node(D_001B6620, -1);
+    g_update_list->append_node(D_001B664C, -1);
+    g_update_list->append_node(D_001B6634, -1);
+    g_update_list->append_node(g_resource_queue, -1);
+    g_update_list->append_node(static_cast<LibListObject*>(D_001B6660), -1);
+    g_update_list->append_node(static_cast<LibListObject*>(&D_507C40), -1);
+    static_cast<LibRenderer*>(g_renderer)->append_node(D_001B665C, -1);
+    g_texture_cache = new (0) LibTextureCache(texture_cache_size, texture_cache_blocks);
+    D_001B6638 = 0;
+    g_image_registry = new (0) LibImageRegistry(node_count);
+    D_001B6644 = new (0) LibPacketRing;
+    static_cast<LibClass174570*>(D_001B665C)->manager = g_display_manager;
+    g_update_list->append_node(g_image_registry, -1);
+    static_cast<LibRenderer*>(g_renderer)->manager = g_display_manager;
+
+    if (first && second)
+    {
+        LibRendererExtra* extra = static_cast<LibRenderer*>(g_renderer)->extra;
+        func_004209C0(reinterpret_cast<LibClass1727E0*>(extra), first, second);
+        extra->enabled = 1;
+        D_001B6550 = 1;
+    }
+    else
+    {
+        static_cast<LibRenderer*>(g_renderer)->extra->enabled = 0;
+        D_001B6550 = 0;
+    }
+
+    g_screen_text = new (0) LibScreenText;
+    g_screen_text->unk18 = 1;
+    g_screen_text->load_font();
+    lib_upload_default_palette();
+    g_frame_seconds = 0.016666668f;
+    g_frame_ticks = 1.0f;
+    func_0045F5E0();
+    lib_set_color_fade_area(LibScreenRect(0, 0, 0x280, 0xE0), 0xFFFF);
+}
 
 /** @brief Destroy the object. */
 LibClass1791E0::~LibClass1791E0()
@@ -3371,7 +3926,614 @@ void LibLightList::assign_spot_lights(LibRenderer* renderer)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7AA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E8510);
+/**
+ * @brief Return how far a light is from a point along an axis: (light position - point) . axis.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @param axis Axis to measure along.
+ * @return The distance along the axis.
+ */
+static inline float lib_light_axis_distance(const LibVector4* point, const LibVector4* origin, const LibVector4* axis)
+{
+    LibVector4 projected;
+    vu0_light_load_axis(point, origin, axis);
+    vu0_light_store_axis_distance(&projected);
+    return projected.x;
+}
+
+/**
+ * @brief Return the squared distance from a point to a light.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @return The squared distance.
+ */
+static inline float lib_light_distance_squared(const LibVector4* point, const LibVector4* origin)
+{
+    LibVector4 squared;
+    vu0_light_load_offset(point, origin);
+    vu0_light_store_offset_squared(&squared);
+    return squared.x + squared.y + squared.z;
+}
+
+/**
+ * @brief Return a light's range over its range plus its distance along an axis.
+ * @param light Light; unk268 is the range.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @param axis Axis to measure along.
+ * @return The attenuation.
+ */
+static inline float lib_light_axis_attenuation(const LibLight* light, const LibVector4* point, const LibVector4* origin,
+                                              const LibVector4* axis)
+{
+    float range = light->unk268;
+    LibVector4 projected;
+    vu0_light_load_axis(point, origin, axis);
+    vu0_light_store_axis_distance(&projected);
+    return range / (projected.x + range);
+}
+
+/**
+ * @brief Return a light's squared range over its squared range plus its squared distance along an axis.
+ * @param light Light; unk268 is the range.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @param axis Axis to measure along.
+ * @return The attenuation.
+ */
+static inline float lib_light_axis_attenuation_squared(const LibLight* light, const LibVector4* point,
+                                                      const LibVector4* origin, const LibVector4* axis)
+{
+    float range = light->unk268;
+    LibVector4 projected;
+    vu0_light_load_axis(point, origin, axis);
+    range = range * range;
+    vu0_light_store_axis_distance(&projected);
+    return range / (range + projected.x * projected.x);
+}
+
+/**
+ * @brief Return a light's range over the square root of its range plus the squared distance to a point.
+ * @param light Light; unk268 is the range.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @return The attenuation.
+ */
+static inline float lib_light_point_attenuation(const LibLight* light, const LibVector4* point, const LibVector4* origin)
+{
+    float range = light->unk268;
+    LibVector4 squared;
+    vu0_light_load_offset(point, origin);
+    vu0_light_store_offset_squared(&squared);
+    return ee_rsqrt(range, range + (squared.x + squared.y + squared.z));
+}
+
+/**
+ * @brief Return a light's squared range over its squared range plus the squared distance to a point.
+ * @param light Light; unk268 is the range.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @return The attenuation.
+ */
+static inline float lib_light_point_attenuation_squared(const LibLight* light, const LibVector4* point,
+                                                       const LibVector4* origin)
+{
+    float range = light->unk268;
+    LibVector4 squared;
+    vu0_light_subtract_offset(point, origin);
+    range = range * range;
+    vu0_light_store_squared(&squared);
+    return range / (range + (squared.x + squared.y + squared.z));
+}
+
+/**
+ * @brief Fill one entry of a model's shadow light list from a light.
+ * @param shadow Shadow light list.
+ * @param index Entry to fill.
+ * @param light Light.
+ */
+static inline void lib_shadow_light_set(LibShadowLightList* shadow, s32 index, LibLight* light)
+{
+    shadow->lights[index] = light;
+    reinterpret_cast<float*>(shadow->unk18)[index] = light->packed_intensity;
+    float scale = light->unk284;
+    shadow->weights[index] = light->packed_intensity * scale;
+    shadow->unk04[index] = light->unk28c;
+}
+
+/**
+ * @brief Write one light into the list's direction and colour matrices, and keep the brightest shadow-casting
+ * light's direction.
+ * @param lights Light list.
+ * @param index Column (and direction row) to write.
+ * @param light Light.
+ * @param direction Direction the light shines on the model.
+ */
+static inline void lib_light_list_set_column(LibLightList* lights, s32 index, LibLight* light, LibVector4* direction)
+{
+    lights->unk90.m[index][0] = -direction->x;
+    lights->unk90.m[index][1] = -direction->y;
+    lights->unk90.m[index][2] = -direction->z;
+
+    if (light->unk290)
+    {
+        float level = light->packed_intensity;
+
+        if (lights->unk374 < level)
+        {
+            lights->unk374 = level;
+            lights->unk350 = *reinterpret_cast<unsigned __int128*>(direction);
+            lights->unk380 = 0;
+            lights->unk381 = 1;
+        }
+    }
+
+    float level = light->packed_intensity;
+    float* reds = lights->unkd0.m[0];
+    float* greens = lights->unkd0.m[1];
+    float* blues = lights->unkd0.m[2];
+    reds[index] = light->tinted_color.x * level;
+    greens[index] = light->tinted_color.y * level;
+    blues[index] = light->tinted_color.z * level;
+}
+
+/**
+ * @brief Light a model with the list's directional lights.
+ * @param lights Light list.
+ * @param color Model colour, lit in place.
+ * @param position Model position.
+ * @param mask Model's light mask.
+ * @param shadow_lights Model's shadow light list to fill, or null.
+ */
+extern "C" void func_004E8510(LibLightList* lights, LibVector4* color, FieldVec4B* position, u32 mask,
+                              LibShadowLightList* shadow_lights)
+{
+    if (lights->unk37e || !(mask & lights->mask))
+    {
+        func_004CFF80(&lights->unkd0);
+        lights->unk374 = 0.0f;
+        LibLight* best[4];
+        LibLight* list[4];
+        float levels[4];
+        LibListSentinel* node = &lights->sentinel;
+        s32 count = 0;
+        bool sorting = false;
+        const LibVector4* point = reinterpret_cast<const LibVector4*>(position);
+
+        if (lights->light_count > 4)
+        {
+            best[0] = 0;
+            best[1] = 0;
+            best[2] = 0;
+            best[3] = 0;
+            levels[0] = 0.0f;
+            levels[1] = 0.0f;
+            levels[2] = 0.0f;
+            levels[3] = 0.0f;
+            sorting = true;
+        }
+
+        for (;;)
+        {
+            node = node->next;
+
+            if (at_list_end(&lights->sentinel, node))
+            {
+                break;
+            }
+
+            LibLight* light = static_cast<LibLight*>(node);
+
+            if (!light->enabled || !(mask & light->mask))
+            {
+                continue;
+            }
+
+            if (!((mask & 1) && light->unk28e) && (light->kind & 4))
+            {
+                continue;
+            }
+
+            if (light->unk28a)
+            {
+                float falloff = 1.0f;
+
+                if ((light->kind & 3) == 2)
+                {
+                    falloff = func_004C9D80(light, point);
+
+                    if (falloff == 0.0f)
+                    {
+                        continue;
+                    }
+                }
+
+                float intensity = light->color.w;
+
+                if (light->unk289)
+                {
+                    u8 kind = light->unk28b;
+                    const LibVector4* origin = reinterpret_cast<const LibVector4*>(&light->position);
+
+                    if ((light->kind & 3) == 0)
+                    {
+                        LibVector4 axis;
+                        axis.x = light->transform.m[0][1];
+                        axis.y = light->transform.m[1][1];
+                        axis.z = light->transform.m[2][1];
+                        axis.w = 1.0f;
+                        vu0_negate_xyz(&axis);
+
+                        switch (kind)
+                        {
+                        case 0:
+                            if (light->unk28d)
+                            {
+                                float range = light->unk268;
+                                float projected = lib_light_axis_distance(point, origin, &axis);
+
+                                if (!(light->unk280 < range / (projected + range)))
+                                {
+                                    continue;
+                                }
+                            }
+
+                            light->packed_intensity = intensity * falloff;
+                            break;
+                        case 1:
+                        {
+                            float attenuation = lib_light_axis_attenuation(light, point, origin, &axis);
+
+                            if (light->unk28d && !(light->unk280 < attenuation))
+                            {
+                                continue;
+                            }
+
+                            light->packed_intensity = attenuation * (intensity * falloff);
+                            break;
+                        }
+                        case 2:
+                        {
+                            float attenuation = lib_light_axis_attenuation_squared(light, point, origin, &axis);
+
+                            if (light->unk28d && !(light->unk280 < attenuation))
+                            {
+                                continue;
+                            }
+
+                            light->packed_intensity = attenuation * (intensity * falloff);
+                            break;
+                        }
+                        default:
+                            light->packed_intensity = intensity * falloff;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        switch (kind)
+                        {
+                        case 0:
+                            if (light->unk28d)
+                            {
+                                float range = light->unk268;
+                                float distance = lib_light_distance_squared(point, origin);
+                                float threshold = light->unk280;
+
+                                if (!(threshold < ee_rsqrt(range, range + distance)))
+                                {
+                                    continue;
+                                }
+                            }
+
+                            light->packed_intensity = intensity * falloff;
+                            break;
+                        case 1:
+                        {
+                            float attenuation = lib_light_point_attenuation(light, point, origin);
+
+                            if (light->unk28d && !(light->unk280 < attenuation))
+                            {
+                                continue;
+                            }
+
+                            light->packed_intensity = attenuation * (intensity * falloff);
+                            break;
+                        }
+                        case 2:
+                        {
+                            float attenuation = lib_light_point_attenuation_squared(light, point, origin);
+
+                            if (light->unk28d && !(light->unk280 < attenuation))
+                            {
+                                continue;
+                            }
+
+                            light->packed_intensity = attenuation * (intensity * falloff);
+                            break;
+                        }
+                        default:
+                            light->packed_intensity = intensity * falloff;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    light->packed_intensity = intensity * falloff;
+                }
+
+                list[count++] = light;
+
+                if (count >= 4)
+                {
+                    break;
+                }
+
+                continue;
+            }
+
+            float level;
+            float falloff = 1.0f;
+            float intensity = light->color.w;
+
+            if ((light->kind & 3) == 2)
+            {
+                falloff = func_004C9D80(light, point);
+
+                if (falloff < light->unk274)
+                {
+                    continue;
+                }
+            }
+
+            u8 kind = light->unk28b;
+            const LibVector4* origin = reinterpret_cast<const LibVector4*>(&light->position);
+
+            if ((light->kind & 3) == 0)
+            {
+                const LibMatrix44Value* matrix = &light->transform;
+                LibVector4 axis;
+                axis.x = matrix_row(matrix, 0)->y;
+                axis.y = matrix_row(matrix, 1)->y;
+                axis.z = matrix_row(matrix, 2)->y;
+                axis.w = 1.0f;
+                vu0_negate_xyz_to(&axis, &axis);
+
+                switch (kind)
+                {
+                case 0:
+                {
+                    float attenuation = lib_light_axis_attenuation(light, point, origin, &axis);
+
+                    if (sorting)
+                    {
+                        level = attenuation * (falloff * intensity);
+                    }
+
+                    light->packed_intensity = falloff * intensity;
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                case 1:
+                {
+                    float attenuation = lib_light_axis_attenuation(light, point, origin, &axis);
+                    level = attenuation * (falloff * intensity);
+
+                    if (light->unk289)
+                    {
+                        light->packed_intensity = level;
+                    }
+                    else
+                    {
+                        light->packed_intensity = falloff * intensity;
+                    }
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                case 2:
+                {
+                    float attenuation = lib_light_axis_attenuation_squared(light, point, origin, &axis);
+                    level = attenuation * (falloff * intensity);
+
+                    if (light->unk289)
+                    {
+                        light->packed_intensity = level;
+                    }
+                    else
+                    {
+                        light->packed_intensity = falloff * intensity;
+                    }
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                }
+            }
+            else
+            {
+                switch (kind)
+                {
+                case 0:
+                {
+                    float attenuation = lib_light_point_attenuation(light, point, origin);
+
+                    if (sorting)
+                    {
+                        level = attenuation * (falloff * intensity);
+                    }
+
+                    light->packed_intensity = falloff * intensity;
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                case 1:
+                {
+                    float attenuation = lib_light_point_attenuation(light, point, origin);
+                    level = attenuation * (falloff * intensity);
+
+                    if (light->unk289)
+                    {
+                        light->packed_intensity = level;
+                    }
+                    else
+                    {
+                        light->packed_intensity = falloff * intensity;
+                    }
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                case 2:
+                {
+                    float attenuation = lib_light_point_attenuation_squared(light, point, origin);
+                    level = attenuation * (falloff * intensity);
+
+                    if (light->unk289)
+                    {
+                        light->packed_intensity = level;
+                    }
+                    else
+                    {
+                        light->packed_intensity = falloff * intensity;
+                    }
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                }
+            }
+
+            if (sorting)
+            {
+                level = ee_abs(level);
+
+                if (levels[3] < level && !(level < light->unk274))
+                {
+                    for (s32 i = 0; i < 4; i++)
+                    {
+                        if (levels[i] < level)
+                        {
+                            for (s32 j = 3; j > i; j--)
+                            {
+                                levels[j] = levels[j - 1];
+                                best[j] = best[j - 1];
+                            }
+
+                            levels[i] = level;
+                            best[i] = light;
+                            break;
+                        }
+                    }
+                }
+
+                if (!(levels[3] < 1.0f))
+                {
+                    break;
+                }
+            }
+            else
+            {
+                list[count++] = light;
+            }
+        }
+
+        s32 slot;
+
+        for (slot = 0; slot < count; slot++)
+        {
+            LibLight* light = list[slot];
+
+            if (shadow_lights != 0)
+            {
+                lib_shadow_light_set(shadow_lights, slot, light);
+            }
+
+            LibVector4 direction;
+            func_004C9E80(light, &direction, point);
+            lib_light_list_set_column(lights, slot, light, &direction);
+        }
+
+        if (shadow_lights != 0)
+        {
+            shadow_lights->count = count;
+        }
+
+        if (sorting)
+        {
+            for (s32 i = 0; slot < 4; slot++)
+            {
+                LibLight* light = best[i++];
+
+                if (light != 0)
+                {
+                    if (shadow_lights != 0)
+                    {
+                        lib_shadow_light_set(shadow_lights, slot, light);
+                        shadow_lights->count++;
+                    }
+
+                    LibVector4 direction;
+                    func_004C9E80(light, &direction, point);
+                    lib_light_list_set_column(lights, slot, light, &direction);
+                }
+            }
+        }
+
+        vu0_scale_matrix_rows(color, &lights->unkd0, &lights->unk1d0);
+    }
+    else
+    {
+        vu0_scale_matrix_rows(color, lights->colors, &lights->unk1d0);
+        copy_vector(reinterpret_cast<LibVector4*>(lights->unk90.m[0]), &lights->directions[0]);
+        copy_vector(reinterpret_cast<LibVector4*>(lights->unk90.m[1]), &lights->directions[1]);
+        copy_vector(reinterpret_cast<LibVector4*>(lights->unk90.m[2]), &lights->directions[2]);
+        copy_vector(reinterpret_cast<LibVector4*>(lights->unk90.m[3]), &lights->directions[3]);
+
+        if (shadow_lights != 0)
+        {
+            s32 count = lights->unk364_count;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                shadow_lights->lights[i] = lights->unk364[i];
+                reinterpret_cast<float*>(shadow_lights->unk18)[i] = lights->unk364[i]->packed_intensity;
+                shadow_lights->unk04[i] = lights->unk364[i]->unk28c;
+                float scale = lights->unk364[i]->unk284;
+                shadow_lights->weights[i] = lights->unk364[i]->packed_intensity * scale;
+            }
+
+            shadow_lights->count = lights->unk364_count;
+        }
+    }
+}
 
 /** @brief Update the listed nodes. */
 void LibLightList::update()
@@ -3380,7 +4542,149 @@ void LibLightList::update()
 }
 
 // LibLightList's per-frame light update; the intensity test's abs.s is still coloured differently.
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9290);
+/**
+ * @brief Light step run before the renderer tests its models: refresh the list's light matrices and sort its lights.
+ * @param lights Light list.
+ */
+extern "C" void func_004E9290(LibLightList* lights)
+{
+    func_004CFF80(&lights->unk90);
+    func_004CFF80(&lights->unkd0);
+    LibCamera* camera = static_cast<LibCamera*>(lights->manager->current_display);
+
+    if (camera == 0)
+    {
+        return;
+    }
+
+    float scale = 1.0f;
+    float red = camera->unk260 * scale;
+    float green = camera->unk264 * scale;
+    float blue = camera->unk268 * scale;
+    LibListSentinel* node = &lights->sentinel;
+    bool dirty = false;
+    lights->unk37e = 1;
+    lights->has_local_lights = 0;
+    lights->light_count = 0;
+    lights->unk364_count = 0;
+
+    for (;;)
+    {
+        node = node->next;
+
+        if (at_list_end(&lights->sentinel, node))
+        {
+            break;
+        }
+
+        LibLight* light = static_cast<LibLight*>(node);
+
+        float brightness = light->color.w;
+
+        if (ee_abs(brightness) < 0.0001f)
+        {
+            light->enabled = 0;
+            continue;
+        }
+
+        light->enabled = 1;
+        light->update_frame();
+        LibVector4 tinted;
+        tinted.x = red * light->color.x;
+        tinted.y = green * light->color.y;
+        tinted.z = blue * light->color.z;
+        copy_vector(&light->tinted_color, &tinted);
+
+        if (light->kind & LIB_LIGHT_LOCAL)
+        {
+            lights->has_local_lights = 1;
+
+            if (!light->unk28e)
+            {
+                continue;
+            }
+        }
+
+        lights->light_count++;
+
+        if (dirty)
+        {
+            continue;
+        }
+
+        if ((light->unk28b && light->unk289) || light->unk288)
+        {
+            dirty = true;
+        }
+
+        if (light->unk28e)
+        {
+            dirty = true;
+        }
+
+        if (light->unk290)
+        {
+            dirty = true;
+        }
+    }
+
+    if (!dirty && lights->light_count <= 4)
+    {
+        func_004CFF80((LibMatrix44Value*)lights->directions);
+        func_004CFF80((LibMatrix44Value*)lights->colors);
+        lights->unk37e = 0;
+        lights->mask = -1;
+        s32 count = 0;
+        LibListSentinel* packed = &lights->sentinel;
+
+        for (;;)
+        {
+            packed = packed->next;
+
+            if (at_list_end(&lights->sentinel, packed))
+            {
+                break;
+            }
+
+            LibLight* light = static_cast<LibLight*>(packed);
+
+            if (!light->enabled || (light->kind & LIB_LIGHT_LOCAL))
+            {
+                continue;
+            }
+
+            LibVector4 direction;
+            lib_light_get_direction(&direction, light);
+            lights->directions[count].x = -direction.x;
+            lights->directions[count].y = -direction.y;
+            lights->directions[count].z = -direction.z;
+            float intensity = light->color.w;
+            float* reds = lights->colors[0];
+            float* greens = lights->colors[1];
+            float* blues = lights->colors[2];
+            reds[count] = light->tinted_color.x * intensity;
+            greens[count] = light->tinted_color.y * intensity;
+            blues[count] = light->tinted_color.z * intensity;
+
+            if (light->unk28c)
+            {
+                lights->unk364[lights->unk364_count++] = light;
+            }
+
+            u32 light_mask = light->mask;
+            lights->mask &= light_mask;
+            count++;
+            light->packed_intensity = intensity;
+
+            if (count == 4)
+            {
+                break;
+            }
+        }
+    }
+
+    vu0_multiply_xyzw(&lights->unk340, &lights->unk320, &lights->unk330);
+}
 
 /** @brief Start with no lights, a (0, 0, 0, 1) ambient colour and white light scales. */
 LibLightList::LibLightList()

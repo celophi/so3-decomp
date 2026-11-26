@@ -47,14 +47,6 @@ void func_004BD3C0(float* values, s32 index, float value);
 void func_004BD360(void* object, const unsigned __int128* value);
 
 /**
- * @brief Copy a vector to the destination and return the destination.
- * @param object Destination vector.
- * @param value Source vector.
- * @return The destination vector.
- */
-void* func_004BD4C0(void* object, const unsigned __int128* value);
-
-/**
  * @brief Copy a vector into the receiver's field at offset 0x850.
  * @param object Receiver to update.
  * @param value Source vector.
@@ -423,6 +415,16 @@ public:
     u8 unkE4[0xC];
 };
 
+/**
+ * @brief Read a container's alpha, which scales its widgets' alpha.
+ * @param container Container.
+ * @return Alpha, 128 for opaque.
+ */
+static inline float lib_widget_container_alpha(const LibContainer* container)
+{
+    return container->unkE0;
+}
+
 /** Partial 0x114-byte text widget, with MAIN vtable D_178750. */
 struct LibTextWidget : public LibDrawWidget
 {
@@ -563,7 +565,8 @@ struct LibObject174D90 : public LibTextWidget
 
     class LibClass175170* unk114;
     void* unk118;
-    u8 unk11c[8];
+    const u8* text_cursor;
+    LibDrawRecord* record_cursor;
     float line_heights[256];
     float unk524;
     float unk528;
@@ -575,7 +578,7 @@ struct LibObject174D90 : public LibTextWidget
     u32 mode;
     u32 resource_mode;
     s32 unk548;
-    u8 unk54c[4];
+    s32 line_count;
     s32 unk550;
     s32 unk554;
     s32 unk558;
@@ -1058,6 +1061,10 @@ public:
 class LibWordTrack : public LibWordKeyTrack
 {
 public:
+    LibWordTrack()
+    {
+    }
+
     virtual ~LibWordTrack();
 
     virtual void get_end_delta(void* output) const;
@@ -1240,7 +1247,7 @@ struct LibAnimationEntry14
     u8 flags;
     LibClass173180* channel;
     void* target;
-    u8 unk0c[4];
+    void* sub_target;
     const char* state_name;
 };
 
@@ -1305,7 +1312,8 @@ public:
         resource_data = data;
     }
 
-    u8 unk14[0x1C];
+    u8 unk14[0xC];
+    float unk20[4];
     void* resource_data;
     s32 node_count;
     s32 entry_count;
@@ -1313,7 +1321,7 @@ public:
     LibAnimationEntry14* entries;
     float* frame;
     LibClass173180* longest_channel;
-    u8 unk4c[4];
+    float unk4c;
     LibAnimationEntry14* cached_entry;
     void* header;
     LibAnimationBindingOwner* primary_binding_owner;
@@ -1329,6 +1337,163 @@ public:
     u8 targets_bound;
     u8 unk6f;
 };
+
+/**
+ * Fields past the transform that animation entries write and func_004BDE00 reads back, by entry type.
+ * TODO: Replace with the real target classes once they're identified; the entry types cover several classes, so the
+ * vectors here are also written one float at a time.
+ */
+struct LibBlendTarget : public LibOrientedTransform
+{
+    u8 unk60[0xC];
+    u16 unk6c;
+    u8 unk6e[0x192];
+    float unk200;
+    u8 unk204[4];
+    u32 unk208;
+    u8 unk20c[4];
+    float unk210;
+    float unk214;
+    u8 unk218[8];
+    FieldVec4A unk220;
+    FieldVec4A unk230;
+    FieldVec4A unk240;
+    FieldVec4A unk250;
+    FieldVec4A unk260;
+    FieldVec4A unk270;
+    FieldVec4A unk280;
+    FieldVec4A unk290;
+    FieldVec4A unk2a0;
+    FieldVec4A unk2b0;
+    FieldVec4A unk2c0;
+    FieldVec4A unk2d0;
+    FieldVec4A unk2e0;
+    FieldVec4A unk2f0;
+    FieldVec4A unk300;
+    FieldVec4A unk310;
+    FieldVec4A unk320;
+    FieldVec4A unk330;
+    FieldVec4A unk340;
+    FieldVec4A unk350;
+    FieldVec4A unk360;
+    FieldVec4A unk370;
+    FieldVec4A unk380;
+    FieldVec4A unk390;
+    FieldVec4A unk3a0;
+    FieldVec4A unk3b0;
+    FieldVec4A unk3c0;
+    FieldVec4A unk3d0;
+    FieldVec4A unk3e0;
+    FieldVec4A unk3f0;
+    FieldVec4A unk400;
+    FieldVec4A unk410;
+    FieldVec4A unk420;
+    FieldVec4A unk430;
+    FieldVec4A unk440;
+    FieldVec4A unk450;
+    FieldVec4A unk460;
+    FieldVec4A unk470;
+    u8 unk480;
+    u8 unk481;
+    u8 unk482[0x12];
+    u8 unk494;
+    u8 unk495;
+    u8 unk496;
+    u8 unk497[0xD9];
+    FieldVec4A unk570;
+    u8 unk580[0x250];
+    FieldVec4A unk7d0;
+};
+
+/**
+ * The packed colours some animation entry types write over LibBlendTarget's floats.
+ * TODO: Replace with the real target class once it's identified.
+ */
+struct LibBlendColorTarget
+{
+    u8 unk00[0x28C];
+    u32 unk28c;
+    u32 unk290;
+    u8 unk294[4];
+    u32 unk298;
+};
+
+/**
+ * Fields func_004BDE00 and func_004B4840 use on an animation entry's sub-target.
+ * TODO: Replace with the real sub-target classes once they're identified.
+ */
+struct LibBlendSubTarget
+{
+    u8 unk00[0x40];
+    float unk40[2];
+    s32 unk48;
+    u8 unk4c[4];
+    float unk50;
+    u8 unk54[8];
+    float unk5c;
+    u8 unk60[0x290];
+    s32 unk2f0;
+    s32 unk2f4;
+};
+
+/**
+ * Render channel sub-target with four blend weights and a state that func_004B4840 updates.
+ * TODO: Replace with the real class (a LibClass1779F0 subclass) once it's identified.
+ */
+struct LibBlendChannelWeights
+{
+    u8 unk00[0x18];
+    u8 unk18;
+    u8 unk19[0x27];
+    FieldVec4A weights;
+    s32 state;
+};
+
+/** Partial aim settings of a func_004C3590 record. */
+struct LibAimSettings
+{
+    u8 unk00[4];
+    s32 positive;
+    u8 unk08[4];
+    s32 axis;
+};
+
+/** Partial record func_004C3590 aims. */
+struct LibAimRecord
+{
+    u8 unk00[4];
+    LibAimSettings* settings;
+    u8 unk08[0x1C];
+    float roll;
+    LibTransform* target;
+};
+
+/**
+ * @brief Return the parent transform's base matrix, updating it first if it isn't ready.
+ * @param transform Transform.
+ * @return The parent's base matrix, or null without a parent.
+ */
+extern "C" const LibMatrix44Value* func_004BD420(LibTransform* transform);
+
+/**
+ * @brief Build the rotation that turns a record's aim axis towards its target, seen from an origin in a matrix's
+ * space, then rolls it about that axis.
+ * @param record Record with the aim settings, roll angle and target transform.
+ * @param key Unused; the animation passes its frame.
+ * @param matrix Matrix whose inverse takes the target's position into the origin's space.
+ * @param origin Position the axis turns from.
+ * @return Quaternion roll, then flip, then turn; the identity when the axis already points at the target.
+ */
+extern "C" FieldVec4B func_004C3590(LibAimRecord* record, float key, const LibMatrix44Value* matrix, const FieldVec4B* origin);
+
+class LibClass1779F0;
+
+/**
+ * @brief Set a render channel entry's flag, marking its list dirty when the value changes.
+ * @param entry Entry.
+ * @param value New flag.
+ */
+extern "C" void func_004BD380(LibClass1779F0* entry, u8 value);
 
 /** 0xD0-byte transform that animation channels drive, with vtable D_178370 in main data. It keeps how far each part moved at its last update. */
 class LibAnimationTarget : public LibOrientedTransform
@@ -1515,6 +1680,13 @@ void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
 void func_004CCCF0(const LibMatrix44Value* source, FieldVec4B* output);
 
 /**
+ * @brief Evaluate the degree-nine VU0 tangent: sine over cosine of one angle.
+ * @param angle Angle in radians.
+ * @return Approximated tangent.
+ */
+float func_004CC070(float angle);
+
+/**
  * @brief Evaluate the degree-six Taylor polynomial for exp(value).
  * @param value Polynomial argument.
  * @return Polynomial approximation to exp(value).
@@ -1529,7 +1701,13 @@ enum
     LIB_ANIMATION_KIND_SCALE = 2,
     LIB_ANIMATION_KIND_TRANSLATION_AXIS = 3,
     LIB_ANIMATION_KIND_ROTATION_AXIS = 4,
-    LIB_ANIMATION_KIND_SCALE_AXIS = 5
+    LIB_ANIMATION_KIND_SCALE_AXIS = 5,
+
+    /** First kind an entry may keep without a target. */
+    LIB_ANIMATION_KIND_UNBOUND_FIRST = 0xE0,
+
+    /** Kinds from here on bind to a slot of the binder's slot source instead of a scene entry. */
+    LIB_ANIMATION_KIND_SLOT = 0xF0
 };
 
 enum
@@ -1538,6 +1716,9 @@ enum
 
     /** Entry flag: lib_animation_apply_frame leaves the entry alone. */
     LIB_ANIMATION_ENTRY_SKIP = 0x10,
+
+    /** Entry flag: the entry's channel only restarts, from its track's looped byte. */
+    LIB_ANIMATION_ENTRY_RESTART_ONLY = 0x20,
 
     /** Low nibble of an entry's flags: the axis of a per-axis channel, zero for a whole vector. */
     LIB_ANIMATION_ENTRY_AXIS_MASK = 0xF
@@ -1595,11 +1776,11 @@ LibClass173180* lib_animation_find_channel(LibAnimation* object, const void* tar
 float func_004BDE00(LibAnimation* object, void* target, LibAnimation* previous, float duration);
 
 /**
- * @brief Make the animation's channels from its resource and bind each record to the scene entry it names.
+ * @brief Build the animation's channels from its 'SAFH' chunk and bind them to the scene's objects.
  * @param object Animation object.
- * @param scene Scene whose entries the records name.
- * @param slots Optional slot source for entries without a scene target.
- * @return One when bound, or zero when the animation has no resource.
+ * @param scene Scene the targets are looked up in, or null.
+ * @param slots Source of the slots that kinds 0xF0 to 0xF3 bind to, or null.
+ * @return One on success, or zero when the resource is missing or invalid or a channel can't be made.
  */
 s32 lib_animation_bind_channels(LibAnimation* object, void* scene, void* slots);
 
@@ -1775,6 +1956,16 @@ void lib_build_directional_shadow_matrix(LibMatrix44Value* output, const FieldVe
  * @param plane Plane equation coefficients (normal.x, normal.y, normal.z, offset).
  */
 void lib_build_projective_shadow_matrix(LibMatrix44Value* output, const FieldVec4A* light, const FieldVec4A* plane);
+
+/**
+ * @brief Build the plane through three points: the normal is the cross product of the normalized directions from the
+ *        origin to the other two points, and the fourth component is minus the normal dotted with the origin.
+ * @param plane Receives the normal and the distance term.
+ * @param origin Point on the plane the two directions start from.
+ * @param first Second point.
+ * @param second Third point.
+ */
+void func_004CC7A0(float* plane, const float* origin, const float* first, const float* second);
 #endif
 
 /** Return the receiver address at byte offset 0x10. */

@@ -2,9 +2,10 @@
 #include "types.h"
 
 
+#include "overlays/1067-00/text_0024C4B0.h"
+
 extern "C" {
 void func_0024CC40(void* object, s32 value);
-#include "overlays/1067-00/text_0024C4B0.h"
 
 /** Partial receiver with status bytes at offsets 0x331-0x334. */
 typedef struct FieldStatus331

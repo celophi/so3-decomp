@@ -6,6 +6,7 @@
 #include "overlays/lib/model.h"
 #include "overlays/lib/emission.h"
 #include "overlays/lib/particle_grid.h"
+#include "main/object_list.h"
 
 #ifdef __cplusplus
 /** GS state an image entry carries: texture registers and the blend register. */
@@ -240,6 +241,18 @@ public:
      */
     void set_phase_period(u8 period);
 
+    /**
+     * @brief Load the image record's texture and palette into the texture cache if they are not there yet, then
+     *        point the setup packet's TEX0 registers at slot 0's texture.
+     */
+    void bind_texture();
+
+    /**
+     * @brief Write the model's DMA chain into the free buffer: the kind's microprogram, the dirty texture uploads
+     *        and the setup packet, then the cell packet calls when the cell count changed.
+     */
+    void build_dma_chain();
+
     /** @brief Reset texture upload records one and two to upload nothing yet. */
     void reset_texture_uploads()
     {
@@ -296,18 +309,24 @@ public:
         reference = 0;
     }
 
+    /**
+     * @brief Set the last two unka70 components.
+     * @param z Third component.
+     * @param w Fourth component.
+     */
+    void set_unka70_zw(float z, float w)
+    {
+        unka70[2] = z;
+        unka70[3] = w;
+    }
+
     LibModelPacketChain chains[2];
     u32 chain_address;
     LibImagePacket* packet;
     LibImageEntry* image;
     u8 unk61c[4];
-    s32 unk620;
-    s16 unk624;
-    u8 unk626[0x1A];
-    s32 unk640;
-    u8 unk644[4];
-    void* unk648;
-    u8 unk64c[0xA4];
+    ResidentRenderDataRecord record;
+    u8 unk650[0xA0];
     LibImageSetupPacket setup;
     u8 unk790[0xA0];
     LibTextureUpload texture_uploads[3];
@@ -316,32 +335,28 @@ public:
     LibVector4 box_max;
     LibVector4 bounding_sphere;
     LibVector4 world_bounding_sphere;
-    u8 unka70[0x10];
+    float unka70[4];
     LibGridBase* reference;
-    u8* unka84;
-    u8* unka88;
+    u8* unka84[2];
     u8* unka8c;
-    u8* unka90;
-    u8* unka94;
-    s32 unka98;
-    s32 unka9c;
+    u8* unka90[2];
+    s32 unka98[2];
     float diagonal;
     float unkaa4;
     float unkaa8;
     s32 unkaac;
-    u8 unkab0[8];
+    s32 unkab0[2];
     s32 next_cell;
     float unkabc;
     float unkac0;
     float unkac4;
-    u32 unkac8;
+    float unkac8;
     u32 unkacc;
     s32 user_count;
     LibObject1751A0* source;
     u8 phase;
     u8 phase_period;
-    u8 unkada;
-    u8 unkadb;
+    u8 unkada[2];
     u8 holds_reference;
     u8 unkadd;
     u8 unkade;
@@ -355,6 +370,7 @@ public:
     u8 unkae6;
     u8 copied;
 };
+
 #endif
 
 #endif

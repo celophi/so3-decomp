@@ -71,6 +71,46 @@ static inline void vu0_multiply_xyzw(void* out, const void* left, const void* ri
 }
 
 /**
+ * @brief Multiply two vectors component by component, with the right factor as the first asm operand.
+ * @param out 16-byte aligned destination.
+ * @param left 16-byte aligned vector.
+ * @param right 16-byte aligned vector.
+ * @see vu0_multiply_xyzw; func_004A59D0 in Lib.
+ */
+static inline void vu0_multiply_xyzw_right_first(void* out, const void* left, const void* right)
+{
+    // TODO: Same as vu0_multiply_xyzw, but the operand order changes which registers the addresses get; check
+    // whether the original had two helpers.
+    asm __volatile__(
+        "lqc2      $vf12, 0(%1)\n"
+        "lqc2      $vf13, 0(%0)\n"
+        "vmul.xyzw $vf12, $vf12, $vf13\n"
+        "sqc2      $vf12, 0(%2)\n"
+        :
+        : "r"(right), "r"(left), "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief Multiply two vectors component by component in vf1 and vf2.
+ * @param out 16-byte aligned destination.
+ * @param left 16-byte aligned vector.
+ * @param right 16-byte aligned vector.
+ * @see vu0_multiply_xyzw; func_004A59D0 in Lib.
+ */
+static inline void vu0_multiply_xyzw_vf1(void* out, const void* left, const void* right)
+{
+    asm __volatile__(
+        "lqc2      $vf1, 0(%0)\n"
+        "lqc2      $vf2, 0(%1)\n"
+        "vmul.xyzw $vf1, $vf1, $vf2\n"
+        "sqc2      $vf1, 0(%2)\n"
+        :
+        : "r"(left), "r"(right), "r"(out)
+        : "memory");
+}
+
+/**
  * @brief Load a 4x4 matrix into vf1-vf4.
  *
  * Callers then run Lib's func_004336E0 once per vector.
@@ -218,6 +258,32 @@ static inline void vu0_apply_matrix(const void* matrix, const void* vector, void
         "sqc2      $vf5, 0x0(%2)\n"
         :
         : "r"(matrix), "r"(vector), "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief vu0_apply_matrix with the vector's address taken first, which the colouring of some callers needs.
+ * @param matrix 16-byte aligned matrix.
+ * @param vector 16-byte aligned vector.
+ * @param out 16-byte aligned destination.
+ * @see sceVu0ApplyMatrix in Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); LibObject1751A0::update
+ *      in Lib.
+ */
+static inline void vu0_apply_matrix_vector_first(const void* matrix, const void* vector, void* out)
+{
+    asm __volatile__(
+        "lqc2      $vf5, 0x0(%0)\n"
+        "lqc2      $vf1, 0x0(%1)\n"
+        "lqc2      $vf2, 0x10(%1)\n"
+        "lqc2      $vf3, 0x20(%1)\n"
+        "lqc2      $vf4, 0x30(%1)\n"
+        "vmulax.xyzw $ACC, $vf1, $vf5x\n"
+        "vmadday.xyzw $ACC, $vf2, $vf5y\n"
+        "vmaddaz.xyzw $ACC, $vf3, $vf5z\n"
+        "vmaddw.xyzw $vf5, $vf4, $vf5w\n"
+        "sqc2      $vf5, 0x0(%2)\n"
+        :
+        : "r"(vector), "r"(matrix), "r"(out)
         : "memory");
 }
 
@@ -428,6 +494,25 @@ static inline void vu0_start_microprogram_b60_vf5(const void* sphere)
 }
 
 /**
+ * @brief Load a vector into vf5 and start the microprogram at 0x188.
+ *
+ * Lib runs it on each mesh part's centre after vu0_start_microprogram_1f0_vf5_vf8
+ * and sorts the parts by the z it leaves in vf6, so I think it's the point
+ * transform for program 0's matrix.
+ * TODO: Work out what else program 0x188 leaves in vf6.
+ * @param vector 16-byte aligned vector.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see func_004A4710 in Lib.
+ */
+static inline void vu0_start_microprogram_188_vf5(const void* vector)
+{
+    asm __volatile__("lqc2 $vf5, 0x0(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0x188" : : "r"(vector) : "memory");
+}
+
+/**
  * @brief Read vi2, waiting for the running microprogram first.
  * @return The register's value.
  * @see vu0_start_microprogram_b60_vf5.
@@ -597,6 +682,22 @@ static inline void vu0_random_seed(u32 seed)
         "vrget.x   $vf31, $R\n"
         :
         : "r"(seed));
+}
+
+/**
+ * @brief Step VU0's random number register R and read it as a float.
+ * @return Random value from 1 up to 2.
+ * @see VRNEXT in the EE Core Instruction Set Manual (VU0 macro mode); Lib's particle scripts (func_00445950,
+ *      func_0049ED80) jitter their vectors with it.
+ */
+static inline float vu0_random_next()
+{
+    float value;
+    asm __volatile__(
+        "vrnext.x  $vf31, $R\n"
+        "qmfc2.i   %0, $vf31\n"
+        : "=r"(value));
+    return value;
 }
 
 /**

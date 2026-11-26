@@ -78,6 +78,8 @@ BOOKKEEPING_STARTS = ('HIDDEN(__romPos = ', '__romPos += SIZEOF(', '__romPos = A
 BOOKKEEPING_VALUES = ('.', '__romPos')
 # A jump-table island's section, like .rodata.00505B30.
 ISLAND_SECTION = re.compile(r'\.rodata\.[0-9A-F]{8}')
+# Subsegment options that pin a unit's zero-initialised data at its original address, and the section each pins.
+FIXED_SECTION_OPTIONS = {'bss_address': '.bss', 'sbss_address': '.sbss'}
 BOOKKEEPING_FUNCTIONS = ('ADDR(', 'ABSOLUTE(')
 
 
@@ -321,6 +323,72 @@ def island_objects(sections):
                 item.path = cpp
 
 
+@dataclass
+class FixedSection:
+    """One object's zero-initialised section, kept at the address the original has it."""
+    path: Path
+    section: str
+    address: int
+
+    def region(self):
+        return f"{self.path.name.split('.')[0]}_{self.section.lstrip('.')}"
+
+
+def fixed_section_options(config):
+    """Read the pinned .bss/.sbss addresses from a module's Splat config, as {(unit, section): address}.
+
+    A unit that defines C++ globals (an overlay's static initialisers) gets a
+    `.bss` of its own, and maybe a `.sbss`. The original keeps every unit's
+    zero-initialised data in one block after the module, and in the main
+    program's small-data area for `.sbss`, at addresses the rest of the module
+    already uses. The config gives them on the unit's subsegment:
+
+        - {start: 0x120b00, type: cpp, name: init_00507380, linker_section: .init, bss_address: 0x507C28}
+    """
+    result = {}
+    for segment in config['segments']:
+        if not isinstance(segment, dict) or segment.get('type') != 'code':
+            continue
+        for subsegment in segment['subsegments']:
+            if not isinstance(subsegment, dict):
+                continue
+            for option, section in FIXED_SECTION_OPTIONS.items():
+                if option in subsegment:
+                    require(isinstance(subsegment[option], int), f"{subsegment.get('name')}: {option} must be an address")
+                    result[(subsegment['name'], section)] = subsegment[option]
+    return result
+
+
+def fix_sections(sections, options):
+    """Take the pinned sections out of splat's layout and return them with their addresses.
+
+    Splat puts a unit's .bss right after the module, and doesn't place .sbss at
+    all. Moving the position forward inside the module's output section would
+    write zeros into the image up to the new address, so each pinned section
+    gets a memory region of its own instead (it holds no file bytes).
+    """
+    fixed = []
+    placed = set()
+    for section in sections:
+        kept = []
+        for item in section.contents:
+            key = (item.path.name.split('.')[0], item.section) if isinstance(item, Placement) else None
+            if key in options:
+                fixed.append(FixedSection(item.path, item.section, options[key]))
+                placed.add(key)
+            else:
+                kept.append(item)
+        section.contents = kept
+    paths = {item.path.name.split('.')[0]: item.path for section in sections for item in section.contents
+             if isinstance(item, Placement)}
+    for (unit, section), address in options.items():
+        if (unit, section) not in placed:
+            # Splat never places .sbss; the unit's other sections say which object it is.
+            require(unit in paths, f'{unit}: pinned {section} for an object the script never places')
+            fixed.append(FixedSection(paths[unit], section, address))
+    return sorted(fixed, key=lambda item: item.address)
+
+
 def symbol_definitions(paths):
     """Read the `name = 0x...;` lines of splat's undefined-symbol scripts."""
     lines = []
@@ -357,7 +425,7 @@ def section_block(sections):
     return lines
 
 
-def command_file(sections, gp, symbols):
+def command_file(sections, gp, symbols, fixed=()):
     """Write the whole command file: the module's region with every section in splat's order, then the rest.
 
     Sections before the first fixed address go in their own region at 0 first.
@@ -377,9 +445,9 @@ def command_file(sections, gp, symbols):
     lines += [
         f'    {MEMORY_REGION} (RWX) : ORIGIN = 0x{module[0].address:X}, LENGTH = 0',
         f'    {ELSEWHERE_REGION} (RWX) : ORIGIN = 0x{ELSEWHERE_ADDRESS:X}, LENGTH = 0',
-        '}',
-        'SECTIONS {',
     ]
+    lines += [f'    {item.region()} (RWX) : ORIGIN = 0x{item.address:X}, LENGTH = 0' for item in fixed]
+    lines += ['}', 'SECTIONS {']
     if file_start:
         lines.append(f'    {FILE_START_OUTPUT_SECTION} : {{')
         lines += section_block(file_start)
@@ -389,7 +457,10 @@ def command_file(sections, gp, symbols):
     if gp is not None:
         lines.append(f'{INDENT}_gp = 0x{gp:X};')
     lines += [INDENT + symbol for symbol in symbols]
-    lines += [f'    }} > {MEMORY_REGION}', f'    {ELSEWHERE_OUTPUT_SECTION} : {{']
+    lines.append(f'    }} > {MEMORY_REGION}')
+    for item in fixed:
+        lines += [f'    .{item.region()} : {{', f'{INDENT}{item.path.name} ({item.section})', f'    }} > {item.region()}']
+    lines.append(f'    {ELSEWHERE_OUTPUT_SECTION} : {{')
     # Asking for a section an object doesn't have is fine, so every object gets both.
     lines += [f'{INDENT}{name} ({section})' for name in object_names(sections) for section in EXCEPTION_SECTIONS]
     lines += [f'    }} > {ELSEWHERE_REGION}', '}']
@@ -433,12 +504,17 @@ def main():
     parser.add_argument('symbols', nargs='*', type=Path, help="splat's undefined-symbol scripts to copy in")
     parser.add_argument('--symbol-map', action='append', default=[], type=Path, dest='symbol_maps',
                         help='a symbol map to take absolute symbols from (can be repeated)')
+    parser.add_argument('--config', type=Path, help="the module's Splat config, for pinned .bss/.sbss addresses")
     parser.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     sections, gp = parse_linker_script(args.linker_script.read_text())
     island_objects(sections)
+    fixed = []
+    if args.config:
+        import yaml
+        fixed = fix_sections(sections, fixed_section_options(yaml.safe_load(args.config.read_text())))
     symbols = symbol_definitions(args.symbols) + absolute_definitions(args.symbol_maps)
-    content = command_file(sections, gp, symbols)
+    content = command_file(sections, gp, symbols, fixed)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(content)
 

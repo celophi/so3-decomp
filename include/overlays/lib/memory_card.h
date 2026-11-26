@@ -47,19 +47,6 @@ struct LibMemoryCardSlot
     u8 unkC0[0x40];
 };
 
-/** Thread with a semaphore, with vtable D_173580 in main data; it sits next to the memory card code. */
-class LibClass173580 : public ResidentThread
-{
-public:
-    virtual ~LibClass173580();
-
-    /** @brief Thread body. */
-    virtual void run();
-
-    u8 unk10[0xC];
-    LibSemaphore semaphore;
-};
-
 /** Partial 0x58-byte memory card object that runs the two transfer modes. */
 class LibMemoryCard : public LibListObject
 {

@@ -29,6 +29,15 @@ void sceGsResetGraph(s16 mode, s16 inter, s16 omode, s16 ffmode);
 void sceGsResetPath(void);
 
 /**
+ * @brief Wait for the GS path transfers to finish, or check whether they have.
+ * @param mode 0 to wait, 1 to return the busy state at once.
+ * @param timeout Wait limit; 0 waits for as long as it takes.
+ * @return 0 once idle; with mode 1, the busy path bits.
+ * @see Sony, libgraph reference, sceGsSyncPath.
+ */
+s32 sceGsSyncPath(s32 mode, u16 timeout);
+
+/**
  * @brief Fill a display environment with the defaults for a frame buffer of the given size.
  * @param environment Environment to fill.
  * @param pixel_format Frame buffer pixel format.
@@ -106,7 +115,18 @@ void sceGsSetDefLoadImage(GsLoadImage* image, s16 buffer_pointer, s16 buffer_wid
 /** GS image read-back packet: VIF codes, GIF tag and transfer registers, 16-byte aligned. */
 typedef struct GsStoreImage
 {
-    u8 data[0x70];
+    u32 vif_codes[4];
+    GsGifTag gif_tag;
+    GsBitbltbuf bitbltbuf;
+    u64 bitbltbuf_address;
+    u64 trxpos;
+    u64 trxpos_address;
+    GsTrxreg trxreg;
+    u64 trxreg_address;
+    u64 finish;
+    u64 finish_address;
+    u64 trxdir;
+    u64 trxdir_address;
 } __attribute__((aligned(16))) GsStoreImage;
 
 /**

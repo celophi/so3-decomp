@@ -7,6 +7,64 @@
 #include "overlays/lib/counted_list.h"
 #include "overlays/lib/render_buffer.h"
 #include "main/dma_queue.h"
+#include "overlays/lib/emission.h"
+
+// TODO: My guess for why LibColorModel's constructor calls this constructor; it may really be LibMatrix44Value.
+/** Matrix in a model's draw packet; its constructor is only defined after LibColorModel's. */
+class LibModelPacketMatrix
+{
+public:
+    inline LibModelPacketMatrix();
+
+    LibVector4 rows[4];
+} __attribute__((aligned(16)));
+
+/** Partial VU1 draw packet a color model keeps at 0x220 and writes through its physical address. */
+struct LibModelPacket
+{
+    u32 unk00[3];
+    u32 unpack;
+    LibClass173490Entry unk10;
+    LibModelPacketMatrix unk20;
+    LibModelPacketMatrix unk60;
+    LibModelPacketMatrix unka0;
+    LibClass173490Entry unke0;
+    s32 unkf0;
+    u8 unkf4[0x2C];
+    u64 frame_alpha;
+    u64 frame_alpha_address;
+    u64 test;
+    u64 test_address;
+    LibClass173490Entry unk140;
+    LibClass173490Entry unk150[3];
+    LibModelPacketMatrix unk180;
+    LibClass173490Entry unk1c0;
+    LibClass173490Entry unk1d0[2];
+    LibClass173490Entry unk1f0[2];
+    LibClass173490Entry unk210[2];
+    LibClass173490Entry unk230[2];
+    u8 unk250[0x10];
+    LibClass173490Entry unk260;
+    LibClass173490Entry unk270;
+    LibClass173490Entry unk280;
+    u8 unk290[0x20];
+    LibClass173490Entry unk2b0;
+    LibModelPacketMatrix unk2c0;
+    u32 mscal;
+    u32 unk304[3];
+};
+
+/** VU1 microprogram a model's draw packet starts. */
+extern "C" u8 D_238[];
+
+/** VU1 microprogram entry a model's first part call starts. */
+extern "C" u8 D_6E0[];
+
+/** VU1 microprogram entry an image model's later cell calls start. */
+extern "C" u8 D_818[];
+
+/** Initial unk59d_1 of a new color model. */
+extern "C" u8 D_001B6550;
 
 /** Partial header at the start of a mesh resource's payload. */
 struct LibMeshHeader
@@ -111,9 +169,8 @@ public:
      */
     virtual void copy_color_state(const LibColorModel* source);
 
-    u8 unk220[0x20];
-    LibVector4 unk240[4];
-    u8 unk280[0x2E0];
+    LibModelPacket draw_packet;
+    u8 unk530[0x30];
     LibVector4 base_color_factor;
     LibVector4 color_modulation;
     LibVector4 combined_color_factor;
@@ -261,8 +318,8 @@ public:
     void* unk70;
     void* payload_buffers[LIB_MODEL_PACKET_SET_COUNT];
     void* payloads[LIB_MODEL_PACKET_SET_COUNT];
-    u16 unk84;
-    u8 unk86[2];
+    s16 unk84;
+    s16 unk86;
     u8 unk88;
     u8 unk89;
     u8 payload_set;
@@ -287,7 +344,9 @@ struct LibEntryOutput
     s32 count;
     LibVector4* vectors;
     LibClass173490Entry* values;
-    u8 unk0c[0xC];
+    u32* uvs;
+    u32* colors;
+    u8 unk14[4];
     void* records[1];
 };
 
@@ -434,8 +493,9 @@ struct LibClass174C20Header
 {
     s32 columns;
     s32 rows;
-    u8 unk08[8];
-    float normal_scale;
+    float left;
+    float top;
+    float cell_size;
     float speed;
     float drop_strength;
     u8 random_drops;
@@ -487,6 +547,7 @@ public:
     u8 unk44[0xC];
     float weight;
     s32 idle_frames;
+    u8 unk58[8];
 };
 
 /** LibClass1734B0 entry of type 35 with per-cell word arrays, with vtable D_174C20 in main data. */
@@ -700,12 +761,24 @@ struct LibModelPart
 /** Partial part record in a mesh resource; the model's copy of its part starts at 0x40. */
 struct LibMeshPartRecord
 {
-    u8 unk00[0x14];
+    u8 unk00[4];
+    s16 unk04;
+    u8 unk06[0xE];
     u16 unk14;
     u8 unk16[0x16];
     u16 unk2c[4];
     u8 unk34[0xC];
     LibModelPart part;
+};
+
+/** Partial view of the object a model's unk638 points at: matrix sets uploaded for each frame. */
+struct LibModelMatrixSource
+{
+    u8 unk00[0x34];
+    s32* unk34;
+    u8 unk38[0x14];
+    u32 unk4c;
+    u8 unk50;
 };
 
 /** Partial 0x80-byte texture upload block in a model's upload table. */
@@ -739,6 +812,16 @@ struct LibModelPartSetting
 struct LibModelPacketChain
 {
     u64 tags[3][2];
+};
+
+/** Lights that cast a model's shadows. */
+struct LibShadowLightList
+{
+    s32 count;
+    u8 unk04[4];
+    LibLight* lights[4];
+    u8 unk18[0x10];
+    float weights[4];
 };
 
 /** Partial 0x820-byte Lib model with vtable D_177820 in main data. */
@@ -869,18 +952,23 @@ public:
 
     /**
      * @brief Put one of the model's textures in VRAM when the model supplies its own textures; this model doesn't.
+     * @param image Image header the record draws.
+     * @param index Record's index.
+     * @param palette Palette packet, which the model may replace.
      * @return VRAM address, or zero to skip the texture.
      */
-    virtual s32 place_texture()
+    virtual s32 place_texture(void* image, s16 index, void** palette)
     {
         return 0;
     }
 
     /**
      * @brief Swap a texture record while drawing when the model supplies its own textures; this model doesn't.
+     * @param image Image header the record draws.
+     * @param index Record's index.
      * @return Replacement record, or zero to keep the original.
      */
-    virtual s32 replace_texture()
+    virtual s32 replace_texture(void* image, s32 index)
     {
         return 0;
     }
@@ -936,8 +1024,9 @@ public:
     s32 func_004A2870();
 
     /**
-     * @brief Virtual slot 0xF0: write the model's parts into its packet.
-     * @param count Value func_004A76D0 returned for the mesh, or zero.
+     * @brief Virtual slot 0xF0: write the model's DMA chain: the microprogram, the texture and palette uploads its
+     *        records mark dirty, the render channels' packets, the before/after blocks, and the part calls.
+     * @param count Image object func_004A76D0 found for the mesh, or zero.
      * @param matrix Camera the model is drawn with.
      */
     virtual void func_slotF0(s32 count, const void* matrix);
@@ -1001,10 +1090,24 @@ public:
     float unk7c0;
     float unk7c4;
     u32 unk7c8[6];
-    u32 unk7e0;
-    u8 unk7e4[0x34];
+    LibShadowLightList shadow_lights;
     LibModel* source;
     u8 unk81c[4];
+};
+
+class FieldVec4B;
+
+/** Ground the shadow models are cast on: gives the height under a point. */
+class LibShadowGround
+{
+public:
+    /**
+     * @brief Find the height of the ground under a point.
+     * @param point Point.
+     * @param model Shadow model asking.
+     * @return Ground height.
+     */
+    virtual float get_height(const FieldVec4B* point, LibModel* model) = 0;
 };
 
 /**
@@ -1091,7 +1194,7 @@ public:
     u8 unk838;
     u8 unk839;
     u8 unk83a;
-    u8 unk83b;
+    s8 unk83b;
     u8 unk83c;
     u8 unk83d;
     u8 unk83e;
@@ -1104,9 +1207,32 @@ public:
     float unk854;
     float unk858;
     u32 unk85c;
-    u32 unk860[6];
+    u64* unk860[2];
+    u64* unk868[2];
+    u64* unk870[2];
     LibTransformOwner* children[3];
     LibUpdateList objects;
 };
+
+/**
+ * @brief Store unk820.
+ * @param model Model to update.
+ * @param value 16-byte aligned value to store.
+ */
+extern "C" void func_0042ABE0(LibClass173380* model, const LibVector4* value);
+
+/**
+ * @brief Refresh the model's packet header from its flags and the camera's TEST register.
+ * @param model Model.
+ * @param camera Camera.
+ */
+extern "C" void func_004A7AC0(LibModel* model, const LibCamera* camera);
+
+/**
+ * @brief Run the model's per-packet step that build_packet skips after unk797_2 was set.
+ * @param model Model.
+ * @param context Opaque caller context.
+ */
+extern "C" void func_004A59D0(LibModel* model, void* context);
 
 #endif

@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/scratchpad_texture_cache.h"
 #include "vu0.h"
 #include "overlays/lib/shape_vu0.h"
 #include "overlays/lib/text_00419A70.h"
@@ -14,6 +15,10 @@
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/image_model.h"
+#include "overlays/lib/model_packet.h"
+#include "overlays/lib/grid_bounds_vu0.h"
+#include "overlays/lib/transform_inlines.h"
+#include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/widget_aggregate.h"
 #include "overlays/lib/message_window.h"
 #include "overlays/lib/text_004095C0.h"
@@ -3207,7 +3212,519 @@ extern "C" LibDrawRecord* func_004602B0(LibObject174D90* object, LibDrawRecord* 
     return record;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00460750);
+/** A decoded text code in the scratchpad: the code, a count or length, and its argument. */
+struct LibTextRecord
+{
+    u16 code;
+    u16 extra;
+
+    union
+    {
+        u32 value;
+        float number;
+        const u8* text;
+        u8 bytes[4];
+    };
+};
+
+#define LIB_TEXT_RECORDS reinterpret_cast<LibTextRecord*>(0x70000000)
+#define LIB_TEXT_RECORDS_END reinterpret_cast<LibTextRecord*>(0x70000C78)
+
+extern "C" void func_004C7290(LibDrawWidget* widget, const u8* text);
+
+/**
+ * @brief Test a one-based allocation ID against the allocation count.
+ * @param identifier One-based allocation ID.
+ * @return Nonzero when the ID is in range.
+ */
+static inline s32 allocation_identifier_valid(s16 identifier)
+{
+    // TODO: Returned as s32 from a bool local, which gives the game's extra andi before the test.
+    bool valid = false;
+
+    if (identifier > 0 && identifier <= LIB_ALLOCATION_COUNT)
+    {
+        valid = true;
+    }
+
+    return valid;
+}
+
+/**
+ * @brief Walk back from a record to the start of its run.
+ * @param record Record inside a run.
+ * @return The run's LIB_DRAW_RECORD_RUN record.
+ */
+static inline LibDrawRecord* run_start(LibDrawRecord* record)
+{
+    for (;;)
+    {
+        if (record->code == LIB_DRAW_RECORD_RUN)
+        {
+            break;
+        }
+
+        record--;
+    }
+
+    return record;
+}
+
+/**
+ * @brief Decode the next page of text into scratchpad records, then lay them out line by line, wrapping a line
+ *        that runs past the widget's width at the start of its run or the break func_004602B0 picks. Up to 12 lines
+ *        wrap; each laid-out line's height goes into line_heights.
+ * @param object Multiline text widget.
+ */
+extern "C" void func_00460750(LibObject174D90* object)
+{
+    u16 codes[64];
+
+    if (object->unk548 < 0)
+    {
+        return;
+    }
+
+    if (object->unk548 == 0)
+    {
+        if (object->unkfc != 0)
+        {
+            LibGlyphDraw6C* glyph = static_cast<LibClass178780*>(object->unkfc)->glyphs;
+
+            for (s32 i = 0; i < static_cast<LibClass178780*>(object->unkfc)->glyph_capacity; i++, glyph++)
+            {
+                lib_draw_state_init(glyph);
+            }
+        }
+
+        object->text_cursor = static_cast<const u8*>(object->unk118);
+        object->record_cursor = reinterpret_cast<LibDrawRecord*>(object->unk70);
+        object->pen_y = 0.0f;
+        object->line_count = 0;
+        object->unk548++;
+    }
+
+    lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+
+    const u8* text = object->text_cursor;
+    LibTextRecord* record = LIB_TEXT_RECORDS;
+
+    for (;;)
+    {
+        u16 code = *text++;
+
+        // TODO: The game compares the code as 64-bit here; I haven't found a cleaner spelling.
+        if ((s64)(s32)code == 0)
+        {
+            record->code = 0;
+            goto decoded;
+        }
+
+        if (code & 0x80)
+        {
+            code = (code & 0x7F) | (*text++ << 7);
+
+            if (code & 0x4000)
+            {
+                switch (code)
+                {
+                case 0x4002:
+                case 0x401A:
+                case 0x4020:
+                    record->value = *text++;
+                    break;
+                case 0x4005:
+                case 0x4006:
+                case 0x400A:
+                case 0x400C:
+                case 0x400E:
+                case 0x4014:
+                case 0x4015:
+                {
+                    u8* bytes = record->bytes;
+
+                    for (s32 i = 0; i < 4; i++)
+                    {
+                        *bytes++ = *text++;
+                    }
+
+                    break;
+                }
+                case 0x4000:
+                    if (object->mode & 8)
+                    {
+                        continue;
+                    }
+
+                    record->code = 0x4000;
+                    goto decoded;
+                case 0x4001:
+                    record->code = 0x4001;
+                    record->text = text;
+                    goto decoded;
+                case 0x4003:
+                    record->value = 0;
+                    code = 0x4002;
+                    break;
+                case 0x4008:
+                    record->value = object->get_palette_color(*text++);
+                    break;
+                case 0x4009:
+                    record->value = 0x808080;
+                    code = 0x4008;
+                    break;
+                case 0x400B:
+                    code = 0x400A;
+                    record->number = 1.0f;
+                    break;
+                case 0x400D:
+                    record->value = 0;
+                    code = 0x400C;
+                    break;
+                case 0x400F:
+                    code = 0x400E;
+                    record->number = 2.0f;
+                    break;
+                case 0x4011:
+                case 0x401C:
+                    record->text = text;
+
+                    while (*text)
+                    {
+                        text++;
+                    }
+
+                    record->extra = text - record->text;
+                    text++;
+                    break;
+                case 0x4012:
+                {
+                    object->format_number_codes(codes, g_field_runtime->message_arguments[*text++]);
+
+                    for (u16* glyph = codes; *glyph; glyph++)
+                    {
+                        record->code = *glyph;
+                        record++;
+
+                        if (record == LIB_TEXT_RECORDS_END)
+                        {
+                            record->code = 0x4001;
+                            record->text = text;
+                            goto decoded;
+                        }
+                    }
+
+                    continue;
+                }
+                case 0x4013:
+                case 0x4021:
+                {
+                    s32 index = *text++;
+
+                    index = code == 0x4013 ? index : g_field_runtime->message_arguments[index];
+
+                    func_00464040(object, codes, func_004642E0(object, index));
+                    u16* glyph = codes;
+                    s32 spacer = 0;
+
+                    while (*glyph)
+                    {
+                        if (!spacer)
+                        {
+                            record->code = *glyph++;
+                        }
+                        else
+                        {
+                            record->code = 0x4018;
+                        }
+
+                        record++;
+
+                        if (record == LIB_TEXT_RECORDS_END)
+                        {
+                            record->code = 0x4001;
+                            record->text = text;
+                            goto decoded;
+                        }
+
+                        spacer ^= 1;
+                    }
+
+                    continue;
+                }
+                case 0x4022:
+                case 0x4023:
+                {
+                    s32 value = g_field_runtime->message_arguments[*text++];
+                    u16 id = 0;
+                    s32 variant = 0;
+
+                    if (code == 0x4022)
+                    {
+                        id = value;
+                    }
+                    else
+                    {
+                        LibGameState* state = reinterpret_cast<LibGameState*>(D_001B64F8);
+                        ItemCreationAllocationRecord* allocation;
+
+                        if (allocation_identifier_valid(value))
+                        {
+                            allocation = reinterpret_cast<ItemCreationAllocationRecord*>(&state->allocations[(s16)value - 1]);
+                        }
+                        else
+                        {
+                            allocation = 0;
+                        }
+
+                        if (allocation != 0 && allocation_in_use(allocation))
+                        {
+                            u16 stored = allocation->checksum;
+                            u16 index;
+
+                            if (stored != allocation->calculate_checksum())
+                            {
+                                index = 0;
+                            }
+                            else
+                            {
+                                index = allocation->definition_factors.bits.definition_index;
+                            }
+
+                            id = index + 1;
+                            variant = allocation->modification_number;
+                        }
+                    }
+
+                    func_00463E60(object, codes, id, variant);
+
+                    for (u16* glyph = codes; *glyph; glyph++)
+                    {
+                        record->code = *glyph;
+                        record++;
+
+                        if (record == LIB_TEXT_RECORDS_END)
+                        {
+                            record->code = 0x4001;
+                            record->text = text;
+                            goto decoded;
+                        }
+                    }
+
+                    continue;
+                }
+                case 0x401B:
+                    record->value = object->unk554;
+                    code = 0x401A;
+                    break;
+                case 0x401D:
+                    record->text = text;
+                    text++;
+                    break;
+                case 0x401E:
+                {
+                    u8* bytes = record->bytes;
+
+                    for (s32 i = 0; i < 4; i++)
+                    {
+                        *bytes++ = *text++;
+                    }
+
+                    record->extra = func_0045FE90(object, text);
+                    break;
+                }
+                }
+            }
+        }
+
+        record->code = code;
+        record++;
+
+        if (record == LIB_TEXT_RECORDS_END)
+        {
+            record->code = 0x4001;
+            record->text = text;
+            break;
+        }
+    }
+
+decoded:
+    object->text_cursor = text;
+
+    if (record->code != 0x4000)
+    {
+        object->unk548 = -1;
+    }
+
+    // TODO: Declaring source first and assigning it later is what keeps records in s4 and source in s5.
+    LibTextRecord* source;
+    LibDrawRecord* records = object->record_cursor;
+    s32 total = 0;
+    s32 lines = 0;
+    source = LIB_TEXT_RECORDS;
+    bool more = true;
+
+    while (more)
+    {
+        LibTextRecord* line_start = source;
+        s32 align = object->horizontal_align;
+        u32 tint = object->tint;
+        LibDrawRecord* wrap = 0;
+        float scale = object->draw_scale;
+        float scale_y = object->draw_scale_y;
+        float spacing = object->unk88;
+        float leading = object->unk8c;
+        object->unk90 = 0.0f;
+
+    retry:
+        object->begin_layout(records, object->pen_y);
+        u8 going = 1;
+        u8 in_run = 0;
+
+        while (going)
+        {
+            if (!in_run && object->next_record == wrap)
+            {
+                lines++;
+                object->next_record->code = 0x4000;
+                object->next_record++;
+                object->record_count++;
+                break;
+            }
+
+            s32 code = source->code;
+
+            if ((s64)code == 0)
+            {
+                object->next_record->code = 0;
+                going = more = 0;
+                object->next_record++;
+                object->record_count++;
+            }
+            else if (code < 0x4000 || code == 0x401C || code == 0x401D)
+            {
+                LibDrawRecord* glyph = object->next_record;
+                float pen_x = object->pen_x;
+
+                switch (source->code)
+                {
+                case 0x401C:
+                    object->add_number_record(const_cast<u8*>(source->text), source->extra);
+                    break;
+                case 0x401D:
+                    func_004C7290(object, source->text);
+                    break;
+                default:
+                    object->add_glyph(source->code);
+                    break;
+                }
+
+                if (wrap == 0 && lines < 12 && !(pen_x + (glyph->right - glyph->left) <= object->unk18.unk08))
+                {
+                    if (in_run)
+                    {
+                        wrap = run_start(glyph);
+                    }
+                    else if (source->code >= 0x4000 || static_cast<LibManagedResourceSlot*>(glyph->unk10)->flag)
+                    {
+                        wrap = func_004602B0(object, records, glyph);
+                    }
+                    else
+                    {
+                        wrap = glyph;
+                    }
+
+                    if (object->unk558 & 1)
+                    {
+                        object->unk90 = func_004601F0(object, records, wrap - 1);
+                    }
+
+                    object->horizontal_align = align;
+                    object->tint = tint;
+                    source = line_start;
+                    object->draw_scale = scale;
+                    object->draw_scale_y = scale_y;
+                    object->unk88 = spacing;
+                    object->unk8c = leading;
+                    goto retry;
+                }
+            }
+            else
+            {
+                switch (code)
+                {
+                case 0x4000:
+                    object->next_record->code = 0x4000;
+                    going = more = 0;
+                    object->next_record++;
+                    object->record_count++;
+                    break;
+                case 0x4001:
+                    object->next_record->code = 0x4001;
+                    going = more = 0;
+                    object->next_record->unk10 = const_cast<u8*>(source->text);
+                    object->next_record++;
+                    object->record_count++;
+                    break;
+                case 0x4002:
+                    object->horizontal_align = source->value;
+                    break;
+                case 0x4008:
+                    object->tint = source->value;
+                    break;
+                case 0x400A:
+                    object->draw_scale = object->draw_scale_y = source->number;
+                    break;
+                case 0x400C:
+                    object->unk88 = source->number;
+                    break;
+                case 0x400E:
+                    object->unk8c = source->number;
+                    break;
+                case 0x4010:
+                    object->begin_run();
+                    in_run = 1;
+                    break;
+                case 0x4011:
+                    object->end_run(const_cast<u8*>(source->text), source->extra);
+                    in_run = 0;
+                    break;
+                case 0x401A:
+                    object->unk558 = source->value;
+                    break;
+                default:
+                    object->next_record->code = code;
+                    object->next_record->glyph = source->extra;
+                    object->next_record->unk10 = reinterpret_cast<void*>(source->value);
+                    object->next_record->unk14.scale = source->number;
+                    object->next_record->color = source->value;
+                    object->next_record++;
+                    object->record_count++;
+                    break;
+                }
+            }
+
+            source++;
+        }
+
+        if (object->record_count > 0)
+        {
+            object->func_004637A0(records, object->record_count);
+            records += object->record_count;
+            total += object->record_count;
+
+            if (object->line_count < 256)
+            {
+                object->line_heights[object->line_count] = object->max_height + object->unk8c;
+            }
+
+            object->line_count++;
+        }
+    }
+
+    object->record_count = total;
+    object->record_cursor += object->record_count;
+}
 
 /**
  * @brief Measure the widget's text page by page: per page, count the glyphs found in its resource (or the runtime's
@@ -4096,7 +4613,195 @@ void LibDrawWidget::func_004623F0()
     packet_cursor = packet + 2;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004624E0__13LibDrawWidgetFP13LibDrawRecord);
+/**
+ * @brief Pack a UV value.
+ * @param u Horizontal texel position, in sixteenths.
+ * @param v Vertical texel position, in sixteenths.
+ * @return UV register value.
+ */
+static inline u32 lib_glyph_uv(s32 u, s32 v)
+{
+    return (s64)u | (s64)v << 16;
+}
+
+/**
+ * @brief Pack an XYZ2 value.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Depth.
+ * @return XYZ2 register value.
+ */
+static inline u64 lib_glyph_xyz(s32 x, s32 y, s32 z)
+{
+    return (s64)z << 32 | ((s64)x | (s64)y << 16);
+}
+
+/**
+ * @brief Draw a glyph record: copy the glyph into the next upload cell when it isn't resident, draw a seven-sprite
+ *        outline when unkf8 is set, then the shadow and the glyph; flush the texture cache once the upload cells run
+ *        out.
+ * @param record Record to draw; unk10 is its resource slot.
+ */
+void LibDrawWidget::func_004624E0(LibDrawRecord* record)
+{
+    u16 glyph = record->glyph;
+    FieldRuntime* runtime = g_field_runtime;
+    LibContainer* owner = container;
+    LibManagedResourceSlot* slot = static_cast<LibManagedResourceSlot*>(record->unk10);
+    float scale_x = runtime->screen_scale_x;
+    float offset_x = runtime->screen_offset_x;
+    float scale_y = runtime->screen_scale_y;
+    float offset_y = runtime->screen_offset_y;
+    float x = owner->translation.x + unk18.unk00 - unk78;
+    float y = owner->translation.y + unk18.unk04 - unk7c;
+    // TODO: Declared before they're assigned, top before right, for the target's register order; a guessed shape.
+    s32 left;
+    s32 top;
+    s32 right;
+    s32 bottom;
+    left = (s32)(offset_x + scale_x * (x + record->left));
+    right = (s32)(offset_x + scale_x * (x + record->right));
+    top = (s32)(offset_y + scale_y * (y + record->top));
+    bottom = (s32)(offset_y + scale_y * (y + record->bottom));
+    u32 uv_top;
+    u32 uv_bottom;
+    bool uploaded;
+
+    if (glyph >= slot->loaded)
+    {
+        s32 row = runtime->resource_area_end;
+        u64* packet = packet_cursor;
+        packet[0] = DMA_TAG(6, DMA_TAG_ID_CNT, 0);
+        packet[2] = GIF_TAG_NREG(1) | 4;
+        packet[3] = GIF_REGISTER_AD;
+        packet[4] = (u64)0x24100000 << 32;
+        packet[5] = GS_REGISTER_BITBLTBUF;
+        packet[6] = (u64)unkd8 << 32 | (u64)row << 48;
+        packet[7] = GS_REGISTER_TRXPOS;
+        packet[8] = slot->unk28 | (u64)slot->unk2c << 32;
+        packet[9] = GS_REGISTER_TRXREG;
+        packet[10] = 0;
+        packet[11] = GS_REGISTER_TRXDIR;
+        packet[12] = (s64)(slot->unk1c / 16) | GIF_TAG_FLG_IMAGE | GIF_TAG_EOP;
+        packet[13] = 0;
+        packet[14] = DMA_TAG(slot->unk1c / 16, DMA_TAG_ID_REF, slot->sections[3] + slot->unk20 * (record->glyph - slot->loaded));
+        packet_cursor = packet + 16;
+        uv_top = lib_glyph_uv(unkd8 * 16 + 8, row * 16 + 8);
+        uv_bottom = lib_glyph_uv((unkd8 + record->unk14.width) * 16 - 8, (row + slot->unk24) * 16 - 8);
+        uploaded = true;
+    }
+    else
+    {
+        s32 columns = slot->unit_count;
+        uploaded = false;
+        s32 u = slot->unk28 * (glyph % columns);
+        s32 v = slot->start + slot->unk2c * (glyph / columns);
+        uv_top = lib_glyph_uv(u * 16 + 8, v * 16 + 8);
+        uv_bottom = lib_glyph_uv((u + record->unk14.width) * 16 - 8, (v + slot->unk24) * 16 - 8);
+    }
+
+    // TODO: These are declared ahead of their values for the target's register order; a guessed shape.
+    u32 alpha_bits;
+    s32 color = record->color;
+    alpha_bits = (s32)(draw_alpha * lib_widget_container_alpha(container) / 128.0f) << 24;
+    s32 shadow_depth;
+    s32 offset;
+    u64* packet;
+    u32 shadow;
+
+    if (color == 0 || !unkf9)
+    {
+        shadow = 0;
+    }
+    else
+    {
+        shadow = alpha_bits | draw_color;
+    }
+
+    u32 fill = color | alpha_bits;
+    offset = g_field_runtime->unk544;
+    packet = reinterpret_cast<u64*>(unk60);
+    s32 depth = container->unka4;
+    shadow_depth = depth + 4;
+    s32 glyph_depth = depth + 5;
+
+    if (unkf8)
+    {
+        packet[0] = GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST | 1;
+        packet[1] = 0xF1;
+        packet[2] = shadow;
+        packet[3] = 0;
+        packet[4] = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | 7;
+        packet[5] = 0x5353;
+        packet[6] = uv_top;
+        packet[7] = lib_glyph_xyz(left - offset, top - offset, shadow_depth);
+        packet[8] = uv_bottom;
+        packet[9] = lib_glyph_xyz(right - offset, bottom - offset, shadow_depth);
+        packet[10] = uv_top;
+        packet[11] = lib_glyph_xyz(left, top - offset, shadow_depth);
+        packet[12] = uv_bottom;
+        packet[13] = lib_glyph_xyz(right, bottom - offset, shadow_depth);
+        packet[14] = uv_top;
+        packet[15] = lib_glyph_xyz(left + offset, top - offset, shadow_depth);
+        packet[16] = uv_bottom;
+        packet[17] = lib_glyph_xyz(right + offset, bottom - offset, shadow_depth);
+        packet[18] = uv_top;
+        packet[19] = lib_glyph_xyz(left - offset, top, shadow_depth);
+        packet[20] = uv_bottom;
+        packet[21] = lib_glyph_xyz(right - offset, bottom, shadow_depth);
+        packet[22] = uv_top;
+        packet[23] = lib_glyph_xyz(left + offset, top, shadow_depth);
+        packet[24] = uv_bottom;
+        packet[25] = lib_glyph_xyz(right + offset, bottom, shadow_depth);
+        packet[26] = uv_top;
+        packet[27] = lib_glyph_xyz(left - offset, top + offset, shadow_depth);
+        packet[28] = uv_bottom;
+        packet[29] = lib_glyph_xyz(right - offset, bottom + offset, shadow_depth);
+        packet[30] = uv_top;
+        packet[31] = lib_glyph_xyz(left, top + offset, shadow_depth);
+        packet[32] = uv_bottom;
+        packet[33] = lib_glyph_xyz(right, bottom + offset, shadow_depth);
+        packet += 34;
+    }
+
+    packet[0] = GIF_TAG_NREG(10) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+    packet[1] = 0x0000005353153531;
+    packet[2] = shadow;
+    packet[3] = uv_top;
+    packet[4] = lib_glyph_xyz(left + offset, top + offset, shadow_depth);
+    packet[5] = uv_bottom;
+    packet[6] = lib_glyph_xyz(right + offset, bottom + offset, shadow_depth);
+    packet[7] = fill;
+    packet[8] = uv_top;
+    packet[9] = lib_glyph_xyz(left, top, glyph_depth);
+    packet[10] = uv_bottom;
+    packet[11] = lib_glyph_xyz(right, bottom, glyph_depth);
+    unk60 = reinterpret_cast<u8*>(packet + 12);
+    unke0++;
+
+    if (uploaded)
+    {
+        if (++unkdc < g_field_runtime->unk550)
+        {
+            unkd8 += 32;
+        }
+        else
+        {
+            u64* cursor = packet_cursor;
+            cursor[0] = DMA_TAG(2, DMA_TAG_ID_CNT, 0);
+            cursor[2] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+            cursor[3] = GIF_REGISTER_AD;
+            cursor[4] = 0;
+            cursor[5] = GS_REGISTER_TEXFLUSH;
+            cursor[6] = DMA_TAG((u32)(unk60 - unk5c) >> 4, DMA_TAG_ID_REF, (u32)unk5c & 0x0FFFFFFF);
+            packet_cursor = cursor + 8;
+            unke0 = 0;
+            unkdc = 0;
+            unkd8 = 0;
+            unk5c = unk60;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462C70__13LibDrawWidgetFP13LibDrawRecord);
 
@@ -4249,7 +4954,7 @@ void LibDrawWidget::func_004637A0(LibDrawRecord* records, s32 count)
 /** "%d". */
 extern const char D_00505CF8[];
 
-extern "C" s32 func_00463C90(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
+extern "C" s32 func_00463C90(LibDrawWidget* widget, u16* codes, s32 id, u8 variant);
 
 extern "C" s32 func_00463E60(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
 
@@ -4259,7 +4964,7 @@ extern "C" s32 func_00463E60(LibDrawWidget* widget, u16* codes, u16 id, s32 vari
  * @param id ID passed to the code lookup.
  * @param variant Second lookup argument.
  */
-extern "C" void func_00463C00(LibDrawWidget* widget, u16 id, s32 variant)
+extern "C" void func_00463C00(LibDrawWidget* widget, s32 id, u8 variant)
 {
     u16 codes[0x80];
     s32 count = func_00463C90(widget, codes, id, variant);
@@ -4888,7 +5593,27 @@ LibTextExtent* func_00464C20(LibObject174F20* object)
     return &object->extent;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464C80);
+/** @brief Lay the number out in the scratchpad and draw it, once; the largest s32 means no number. */
+void LibObject174F20::draw()
+{
+    if (numeric_value == 0x7FFFFFFF)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        LibDrawRecord* records = reinterpret_cast<LibDrawRecord*>(0x70000000);
+        begin_layout(records, 0.0f);
+        add_number(numeric_value);
+        func_004637A0(records, record_count);
+        align_records_vertically(records, record_count);
+        draw_records(records, record_count);
+        unk3b = 1;
+    }
+}
 
 /** One opaque 0x50-byte resource slot in the runtime's sixteen-slot table. */
 typedef struct LibNumericResourceSlot
@@ -6425,7 +7150,78 @@ void LibMovementState::func_00466E70(const LibVector4* origin, u32 depth, float 
     packet[17] = lib_sprite_xyz(right, bottom, depth);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", step__16LibMovementStateFv);
+/**
+ * @brief Measure an offset's length from the absolute values of its components.
+ * @param x Horizontal offset.
+ * @param y Vertical offset.
+ * @return Length.
+ */
+static inline float movement_length(float x, float y)
+{
+    float abs_x = ee_abs(x);
+    float abs_y = __s_abs(y);
+    float squared = abs_x * abs_x + abs_y * abs_y;
+    return __sqrt(squared, squared);
+}
+
+/**
+ * @brief Move towards the target by the speed scaled by the frame rate, arriving once within a quarter pixel.
+ * @return Whether the position changed.
+ */
+bool LibMovementState::step()
+{
+    bool changed = false;
+
+    if (!arrived)
+    {
+        for (s32 moved = 0;; moved++)
+        {
+            float dx = target.x - position.x;
+            float dy = target.y - position.y;
+            float distance = __s_abs(movement_length(dx, dy));
+
+            if (!(distance < 0.25f))
+            {
+                if (moved)
+                {
+                    break;
+                }
+
+                if (!speed_ready)
+                {
+                    speed = distance / move_frames;
+                    speed_ready++;
+                }
+
+                float step = speed * field_rate(g_field_runtime);
+
+                if (!(step <= distance))
+                {
+                    step = distance;
+                }
+
+                float angle = func_00142148(dy, dx);
+
+                position.x += step * lib_cosine_degree9(angle);
+                position.y += step * lib_sine_degree9(angle);
+            }
+            else
+            {
+                arrived = 1;
+                on_arrived();
+                break;
+            }
+        }
+    }
+
+    if (position.x != previous_position.x || position.y != previous_position.y)
+    {
+        changed = true;
+    }
+
+    previous_position = position;
+    return changed;
+}
 
 /**
  * @brief Allocate the drawing storage and show the state at a position at full alpha.
@@ -6712,7 +7508,27 @@ s32 func_004679B0(LibStringLabel* object)
     return func_00464040(object, codes, object->text);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004679D0);
+/** @brief Lay the text out in the scratchpad and draw it, once. */
+void LibStringLabel::draw()
+{
+    if (text == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        LibDrawRecord* records = reinterpret_cast<LibDrawRecord*>(0x70000000);
+        begin_layout(records, 0.0f);
+        add_text(text);
+        func_004637A0(records, record_count);
+        align_records_vertically(records, record_count);
+        draw_records(records, record_count);
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Configure the drawing rectangle and string.
@@ -6740,7 +7556,110 @@ s32 LibStringLabel::init_text_rectangle(float x, float y, float width, float hei
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", draw__14LibClass175170Fv);
+/** @brief Lay the twenty cells out on two arcs around the centre cell and draw them, the back arc first. */
+void LibClass175170::draw()
+{
+    if (!unk894)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (unk3b)
+    {
+        return;
+    }
+
+    LibImageAnimation* cell = &cells[0][0];
+    float tilt_cos = lib_cosine_degree9(-0.7853982f);
+    float tilt_sin = lib_sine_degree9(-0.7853982f);
+    float angle = -unk884;
+    float limit = -180.0f;
+    float step = 12.5f;
+
+    for (s32 side = 0; side < 2; side++)
+    {
+        for (s32 i = 0; i < 10; i++)
+        {
+            float radians = (3.1415927f * angle) / 180.0f;
+            float x = 18.0f * lib_cosine_degree9(radians);
+            float y = 8.0f * lib_sine_degree9(radians);
+            cell->unk18 = x * tilt_cos - y * tilt_sin;
+            cell->unk1c = x * tilt_sin + y * tilt_cos;
+            float scale = unk888 - 0.06f * (float)i;
+
+            if (scale < 0.0f)
+            {
+                scale = 0.0f;
+            }
+
+            cell->unk34 = scale;
+            cell->unk30 = scale;
+            cell->unk60 = (float)((s32)angle % 360) >= limit;
+            cell->unk50 = draw_alpha;
+            angle += step;
+            cell++;
+        }
+
+        tilt_sin = -tilt_sin;
+        limit = -limit;
+        step = -step;
+        angle = 180.0f + unk884;
+    }
+
+    unk50.unk50 = draw_alpha;
+    u64* start = reinterpret_cast<u64*>(unk40.dma_address);
+    u64* cursor = start;
+    packet_tag = start;
+    packet = start;
+    cursor += 2;
+    LibContainer* owner = container;
+    LibVector4 origin;
+    origin.x = owner->translation.x + unk18.unk00;
+    origin.y = owner->translation.y + unk18.unk04;
+    owner = container;
+    u32 depth = owner->unka4 + unk34;
+    float scale = owner->unkE0;
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    *cursor++ = GIF_REGISTER_AD;
+    *cursor++ = 0x48;
+    *cursor++ = GS_REGISTER_ALPHA_2;
+    LibImageAnimation* front_cell = &cells[0][0];
+
+    for (s32 i = 0; i < 20; i++, front_cell++)
+    {
+        if (front_cell->unk60)
+        {
+            func_004535B0(front_cell, &cursor, &origin, depth, scale, 0);
+        }
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    *cursor++ = GIF_REGISTER_AD;
+    *cursor++ = GS_ALPHA_NORMAL;
+    *cursor++ = GS_REGISTER_ALPHA_2;
+    func_004535B0(&unk50, &cursor, &origin, depth, scale, 0);
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    *cursor++ = GIF_REGISTER_AD;
+    *cursor++ = 0x48;
+    *cursor++ = GS_REGISTER_ALPHA_2;
+    LibImageAnimation* back_cell = &cells[0][0];
+
+    for (s32 i = 0; i < 20; i++, back_cell++)
+    {
+        if (!back_cell->unk60)
+        {
+            func_004535B0(back_cell, &cursor, &origin, depth, scale, 0);
+        }
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    *cursor++ = GIF_REGISTER_AD;
+    *cursor++ = GS_ALPHA_NORMAL;
+    *cursor++ = GS_REGISTER_ALPHA_2;
+    *packet_tag = DMA_TAG((reinterpret_cast<u32>(cursor) - reinterpret_cast<u32>(packet_tag) - LIB_DRAW_QWORD_SIZE) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_END, 0);
+    unk3b = 1;
+}
 
 /** @brief Fade the widget in or out while it opens or closes, and turn the rings while it shows. */
 void LibClass175170::func_00413D20()
@@ -6877,7 +7796,7 @@ void* LibObject1751A0::get_data()
 {
     if (image != 0)
     {
-        return &unk620;
+        return &record;
     }
 
     return 0;
@@ -6901,9 +7820,160 @@ void LibObject1751A0::set_phase_period(u8 period)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004683E0__15LibObject1751A0Fv);
+/**
+ * @brief Bind the renderer's first pass target (LATF image 1) as the model's texture and point the setup packet's
+ *        TEX0 registers at it.
+ */
+void LibObject1751A0::func_004683E0()
+{
+    void* data = &record;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468590);
+    if (record.resolved_data == 0)
+    {
+        data = func_00448A10(&static_cast<LibRenderResource&>(*this), LIB_TEXTURE_TAG_LATF, 1);
+        record.resolved_data = reinterpret_cast<u32>(data);
+    }
+
+    if (data != 0)
+    {
+        g_texture_cache->find_texture(0, LIB_TEXTURE_TAG_LATF, 1, 0, 1, 0, 0);
+    }
+
+    LibImageSetupPacket* packet = reinterpret_cast<LibImageSetupPacket*>(reinterpret_cast<u32>(&setup) | EE_UNCACHED_ACCELERATED);
+    u64 tex0 = (packet->texture_2_data & 0x0000001FFC000000ULL) | g_texture_cache->entries[g_texture_cache->slot_entries[0]].tex0 | (4ULL << 32);
+
+    switch ((s32)((g_texture_cache->entries[g_texture_cache->slot_entries[0]].tex0 >> 20) & 0x3F))
+    {
+    case GS_PSMT4:
+        packet->texture_2_data = tex0 | (g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0]].tex0 | (u64)(u32)image->unk02 << 56);
+        packet->texture_data = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0]].tex0 | 0x4000000621300000ULL;
+        break;
+    case GS_PSMT8:
+        packet->texture_2_data = tex0 | g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0]].tex0;
+        packet->texture_data = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0]].tex0 | 0x4000000621300000ULL;
+        break;
+    default:
+        packet->texture_data = tex0;
+        packet->texture_2_data = tex0;
+        break;
+    }
+}
+
+/**
+ * @brief Get the record a by-key image record refers to, looking it up by its two keys the first time.
+ * @param object Model holding the record.
+ * @return The record holding the image, or null when none is registered yet.
+ */
+static inline ResidentRenderDataRecord* lib_image_model_resolved_record(LibObject1751A0* object)
+{
+    ResidentRenderDataRecord* found = reinterpret_cast<ResidentRenderDataRecord*>(object->record.resolved_data);
+
+    if (found == 0)
+    {
+        found = static_cast<ResidentRenderDataRecord*>(
+            func_00448A10(&static_cast<LibRenderResource&>(*object), object->record.key08, object->record.key0c));
+        object->record.resolved_data = reinterpret_cast<u32>(found);
+        return found;
+    }
+
+    return found;
+}
+
+/**
+ * @brief Load the image record's texture and palette into the texture cache if they are not there yet, then point
+ *        the setup packet's TEX0 registers at slot 0's texture.
+ */
+void LibObject1751A0::bind_texture()
+{
+    ResidentRenderDataRecord* current = &record;
+    s16 kind = record.storage_kind;
+
+    if (kind == 1)
+    {
+        current = lib_image_model_resolved_record(this);
+
+        if (current != 0)
+        {
+            kind = current->storage_kind;
+        }
+    }
+    else if (kind == 4)
+    {
+        current->storage_kind = 0;
+        kind = 0;
+        current->data = reinterpret_cast<u8*>(current) + reinterpret_cast<u32>(current->data);
+        current->resolved_data = reinterpret_cast<u32>(current->data);
+    }
+
+    if ((kind == 0 || kind == 5) && current != 0)
+    {
+        LibImageHeader* image;
+
+        if (current->data != 0)
+        {
+            image = reinterpret_cast<LibImageHeader*>(current->data);
+        }
+        else
+        {
+            image = reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(current) + 0x40);
+        }
+
+        LibImageInfo* info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(image) + image->image_offset);
+
+        if (g_texture_cache->func_004A6D20(image, 0, reinterpret_cast<LibTextureUser*>(current)))
+        {
+            u32 address = func_004A7100(g_texture_cache, reinterpret_cast<LibTextureRequest*>(info), *reinterpret_cast<u32*>(image->name),
+                                        image->id, 0, image->flags, reinterpret_cast<LibTextureUser*>(current));
+
+            if (address == 1)
+            {
+                g_texture_cache->release_unstamped();
+                address = func_004A7100(g_texture_cache, reinterpret_cast<LibTextureRequest*>(info), *reinterpret_cast<u32*>(image->name),
+                                        image->id, 0, image->flags, reinterpret_cast<LibTextureUser*>(current));
+
+                if (address == 1)
+                {
+                    address = 0;
+                }
+            }
+
+            u64 bitbltbuf = *reinterpret_cast<u64*>(reinterpret_cast<u8*>(image) + info->pixel_offset + 0x20);
+            record.unk10[0] = (bitbltbuf & ~(0x3FFFULL << 32)) | (((u64)address >> 6) << 32);
+            unkae3 |= 1;
+        }
+
+        if (image->unk02)
+        {
+            u8* palette = reinterpret_cast<u8*>(image) + image->palette_offset;
+            u32 clut = g_texture_cache->func_004A6EA0(image, 0, 0);
+
+            if (clut != 0)
+            {
+                record.unk10[1] = (*reinterpret_cast<u64*>(palette + 0x20) & ~(0x3FFFULL << 32)) | (((u64)clut >> 6) << 32);
+                unkae3 |= 4;
+            }
+        }
+    }
+
+    LibImageSetupPacket* packet = reinterpret_cast<LibImageSetupPacket*>(reinterpret_cast<u32>(&setup) | EE_UNCACHED_ACCELERATED);
+    u64 tex0 = (packet->texture_2_data & 0x0000001FFC000000ULL) | g_texture_cache->entries[g_texture_cache->slot_entries[0]].tex0 | (4ULL << 32);
+
+    switch ((s32)((g_texture_cache->entries[g_texture_cache->slot_entries[0]].tex0 >> 20) & 0x3F))
+    {
+    case GS_PSMT4:
+        packet->texture_2_data = tex0 | (g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0]].tex0 | (u64)(u32)this->image->unk02 << 56);
+        packet->texture_data = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0]].tex0 | 0x4000000621300000ULL;
+        break;
+    case GS_PSMT8:
+        packet->texture_2_data = tex0 | g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0]].tex0;
+        packet->texture_data = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0]].tex0 | 0x4000000621300000ULL;
+        break;
+    default:
+        packet->texture_data = tex0;
+        packet->texture_2_data = tex0;
+        break;
+    }
+}
 
 /**
  * @brief Claim the next free cell of the referenced grid, searching on from next_cell, and place it.
@@ -6951,8 +8021,8 @@ s32 LibObject1751A0::claim_cell(const LibVector4* position, LibClass174228** cel
                 next_cell = 0;
             }
 
-            unkada = 1;
-            unkadb = 1;
+            unkada[0] = 1;
+            unkada[1] = 1;
             return index;
         }
 
@@ -7003,10 +8073,10 @@ void LibObject1751A0::copy_image_state(LibObject1751A0* model)
 
     if (image)
     {
-        unk648 = model->unk648;
-        unk624 = model->unk624;
-        unk640 = 0;
-        unk620 = 0;
+        record.data = model->record.data;
+        record.storage_kind = model->record.storage_kind;
+        record.resolved_data = 0;
+        record.next_offset = 0;
         reset_texture_uploads();
         setup = model->setup;
     }
@@ -7019,7 +8089,7 @@ void LibObject1751A0::copy_image_state(LibObject1751A0* model)
     unkae2 = model->unkae2;
     LibColorModel::copy_color_state(model);
 
-    if (unka90 == 0)
+    if (unka90[0] == 0)
     {
         allocate_packets();
     }
@@ -7062,12 +8132,12 @@ void LibObject1751A0::set_primitive(s32 primitive, u8 value, s32 blend, float un
 {
     kind = primitive;
 
-    if (unka90 == 0)
+    if (unka90[0] == 0)
     {
         allocate_packets();
     }
 
-    if (unka90 != 0 && packet != 0)
+    if (unka90[0] != 0 && packet != 0)
     {
         LibImagePacket* uncached = reinterpret_cast<LibImagePacket*>(reinterpret_cast<u32>(packet) | EE_UNCACHED_ACCELERATED);
         uncached->unpack = VIF_UNPACK(VIF_UNPACK_V4_32, 0xE, 0x60);
@@ -7143,9 +8213,709 @@ void LibObject1751A0::set_primitive(s32 primitive, u8 value, s32 blend, float un
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00469180);
+/**
+ * @brief Write the image model's DMA chain into the free buffer: the kind's microprogram, the texture and palette
+ *        uploads bind_texture marked dirty and the setup packet, then the cell packet calls when the cell count
+ *        changed.
+ */
+void LibObject1751A0::build_dma_chain()
+{
+    s32 index;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", update__15LibObject1751A0Fv);
+    if (copied)
+    {
+        index = (u8)!source->unkadd;
+    }
+    else
+    {
+        index = (u8)!unkadd;
+    }
+
+    u64* cursor = reinterpret_cast<u64*>((reinterpret_cast<u32>(unka8c) + 0x40) | EE_UNCACHED_ACCELERATED);
+    u64* tail = reinterpret_cast<u64*>((reinterpret_cast<u32>(unka84[index]) + 0x40) | EE_UNCACHED_ACCELERATED);
+    chain_address = reinterpret_cast<u32>(&chains[index]);
+    s32 program;
+    u32 first_call;
+    u32 next_call;
+
+    // TODO: Every case recomputes both microprogram addresses, like LibModel::func_slotF0; maybe they came from a macro.
+    switch (kind)
+    {
+    case 0:
+        program = 3;
+        first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+        next_call = reinterpret_cast<u32>(D_818) >> 3;
+        break;
+    case 1:
+        program = 4;
+        first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+        next_call = reinterpret_cast<u32>(D_818) >> 3;
+        break;
+    case 2:
+        program = 5;
+        first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+        next_call = reinterpret_cast<u32>(D_818) >> 3;
+        break;
+    case 3:
+        program = 6;
+        first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+        next_call = reinterpret_cast<u32>(D_818) >> 3;
+        break;
+    case 4:
+        program = 7;
+        first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+        next_call = reinterpret_cast<u32>(D_818) >> 3;
+        break;
+    case 5:
+        program = 8;
+        first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+        next_call = reinterpret_cast<u32>(D_818) >> 3;
+        break;
+    case 6:
+        program = 9;
+        first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+        next_call = reinterpret_cast<u32>(D_818) >> 3;
+        break;
+    }
+
+    if (g_microcode_loader->select_program(program))
+    {
+        *cursor = g_microcode_loader->get_program_tag(program);
+        cursor += 2;
+    }
+
+    cursor[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+    *(unsigned __int128*)(cursor + 2) = 0;
+    reinterpret_cast<u32*>(cursor)[7] = 0x06008000;
+    cursor += 4;
+
+    if (image)
+    {
+        ResidentRenderDataRecord* own = &record;
+        s16 storage = own->storage_kind;
+        LibImageHeader* header;
+        s32 uploaded = 0;
+        ResidentRenderDataRecord* current = own;
+
+        if (storage == 1)
+        {
+            current = reinterpret_cast<ResidentRenderDataRecord*>(own->resolved_data);
+
+            if (current != 0)
+            {
+                storage = 0;
+            }
+        }
+
+        if (storage == 0 || storage == 5)
+        {
+            if (current->data != 0)
+            {
+                header = reinterpret_cast<LibImageHeader*>(current->data);
+            }
+            else
+            {
+                header = reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(current) + 0x40);
+            }
+
+            if (unkae3 & 1)
+            {
+                unkae3 &= ~1;
+                LibImageInfo* info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(header) + header->image_offset);
+                LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u32>(&texture_uploads[1]) | EE_UNCACHED_ACCELERATED);
+                LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(header) + info->pixel_offset);
+
+                if (!(unkae3 & 2))
+                {
+                    unsigned __int128 bitbltbuf;
+                    unsigned __int128 trxreg;
+                    unsigned __int128 image_tag;
+                    u64 unk68;
+
+                    bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+                    trxreg = *(unsigned __int128*)&packet->trxreg;
+                    unk68 = *(u64*)&packet->unk64[4];
+                    image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+                    *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+                    *(unsigned __int128*)&upload->trxreg = trxreg;
+                    *(u64*)&upload->unk64[4] = unk68;
+                    *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+                    unkae3 |= 2;
+                }
+
+                upload->bitbltbuf.data = own->unk10[0];
+                s32 quadwords = (s32)(info->data_size + 15) / 16;
+                cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, &texture_uploads[1]);
+                cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+                cursor += 4;
+                uploaded = 1;
+            }
+
+            if (unkae3 & 4)
+            {
+                unkae3 &= ~4;
+                LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u32>(&texture_uploads[2]) | EE_UNCACHED_ACCELERATED);
+                LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(header) + header->palette_offset);
+
+                if (!(unkae3 & 8))
+                {
+                    unsigned __int128 bitbltbuf;
+                    unsigned __int128 trxreg;
+                    unsigned __int128 image_tag;
+                    u64 unk68;
+
+                    bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+                    trxreg = *(unsigned __int128*)&packet->trxreg;
+                    unk68 = *(u64*)&packet->unk64[4];
+                    image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+                    *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+                    *(unsigned __int128*)&upload->trxreg = trxreg;
+                    *(u64*)&upload->unk64[4] = unk68;
+                    *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+                    unkae3 |= 8;
+                }
+
+                upload->bitbltbuf.data = own->unk10[1];
+                s32 quadwords = (header->palette_size + 15) / 16;
+                cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, &texture_uploads[2]);
+                cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+                cursor += 4;
+                uploaded = 1;
+            }
+        }
+
+        if (uploaded)
+        {
+            cursor[0] = DMA_TAG(3, DMA_TAG_ID_CNT, 0);
+            *(unsigned __int128*)(cursor + 2) = 0;
+            reinterpret_cast<u32*>(cursor)[7] = VIF_DIRECTHL(2);
+            cursor[4] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+            cursor[5] = GIF_REGISTER_AD;
+            cursor[6] = 0;
+            cursor[7] = GS_REGISTER_TEXFLUSH;
+            cursor += 8;
+        }
+
+        cursor[0] = DMA_TAG(0xA, DMA_TAG_ID_REF, &setup);
+        s32 quadwords = (u32)(image->flag_count * (image->unk00 * 80)) / 16 + 1;
+        cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, image->unkb0);
+        cursor += 4;
+    }
+    else if (kind == 5)
+    {
+        cursor[0] = DMA_TAG(0xA, DMA_TAG_ID_REF, &setup);
+        cursor += 2;
+    }
+
+    *cursor = DMA_TAG_ID_RET;
+    tail[0] = DMA_TAG(3, DMA_TAG_ID_CNT, 0);
+    *(unsigned __int128*)(tail + 2) = 0;
+    reinterpret_cast<u32*>(tail)[7] = VIF_DIRECTHL(2);
+    tail[4] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    tail[5] = GIF_REGISTER_AD;
+
+    if (kind == 5)
+    {
+        tail[6] = 0xFFFFFFFF5ULL;
+        tail[7] = GS_REGISTER_CLAMP_1;
+        tail += 8;
+    }
+    else
+    {
+        tail[6] = 0xFFFFFFFF0ULL;
+        tail[7] = GS_REGISTER_CLAMP_1;
+        tail += 8;
+    }
+
+    if (copied)
+    {
+        if (unka98[index] != source->unkaac)
+        {
+            unka98[index] = source->unkaac;
+            tail[0] = DMA_TAG(0x31, DMA_TAG_ID_REF, &draw_packet);
+            tail[2] = DMA_TAG(0xF, DMA_TAG_ID_REF, source->packet);
+            tail += 4;
+            u8* cell = source->unka90[index] + 0x20;
+            s32 count = source->unkab0[index];
+
+            for (s32 i = 0; i < count; i++)
+            {
+                s32 quadwords = *reinterpret_cast<s32*>((reinterpret_cast<u32>(cell) | UNCACHED_SEGMENT) + 0x14);
+                tail[0] = DMA_TAG(quadwords, DMA_TAG_ID_REF, cell);
+                tail[2] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+
+                if (i == 0)
+                {
+                    *(unsigned __int128*)(tail + 4) = 0;
+                    reinterpret_cast<u32*>(tail)[11] = VIF_MSCALF(first_call);
+                }
+                else
+                {
+                    *(unsigned __int128*)(tail + 4) = 0;
+                    reinterpret_cast<u32*>(tail)[11] = VIF_MSCAL(next_call);
+                }
+
+                cell += quadwords * 16;
+                tail += 6;
+            }
+
+            tail[0] = DMA_TAG(1, DMA_TAG_ID_REF, reinterpret_cast<u8*>(g_microcode_loader) + 0x20);
+            tail[2] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+            *(unsigned __int128*)(tail + 4) = 0;
+            reinterpret_cast<u32*>(tail)[11] = 0x06000000;
+            tail[6] = DMA_TAG_ID_RET;
+        }
+    }
+    else if (unka98[index] != unkaac)
+    {
+        unka98[index] = unkaac;
+        tail[0] = DMA_TAG(0x31, DMA_TAG_ID_REF, &draw_packet);
+        tail[2] = DMA_TAG(0xF, DMA_TAG_ID_REF, packet);
+        tail += 4;
+        u8* cell = unka90[index] + 0x20;
+        s32 count = unkab0[index];
+
+        for (s32 i = 0; i < count; i++)
+        {
+            s32 quadwords = *reinterpret_cast<s32*>((reinterpret_cast<u32>(cell) | UNCACHED_SEGMENT) + 0x14);
+            tail[0] = DMA_TAG(quadwords, DMA_TAG_ID_REF, cell);
+            tail[2] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+
+            if (i == 0)
+            {
+                *(unsigned __int128*)(tail + 4) = 0;
+                reinterpret_cast<u32*>(tail)[11] = VIF_MSCALF(first_call);
+            }
+            else
+            {
+                *(unsigned __int128*)(tail + 4) = 0;
+                reinterpret_cast<u32*>(tail)[11] = VIF_MSCAL(next_call);
+            }
+
+            cell += quadwords * 16;
+            tail += 6;
+        }
+
+        tail[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+        tail[2] = 0;
+        reinterpret_cast<u32*>(tail)[6] = VIF_FLUSH;
+        reinterpret_cast<u32*>(tail)[7] = 0x06000000;
+        tail[4] = DMA_TAG_ID_RET;
+    }
+}
+
+// TODO: The bounds starts and their two flags look like function-local statics and their guards; they are written
+// out because the guards sit at fixed addresses in sbss.
+/** Set once D_0050CB90 holds the bounds minimum start. */
+extern "C" s8 D_001B6584;
+
+/** Set once D_0050CBA0 holds the bounds maximum start. */
+extern "C" s8 D_001B6588;
+
+/** Bounds minimum start: positive infinity, with w = 1. */
+extern "C" LibVector4 D_0050CB90;
+
+/** Bounds maximum start: negative infinity, with w = 0.5 to halve the sum into the centre. */
+extern "C" LibVector4 D_0050CBA0;
+
+/**
+ * @brief Flag a renderer pass ready to draw.
+ * @param pass Pass to flag.
+ */
+static inline void lib_mark_pass_ready(LibRendererPass* pass)
+{
+    pass->unk9c = 1;
+}
+
+/**
+ * @brief Advance the model while its grid is ready: run the phase and lifetime, then, on the model's own frames,
+ *        refresh the transform, pick the detail level from the camera depth and, when the cells changed, stream the
+ *        grid's packets through the scratchpad into the free buffer and refit the bounds.
+ */
+void LibObject1751A0::update()
+{
+    if (reference != 0 && reference->func_slotc0())
+    {
+        LibColorModel::update();
+
+        if (kind == 5)
+        {
+            lib_mark_pass_ready(static_cast<LibRenderer*>(g_renderer)->unk4458);
+        }
+
+        if (g_frame_ticks == 0.0f)
+        {
+            return;
+        }
+
+        if (g_frame_seconds == 0.0f)
+        {
+            return;
+        }
+
+        unkac8 += g_frame_seconds;
+
+        if (unkaac == 0)
+        {
+            *(unsigned __int128*)&bounding_sphere = 0;
+            bounding_sphere.w = 1.0f;
+            bounding_sphere.w = 10000.0f;
+        }
+
+        if (!(unkabc <= 0.0f))
+        {
+            if (unkadf && (draw_flags & 0x10) && phase_period)
+            {
+                phase = (phase + 1) % phase_period;
+
+                if (phase)
+                {
+                    return;
+                }
+            }
+
+            unkabc -= g_frame_seconds;
+        }
+        else
+        {
+            unkabc = 0.0f;
+
+            if (unkadf && (draw_flags & 0x10))
+            {
+                return;
+            }
+        }
+
+        if (copied)
+        {
+            return;
+        }
+
+        update_transform_matrix();
+        mark_transpose_current(this);
+
+        if (!D_001B6584)
+        {
+            D_0050CB90.x = LIB_FLOAT_INFINITY;
+            D_0050CB90.y = LIB_FLOAT_INFINITY;
+            D_0050CB90.z = LIB_FLOAT_INFINITY;
+            D_0050CB90.w = 1.0f;
+            D_001B6584 = 1;
+        }
+
+        if (!D_001B6588)
+        {
+            D_0050CBA0.x = -LIB_FLOAT_INFINITY;
+            D_0050CBA0.y = -LIB_FLOAT_INFINITY;
+            D_0050CBA0.z = -LIB_FLOAT_INFINITY;
+            D_0050CBA0.w = 0.5f;
+            D_001B6588 = 1;
+        }
+
+        if (reference->func_slot2c())
+        {
+            unkada[0] = 1;
+            unkada[1] = 1;
+        }
+
+        s32 buffer = unkadd ? 1 : 0;
+        s32 level = 0;
+
+        if (unkae6)
+        {
+            FieldVec4B position;
+            position.x = transform.m[0][3];
+            position.y = transform.m[1][3];
+            position.z = transform.m[2][3];
+            position.w = 1.0f;
+
+            LibCamera* camera;
+
+            if (display_manager != 0)
+            {
+                camera = static_cast<LibCamera*>(display_manager->current_display);
+            }
+            else
+            {
+                camera = static_cast<LibCamera*>(g_display_manager->current_display);
+            }
+
+            if (camera != 0)
+            {
+                LibMatrix44Value view;
+                LibVector4 local;
+
+                ee_transpose_matrix(&view, &camera->view_matrix);
+                vu0_apply_matrix_vector_first(&view, &position, &local);
+
+                if (!(local.z <= 0.0f))
+                {
+                    s32 steps = local.z / unkac4;
+
+                    if (steps > 0)
+                    {
+                        s32 limit = 2;
+                        level = 2;
+
+                        for (;;)
+                        {
+                            if (limit > steps)
+                            {
+                                break;
+                            }
+
+                            level <<= 1;
+
+                            if (level >= 16)
+                            {
+                                break;
+                            }
+
+                            limit <<= 1;
+                        }
+
+                        level--;
+                    }
+
+                    if (unkacc != level)
+                    {
+                        unkada[0] = 1;
+                        unkada[1] = 1;
+                        unkacc = level;
+                    }
+                }
+            }
+        }
+
+        if (!unkada[buffer])
+        {
+            unkadd ^= 1;
+            return;
+        }
+
+        unkada[buffer] = 0;
+        u8* destination = unka90[buffer] + 0x20;
+        ResidentDmaQueue* queue = D_001B6604;
+        queue->current = 0;
+        DisableDmac(queue->channel);
+        *D8_QWC = 0;
+        s32 batches = 0;
+        s32 stride = reference->func_slot38();
+        s32 count = 0x30 / stride;
+
+        switch (kind)
+        {
+        case 2:
+        case 4:
+            count /= 2;
+            break;
+
+        case 3:
+        case 5:
+        case 6:
+            count = 0x12 / stride;
+            break;
+        }
+
+        count *= stride;
+        float seconds = g_frame_seconds;
+        s32 steps = 1;
+        u8 interpolate;
+
+        if (stride > 1)
+        {
+            steps = g_frame_ticks;
+
+            if (steps > 4)
+            {
+                steps = 4;
+            }
+
+            if (steps <= 0)
+            {
+                steps = 1;
+            }
+
+            if (!(g_frame_seconds <= 0.0f))
+            {
+                g_frame_seconds = 1.0f / 60.0f;
+            }
+
+            if (kind == 2 || kind == 4)
+            {
+                interpolate = true;
+            }
+            else
+            {
+                interpolate = false;
+            }
+        }
+        else
+        {
+            interpolate = false;
+        }
+
+        s32 skip;
+        u8* scratch;
+        g_frame_seconds *= unkac0;
+        u8 first = 0;
+
+        if (kind >= 3)
+        {
+            first = 1;
+        }
+
+        unkaac = 0;
+
+        for (s32 step = 0; step < steps; step++)
+        {
+            if (step == steps - 1)
+            {
+                reference->func_slot0c(this);
+                vu0_load_bounds(&D_0050CB90, &D_0050CBA0);
+                skip = 0;
+
+                for (;;)
+                {
+                    scratch = (u8*)(((batches & 1) ? 0xA00 : 0) + EE_SCRATCHPAD);
+
+                    if (first)
+                    {
+                        reference->func_slot10(count, scratch + 0x20, interpolate);
+                    }
+
+                    if (stride > 1)
+                    {
+                        reference->func_slot14(count, scratch + 0x20, interpolate);
+                    }
+
+                    s32 written = reference->func_slot18(count, scratch + 0x20);
+
+                    if (written == 0)
+                    {
+                        break;
+                    }
+
+                    if (level != 0)
+                    {
+                        unsigned __int128* to = (unsigned __int128*)(scratch + 0x20);
+                        unsigned __int128* from = to;
+                        s32 kept = 0;
+
+                        for (s32 i = 0; i < written; i += stride)
+                        {
+                            if (--skip < 0)
+                            {
+                                skip = level;
+                                kept += stride;
+
+                                if (to != from)
+                                {
+                                    for (s32 j = 0; j < stride; j++)
+                                    {
+                                        to[0] = from[0];
+                                        to[1] = from[1];
+                                        to[2] = from[2];
+                                        from += 3;
+                                        to += 3;
+                                    }
+                                }
+                                else
+                                {
+                                    to += stride * 3;
+                                    from += stride * 3;
+                                }
+                            }
+                            else
+                            {
+                                from += stride * 3;
+                            }
+                        }
+
+                        if (kept == 0)
+                        {
+                            continue;
+                        }
+
+                        written = kept;
+                    }
+
+                    u32* header = (u32*)scratch;
+                    header[4] = written;
+                    header[6] = stride;
+                    u32 quadwords = (u32)(written * 0x30 + 0x2F) >> 4;
+                    *(unsigned __int128*)header = 0;
+                    header[3] = VIF_UNPACK(VIF_UNPACK_V4_32, quadwords - 1, 0x8000);
+                    header[5] = quadwords;
+                    ee_sync();
+
+                    if (batches > 0)
+                    {
+                        while ((*D_STAT & D_STAT_CIS8) == 0)
+                        {
+                        }
+                    }
+
+                    *D8_MADR = (u32)destination;
+                    *D8_SADR = (u32)scratch;
+                    *D8_QWC = quadwords;
+                    *D_STAT = D_STAT_CIS8;
+                    destination += quadwords * 16;
+                    batches++;
+                    *D8_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+                    unkaac += written;
+                }
+            }
+            else
+            {
+                reference->func_slot0c(this);
+                scratch = (u8*)EE_SCRATCHPAD;
+
+                do
+                {
+                    if (first)
+                    {
+                        reference->func_slot10(count, scratch + 0x20, interpolate);
+                    }
+
+                    if (stride > 1)
+                    {
+                        reference->func_slot14(count, scratch + 0x20, interpolate);
+                    }
+                } while (reference->func_slot18(count, scratch + 0x20) != 0);
+            }
+        }
+
+        g_frame_seconds = seconds;
+        unkab0[buffer] = batches;
+
+        if (reference->unk04 && unkaac)
+        {
+            LibVector4 padding;
+            padding.x = unkaa4 + reference->func_slot48();
+            vu0_begin_bounds_sphere(&padding);
+            vu0_store_bounds(&box_min);
+            vu0_store_bounds_sphere(&bounding_sphere);
+            bounding_sphere.w += diagonal;
+
+            if (bounding_sphere.w < unkaa8)
+            {
+                bounding_sphere.w = unkaa8;
+            }
+        }
+
+        if (batches > 0)
+        {
+            while ((*D_STAT & D_STAT_CIS8) == 0)
+            {
+            }
+        }
+
+        reference->func_slot28();
+        unkadd ^= 1;
+        EnableDmac(D_001B6604->channel);
+    }
+}
 
 /**
  * @brief Send the model's packet chain on VIF1.
@@ -7175,7 +8945,223 @@ void LibObject1751A0::render()
     resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", build_packet__15LibObject1751A0FPCvPv);
+/**
+ * @brief Refresh the draw packet from the model's state while its grid has cells to draw: transform, lighting,
+ *        colour, TEST register, fog and blend flags and the texture, then build the cell packets.
+ * @param matrix Camera the model is drawn with.
+ * @param context Light list, or null for none.
+ */
+void LibObject1751A0::build_packet(const void* matrix, void* context)
+{
+    if (reference != 0 && reference->func_slotc0())
+    {
+        if (copied)
+        {
+            if (source->unkaac == 0)
+            {
+                return;
+            }
+        }
+        else
+        {
+            if (unka90[0] == 0)
+            {
+                return;
+            }
+
+            if (unkaac == 0)
+            {
+                return;
+            }
+        }
+
+        LibLightList* lights = static_cast<LibLightList*>(context);
+        LibModelPacketHeader* packet = (LibModelPacketHeader*)((u32)&draw_packet | EE_UNCACHED_ACCELERATED);
+        const unsigned __int128* from = reinterpret_cast<const unsigned __int128*>(get_transform_matrix());
+        unsigned __int128* to = packet->transform;
+        LibVector4 color;
+
+        *to++ = *from++;
+        *to++ = *from++;
+        *to++ = *from++;
+        *to++ = *from++;
+
+        if (lights != 0)
+        {
+            vu0_multiply_xyzw_right_first(&color, &combined_color_factor, &lights->unk340);
+
+            if (unkade || lights->has_local_lights)
+            {
+                FieldVec4B position;
+                position.x = transform.m[0][3];
+                position.y = transform.m[1][3];
+                position.z = transform.m[2][3];
+                position.w = 1.0f;
+
+                if (unkade)
+                {
+                    LibVector4 ambient;
+
+                    func_004E8510(lights, &color, &position, light_mask, 0);
+
+                    const unsigned __int128* rows = reinterpret_cast<const unsigned __int128*>(&lights->unk90);
+                    packet->light_matrix[0] = rows[0];
+                    packet->light_matrix[1] = rows[1];
+                    packet->light_matrix[2] = rows[2];
+                    packet->light_matrix[3] = rows[3];
+                    vu0_multiply_xyzw_vf1(&ambient, &lights->unk310, &color);
+                    packet->ambient = *reinterpret_cast<unsigned __int128*>(&ambient);
+                    ee_transpose_matrix_input_first(&packet->light_transposed, &lights->unk1d0);
+                }
+
+                if (lights->has_local_lights)
+                {
+                    func_004E7AA0(lights, &bounding_sphere, &color, &position, light_mask, 0);
+
+                    s32 any = 0;
+
+                    if (lights->unk37c)
+                    {
+                        packet->unkf4 = 1;
+                        const unsigned __int128* rows = reinterpret_cast<const unsigned __int128*>(lights->unk210);
+                        packet->unk150[0] = rows[0];
+                        packet->unk150[1] = rows[1];
+                        packet->unk150[2] = rows[2];
+                        ee_transpose_matrix_input_first(&packet->unk180, &lights->unk240);
+                        const unsigned __int128* vector = reinterpret_cast<const unsigned __int128*>(&lights->unk280);
+                        *reinterpret_cast<FieldVec4B*>(&packet->unk1c0) = *reinterpret_cast<const FieldVec4B*>(vector);
+                        any = 1;
+                    }
+                    else
+                    {
+                        packet->unkf4 = 0;
+                    }
+
+                    s32 count = lights->unk37d;
+
+                    if (count)
+                    {
+                        packet->unkf8 = count;
+                        packet->unk1d0[0] = lights->unk2b0[0];
+                        packet->unk1d0[2] = lights->unk290[0];
+                        packet->unk1d0[4] = lights->unk2d0[0];
+                        packet->unk1d0[6] = lights->unk2f0[0];
+
+                        if (count == 2)
+                        {
+                            packet->unk1d0[1] = lights->unk2b0[1];
+                            packet->unk1d0[3] = lights->unk290[1];
+                            packet->unk1d0[5] = lights->unk2d0[1];
+                            packet->unk1d0[7] = lights->unk2f0[1];
+                        }
+
+                        any = 1;
+                    }
+                    else
+                    {
+                        packet->unkf8 = 0;
+                    }
+
+                    if (any)
+                    {
+                        packet->light_mode = 2;
+                    }
+                    else
+                    {
+                        packet->light_mode = 1;
+                    }
+                    }
+                    else
+                    {
+                        packet->light_mode = 1;
+                    }
+            }
+            else
+            {
+                packet->light_mode = 0;
+            }
+        }
+        else
+        {
+            packet->light_mode = 0;
+        }
+
+        if (D_001B6550 && !unk59d_1 && !(color.w <= 0.993f))
+        {
+            color.w = 0.993f;
+        }
+
+        *reinterpret_cast<FieldVec4B*>(&packet->color) = *reinterpret_cast<FieldVec4B*>(&color);
+
+        if (unk59d_0)
+        {
+            unk59d_0 = 0;
+            packet->unk120 = unk59d_1;
+            packet->test = lib_model_test_register(this, static_cast<const LibCamera*>(matrix));
+
+            if (kind == 3 || kind == 5 || kind == 6)
+            {
+                packet->unk250 = 0x110;
+                packet->unk254 = 0x1F8;
+            }
+            else
+            {
+                packet->unk250 = 0x1A0;
+                packet->unk254 = 0x240;
+            }
+        }
+
+        packet->unk10c = (u8)(fog_enabled ? (unk67 ? true : false) : false);
+
+        if (color.x == 1.0f && color.y == 1.0f && color.z == 1.0f && color.w == 1.0f)
+        {
+            packet->white = 1;
+        }
+        else
+        {
+            packet->white = 0;
+        }
+
+        if (image)
+        {
+            bind_texture();
+
+            if (image->flags[0] || image->flags[1] || image->flags[2] || image->flags[3])
+            {
+                packet->unk104 = 1;
+            }
+            else
+            {
+                packet->unk104 = 0;
+            }
+        }
+        else
+        {
+            if (kind == 5)
+            {
+                func_004683E0();
+
+                const LibVector4* scale = D_00508210;
+                const LibVector4* offset = D_00508220;
+                LibVector4 value;
+                *(unsigned __int128*)&value = *(const unsigned __int128*)scale;
+                value.x *= unka70[0];
+                value.y *= unka70[1];
+                packet->unk270 = *(unsigned __int128*)&value;
+                *(unsigned __int128*)&value = *(const unsigned __int128*)offset;
+                value.x += unka70[2];
+                value.y += unka70[3];
+                packet->unk280 = *(unsigned __int128*)&value;
+            }
+
+            packet->unk104 = (u8)(blend_mode ? true : false);
+        }
+
+        build_dma_chain();
+        ee_sync();
+        unk63 = 1;
+    }
+}
 
 /**
  * @brief Give the centre and half extent of the image's bounding box.
@@ -7254,10 +9240,10 @@ void LibObject1751A0::set_default_draw_bucket()
 /** @brief Clear the image and reset the texture state. */
 void LibObject1751A0::clear_image()
 {
-    unk648 = 0;
+    record.data = 0;
     image = 0;
-    unk624 = 0;
-    unk640 = 0;
+    record.storage_kind = 0;
+    record.resolved_data = 0;
     reset_texture_uploads();
     memset_guess(&setup, 0, sizeof(setup));
     setup.unpack = VIF_UNPACK(VIF_UNPACK_V4_32, 9, 0x2E0);
@@ -7280,5 +9266,5 @@ void LibObject1751A0::clear_image()
         reference->func_slot54(1);
     }
 
-    unk620 = 0;
+    record.next_offset = 0;
 }

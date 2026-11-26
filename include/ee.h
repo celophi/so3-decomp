@@ -16,6 +16,7 @@
 #define DMA_TAG_ID_NEXT 0x20000000
 #define DMA_TAG_ID_REF 0x30000000
 #define DMA_TAG_ID_CALL 0x50000000
+#define DMA_TAG_ID_RET 0x60000000
 #define DMA_TAG_ID_END 0x70000000
 #define DMA_TAG(qwc, id, address) ((u64)(qwc) | (id) | ((u64)(u32)(address) << 32))
 
@@ -36,6 +37,7 @@
 #define D9_CHCR ((volatile u32*)0x1000D400)
 #define D9_MADR ((volatile u32*)0x1000D410)
 #define D9_QWC ((volatile u32*)0x1000D420)
+#define D9_TADR ((volatile u32*)0x1000D430)
 #define D9_SADR ((volatile u32*)0x1000D480)
 
 /** DMA channel 0 (VIF0) registers. */
@@ -85,6 +87,16 @@
 #define D_PCR_CPC9 0x200
 
 /** EE timer 0 counter and mode. */
+#define GIF_CTRL (*(volatile u32*)0x10003000)
+#define GIF_CTRL_RESET 0x1
+
+#define VIF1_STAT (*(volatile u32*)0x10003C00)
+#define VIF1_STAT_FDR 0x800000
+#define VIF1_STAT_FQC 0x1F000000
+#define VIF1_FBRST (*(volatile u32*)0x10003C10)
+#define VIF1_FBRST_RESET 0x1
+#define VIF1_FIFO (*(volatile unsigned __int128*)0x10005000)
+
 #define TIMER0_COUNT (*(volatile u32*)0x10000000)
 #define TIMER0_MODE (*(volatile u32*)0x10000010)
 
@@ -93,6 +105,9 @@
 
 /** VIF codes: STCYCL, and UNPACK with its formats and flags. */
 #define VIF_STCYCL(cl, wl) (0x01000000 | ((wl) << 8) | (cl))
+
+/** VIF MSCAL: start the microprogram at address (in doublewords) once the running one ends. */
+#define VIF_MSCAL(address) (0x14000000 | (address))
 
 /** VIF MSCALF: wait for the GIF and the running microprogram, then start the one at address (in doublewords). */
 #define VIF_MSCALF(address) (0x15000000 | (address))
@@ -140,6 +155,84 @@ static inline float ee_abs(float value)
 }
 
 /**
+ * @brief Divide a numerator by the square root of a value with the EE scalar instruction.
+ * @param numerator Numerator, usually one.
+ * @param value Value under the square root.
+ * @return numerator / sqrt(value) produced by rsqrt.s.
+ * @see rsqrt.s in the EE Core Instruction Set Manual; Lib's vector normalisers (0x4CF5E0, 0x4CF640).
+ */
+static inline float ee_rsqrt(float numerator, float value)
+{
+    // TODO: The compiler's __rsqrt gives the same instruction but lets later loads move above it; check if this was asm.
+    asm __volatile__("rsqrt.s %0, %1, %0" : "+f"(value) : "f"(numerator));
+    return value;
+}
+
+/**
+ * @brief Divide a numerator by the square root of a value with the EE scalar instruction, in the numerator's register.
+ *
+ * Like ee_rsqrt, but the result replaces the numerator (`rsqrt.s fd, fd, ft`).
+ * @param numerator Numerator.
+ * @param value Value under the square root.
+ * @return numerator / sqrt(value) produced by rsqrt.s.
+ * @see rsqrt.s in the EE Core Instruction Set Manual; Lib's shadow fade (0x42CB90) and 0x4C8E24.
+ */
+static inline float ee_rsqrt_in_place(float numerator, float value)
+{
+    // TODO: MWCC's __rsqrt gives the same operand order but lets the plane loads be shared; check if this was asm.
+    asm __volatile__("rsqrt.s %0, %0, %1" : "+f"(numerator) : "f"(value));
+    return numerator;
+}
+
+/**
+ * @brief Return the square root of a floating-point operand with the EE scalar instruction.
+ * @param value Operand.
+ * @return Square root produced by sqrt.s.
+ * @see sqrt.s in the EE Core Instruction Set Manual; Lib's matrix-to-quaternion conversion (0x4CC520).
+ */
+static inline float ee_sqrt(float value)
+{
+    // TODO: The compiler's __sqrt adds two nops and works in place where the game doesn't; check if this was asm.
+    float result;
+    asm __volatile__("sqrt.s %0, %1" : "=f"(result) : "f"(value));
+    return result;
+}
+
+/**
+ * @brief Return the square root of a floating-point operand with the EE scalar instruction, in its own register.
+ * @param value Operand.
+ * @return Square root produced by sqrt.s.
+ * @see ee_sqrt; Lib's animation channel setter for emitter extents (0x4B4840).
+ */
+static inline float ee_sqrt_in_place(float value)
+{
+    // TODO: The same instruction as ee_sqrt with the result in the operand's register; check if this was asm.
+    asm __volatile__("sqrt.s %0, %0" : "+f"(value));
+    return value;
+}
+
+/**
+ * @brief Wait until the DMA channels selected in D_PCR's CPC bits have finished (bc0f on COP0's condition).
+ * @see bc0f in the EE Core Instruction Set Manual and the DMAC's D_PCR in the EE User's Manual; Lib waits this way after
+ *      starting a scratchpad transfer with CPC8 set (0x4142E0 and seven more).
+ */
+static inline void ee_wait_dma_condition(void)
+{
+    // TODO: There's no C form for bc0f; check whether the game's loop was asm too.
+    asm __volatile__(
+        "1:\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "bc0f 1b\n"
+        :
+        :
+        : "memory");
+}
+
+/**
  * @brief Return the EE scalar minimum of two floating-point operands.
  * @param left First operand.
  * @param right Second operand.
@@ -152,6 +245,45 @@ static inline float ee_min(float left, float right)
     float result;
     asm __volatile__("min.s %0, %1, %2" : "=f"(result) : "f"(left), "f"(right));
     return result;
+}
+
+/**
+ * @brief Like ee_max, but the result replaces the first operand (`max.s fd, fd, ft`).
+ * @param value First operand, also the result's register.
+ * @param limit Second operand.
+ * @return Maximum produced by the EE scalar instruction.
+ * @see ee_max; LibClass173990::emit_entries in Lib (0x435840).
+ */
+static inline float ee_max_tied(float value, float limit)
+{
+    // TODO: The tied operand is what keeps the result in the value's register there; check if this was asm.
+    asm __volatile__("max.s %0, %0, %1" : "+f"(value) : "f"(limit));
+    return value;
+}
+
+/**
+ * @brief Like ee_min, but the result replaces the first operand (`min.s fd, fd, ft`).
+ * @param value First operand, also the result's register.
+ * @param limit Second operand.
+ * @return Minimum produced by the EE scalar instruction.
+ * @see ee_min; LibClass173990::emit_entries in Lib (0x435840).
+ */
+static inline float ee_min_tied(float value, float limit)
+{
+    // TODO: The tied operand is what keeps the result in the value's register there; check if this was asm.
+    asm __volatile__("min.s %0, %0, %1" : "+f"(value) : "f"(limit));
+    return value;
+}
+
+/**
+ * @brief Emit no code, but end the compiler's basic block here (an asm directive always starts a new block).
+ * @see LibClass173990::emit_entries in Lib (0x435840).
+ */
+static inline void ee_block_break()
+{
+    // TODO: The original's block split here came from something I haven't found; a late block merge it caused turns
+    // off fall-through delay-slot filling for the whole function. This directive reproduces the split.
+    asm __volatile__(".set noat");
 }
 
 #ifdef __cplusplus
@@ -243,6 +375,20 @@ static inline u32 ee_get_status(void)
 }
 
 /**
+ * @brief Join the low halfwords of two words into one word with the EE's PINTEH instruction.
+ * @param high Word whose low halfword becomes the upper half.
+ * @param low Word whose low halfword becomes the lower half.
+ * @return The joined word.
+ * @see EE Core Instruction Set Manual (PINTEH); Lib's environment map at 0x4540E0.
+ */
+static inline u32 ee_join_halfwords(u32 high, u32 low)
+{
+    // TODO: This is asm because the compiler has no way to write PINTEH; check whether the original was asm too.
+    asm __volatile__("pinteh %0, %1, %0" : "+r"(low) : "r"(high));
+    return low;
+}
+
+/**
  * @brief Pack the low halfword of each word of two quadwords into one quadword with the EE's PPACH instruction.
  * @param high Quadword whose halfwords fill the upper half of the result.
  * @param low Quadword whose halfwords fill the lower half of the result.
@@ -290,6 +436,37 @@ static inline void ee_transpose_matrix(void* out, const void* in)
                      : "$8", "$9", "$10", "$11", "$12", "$13", "$14", "$15", "memory");
 }
 
+/**
+ * @brief Transpose a 4x4 matrix with MMI, with the input as the first asm operand.
+ * @param out Aligned destination matrix.
+ * @param in Aligned source matrix.
+ * @see ee_transpose_matrix; func_004A59D0 in Lib.
+ */
+static inline void ee_transpose_matrix_input_first(void* out, const void* in)
+{
+    // TODO: Same as ee_transpose_matrix, but the operand order changes which registers the addresses get; check
+    // whether the original had two helpers.
+    asm __volatile__("lq       $8, 0x0(%0)\n"
+                     "lq       $9, 0x10(%0)\n"
+                     "lq       $10, 0x20(%0)\n"
+                     "lq       $11, 0x30(%0)\n"
+                     "pextlw   $12, $9, $8\n"
+                     "pextuw   $13, $9, $8\n"
+                     "pextlw   $14, $11, $10\n"
+                     "pextuw   $15, $11, $10\n"
+                     "pcpyld   $8, $14, $12\n"
+                     "pcpyud   $9, $12, $14\n"
+                     "pcpyld   $10, $15, $13\n"
+                     "pcpyud   $11, $13, $15\n"
+                     "sq       $8, 0x0(%1)\n"
+                     "sq       $9, 0x10(%1)\n"
+                     "sq       $10, 0x20(%1)\n"
+                     "sq       $11, 0x30(%1)\n"
+                     :
+                     : "r"(in), "r"(out)
+                     : "$8", "$9", "$10", "$11", "$12", "$13", "$14", "$15", "memory");
+}
+
 /*
  * My guess is the game wanted branchless selects that weren't at the mercy of
  * bad branch prediction, and the compiler only sometimes turns a ?: into
@@ -324,6 +501,46 @@ static inline s32 ee_movz(s32 value, s32 replacement, s32 condition)
 {
     asm __volatile__("movz %0, %1, %2" : "+r"(value) : "r"(replacement), "r"(condition));
     return value;
+}
+
+/**
+ * @brief Clear the breakpoint control register and the data address and value breakpoints.
+ * @see MTBPC, MTDAB, MTDABM, MTDVB and MTDVBM in the EE Core Instruction Set Manual; LibUpdateList::update_nodes in
+ *      Lib.
+ */
+static inline void ee_clear_breakpoints()
+{
+    // TODO: The debug registers have no C form; check whether the original wrote these through a macro.
+    asm __volatile__("mtbpc $zero\n"
+                     "mtdab $zero\n"
+                     "mtdabm $zero\n"
+                     "mtdvb $zero\n"
+                     "mtdvbm $zero\n");
+}
+
+/**
+ * @brief Move the stack to the top of the scratchpad, keeping the old stack pointer in s1.
+ * @see ee_leave_scratchpad_stack; LibUpdateList::update_nodes in Lib.
+ */
+static inline void ee_enter_scratchpad_stack()
+{
+    // TODO: Switching the stack pointer has no C form; check whether the original used a macro for this pair.
+    asm __volatile__("addu $17, $sp, $zero\n"
+                     "lui $8, 0x7000\n"
+                     "ori $8, $8, 0x3ff0\n"
+                     "addu $sp, $8, $zero\n"
+                     :
+                     :
+                     : "$17", "$8");
+}
+
+/**
+ * @brief Return to the stack ee_enter_scratchpad_stack saved in s1.
+ * @see ee_enter_scratchpad_stack.
+ */
+static inline void ee_leave_scratchpad_stack()
+{
+    asm __volatile__("addu $sp, $17, $zero\n");
 }
 
 #endif

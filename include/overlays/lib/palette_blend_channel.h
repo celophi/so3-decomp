@@ -5,7 +5,7 @@
 #include "overlays/lib/text_003E68C0.h"
 
 class LibResourceBuffer;
-struct LibImageDataHeader;
+struct LibImageHeader;
 
 /** Channel that blends selected palette entries between two borrowed RGBA arrays. */
 class LibPaletteBlendChannel : public LibRenderChannel
@@ -36,7 +36,7 @@ public:
     const LibVector4* start_colors;
     const LibVector4* end_colors;
     const u8* palette_indices;
-    LibImageDataHeader* target;
+    LibImageHeader* target;
     LibResourceBuffer* resource;
     float blend;
     s16 entry_count;

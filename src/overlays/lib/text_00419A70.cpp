@@ -2,6 +2,7 @@
 #include "overlays/lib/movie_player.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/transform_owner_inlines.h"
+#include "overlays/lib/transform_inlines.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_data.h"
@@ -20,8 +21,6 @@
 #include "overlays/lib/light_random.h"
 #include "overlays/lib/quaternion_vu0.h"
 #include "overlays/lib/direction_vu0.h"
-
-
 
 
 
@@ -448,7 +447,7 @@ void func_0041A530(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A560);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", draw__16LibListIndicatorFv);
 
 /**
  * @brief Place a list indicator, set its scroll extent and position, and allocate its drawing storage.
@@ -480,7 +479,64 @@ s32 lib_list_indicator_init(LibListIndicator* object, float x, float y, float he
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A9A0);
+/** @brief Draw the indicator: a half-alpha box whose corners pulse in grey, a quarter turn apart. */
+void ItemCreationClass172600::draw()
+{
+    if (unk3b)
+    {
+        return;
+    }
+
+    LibCallbackTransform& transform = *container;
+    FieldRuntime* runtime = g_field_runtime;
+    float alpha = (0.5f * (draw_alpha * lib_widget_container_alpha(container))) / 128.0f;
+    float x = transform.translation.x + unk18.unk00;
+    float y = transform.translation.y + unk18.unk04;
+    s32 left = (s32)(runtime->screen_offset_x + x * runtime->screen_scale_x);
+    s32 top = (s32)(runtime->screen_offset_y + y * runtime->screen_scale_y);
+    s32 right = (s32)(runtime->screen_offset_x + runtime->screen_scale_x * (x + unk18.unk08));
+    s32 bottom = (s32)(runtime->screen_offset_y + runtime->screen_scale_y * (y + unk18.unk0c));
+    s32 depth = transform.unka4 + unk34;
+    s32 i;
+    u32 colors[4];
+    u32* color;
+    u64 alpha_bits = (u32)alpha << 24;
+    float phase = unk50;
+
+    for (i = 0, color = colors; i < 4; i++)
+    {
+        s64 level = (s32)(80.0f + 80.0f * lib_cosine_degree9((3.1415927f * phase) / 180.0f));
+        *color++ = alpha_bits | (level << 16 | (level | level << 8));
+        phase += 90.0f;
+    }
+
+    u64* start = reinterpret_cast<u64*>(unk40.dma_address);
+    packet_tag = start;
+    packet = start;
+    start[2] = GIF_TAG_NREG(1) | 1;
+    start[3] = GIF_REGISTER_AD;
+    start[4] = 0x48;
+    start[5] = GS_REGISTER_ALPHA_2;
+    start[6] = GIF_TAG_NREG(10) | GIF_TAG_FLG_REGLIST | 1;
+    start[7] = 0x00000000F515151510ULL;
+    start[8] = 0x24C;
+    start[9] = colors[0];
+    start[10] = (u64)depth << 32 | ((u64)left | (u64)top << 16);
+    start[11] = colors[3];
+    start[12] = (u64)depth << 32 | ((u64)right | (u64)top << 16);
+    start[13] = colors[1];
+    start[14] = (u64)depth << 32 | ((u64)left | (u64)bottom << 16);
+    start[15] = colors[2];
+    start[16] = (u64)depth << 32 | ((u64)right | (u64)bottom << 16);
+    start[17] = 0;
+    start[18] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    start[19] = GIF_REGISTER_AD;
+    start[20] = 0x44;
+    start[21] = GS_REGISTER_ALPHA_2;
+    u64* end = start + 22;
+    *packet_tag = DMA_TAG((reinterpret_cast<u32>(end) - reinterpret_cast<u32>(packet_tag) - 16) / 16, DMA_TAG_ID_END, 0);
+    unk3b = 1;
+}
 
 /** @brief Advance the scalar indicator by the runtime rate and mark it for redraw. */
 void ItemCreationClass172600::func_00413D20()
@@ -624,7 +680,7 @@ void LibClass1726C0::render()
     resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D260);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", build_packet__14LibClass1726C0FPCvPv);
 
 /** @brief Delete the packet and destroy the object. */
 LibClass1726C0::~LibClass1726C0()
@@ -892,7 +948,315 @@ void LibClass1727E0::render()
     resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F350);
+/**
+ * @brief Build the blur packet: capture the display into the object's VRAM image (or, when unk9a is set, filter the
+ *        image through a second texture first), draw it back over the display, then blend it in unk9e weighted,
+ *        offset passes and restore TEST_1, ZBUF_1 and CLAMP_1.
+ * @param matrix View matrix; unused.
+ * @param context Packet building context; unused.
+ */
+void LibClass1727E0::build_packet(const void* matrix, void* context)
+{
+    if (!unk96)
+    {
+        return;
+    }
+
+    resident_packet_rewind(packet);
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(packet, 0));
+    cursor[0] = 0;
+    u32* vif = reinterpret_cast<u32*>(cursor + 1);
+    u32* direct = vif + 1;
+    vif[0] = 0x06008000;
+    owner = (LibUpdateList*)g_renderer;
+    LibDisplayArea* area = &display->display_area;
+    s32 psm = unk9d == 0 ? 0 : 2;
+    s32 left = (0x800 - display->display_area.width / 2) * 16;
+    s32 top = (0x800 - area->height / 2) * 16;
+    GsGifTag* tag = reinterpret_cast<GsGifTag*>(cursor + 2);
+    tag->tag = GIF_TAG_NREG(1) | 8;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    cursor[4] = 0x32000000 | ((u64)1 << 32);
+    cursor[5] = GS_REGISTER_ZBUF_1;
+    cursor[6] = ((0x800 - (area->width >> 1)) << 4) | ((s64)0x800 - (s64)(area->height >> 1)) * 16 << 32;
+    cursor[7] = GS_REGISTER_XYOFFSET_1;
+    cursor[8] = 0xFFFFFFFF5ULL;
+    cursor[9] = GS_REGISTER_CLAMP_1;
+    cursor[10] = 0;
+    cursor[11] = GS_REGISTER_FBA_1;
+    cursor[12] = 0;
+    cursor[13] = GS_REGISTER_TEXFLUSH;
+    u32 frame_psm = psm << 24;
+    cursor[14] = (u32)(frame_psm | (vram_address >> 11 | ((1 << width_log2) / 64) << 16));
+    cursor[15] = GS_REGISTER_FRAME_1;
+    cursor[16] = ((1 << width_log2) - 1) << 16 | ((1 << height_log2) - 1ULL) << 48;
+    cursor[17] = GS_REGISTER_SCISSOR_1;
+    cursor[18] = 0x44;
+    cursor[19] = GS_REGISTER_ALPHA_1;
+    cursor += 20;
+
+    if (!unk97)
+    {
+        unk97 = 1;
+        *cursor++ = GIF_TAG_NREG(1) | 3;
+        *cursor = 0;
+        reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+        cursor++;
+        *cursor++ = 0x30000;
+        *cursor++ = GS_REGISTER_TEST_1;
+        *cursor++ = GS_PRIM_SPRITE;
+        *cursor++ = GS_REGISTER_PRIM;
+        *cursor++ = 0;
+        *cursor++ = GS_REGISTER_RGBAQ;
+        s32 strips = (1 << width_log2) / 64;
+        *cursor++ = (s64)strips | GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST;
+        *cursor = 0;
+        reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_XYZ2;
+        reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register1 = GIF_REGISTER_XYZ2;
+        cursor++;
+
+        for (s32 i = 0; i < strips; i++)
+        {
+            *cursor++ = gs_xyz2(left + i * 0x400, top, 0xFFFFFF);
+            *cursor++ = gs_xyz2(left + (i + 1) * 0x400, top + (1 << height_log2) * 16, 0xFFFFFF);
+        }
+    }
+    else if (unk9a)
+    {
+        if (unk98)
+        {
+            LibTextureRequest request;
+            request.psm = psm;
+            request.size = (unk9d == 0 ? 4 : 2) * ((1 << width_log2) * (1 << height_log2));
+            request.width = 1 << width_log2;
+            request.height = 1 << height_log2;
+            request.width_log2 = width_log2;
+            request.height_log2 = height_log2;
+            u32 address = g_texture_cache->find_texture(&request, 0x50734074, 1, 0, 0, 1, 0);
+
+            if (address)
+            {
+                *cursor++ = GIF_TAG_NREG(1) | 7;
+                *cursor = 0;
+                reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+                cursor++;
+                *cursor++ = 0x30000;
+                *cursor++ = GS_REGISTER_TEST_1;
+                *cursor++ = 0;
+                *cursor++ = GS_REGISTER_TEXFLUSH;
+                u64 tex0 = (s64)(s32)(vram_address >> 6) |
+                           ((u64)height_log2 << 30 | (u32)(width_log2 << 26 | (((1 << width_log2) / 64) << 14 | psm << 20)) | 4ULL << 32);
+                *cursor++ = (u32)(frame_psm | (address >> 11 | ((1 << width_log2) / 64) << 16));
+                *cursor++ = GS_REGISTER_FRAME_1;
+                *cursor++ = tex0;
+                *cursor++ = GS_REGISTER_TEX0_1;
+                *cursor++ = 0x8080ULL << 16 | 0x8080;
+                *cursor++ = GS_REGISTER_RGBAQ;
+                *cursor++ = 0x30000;
+                *cursor++ = GS_REGISTER_TEST_1;
+                *cursor++ = 0x116;
+                *cursor++ = GS_REGISTER_PRIM;
+                s32 strips = (1 << width_log2) / 32;
+                *cursor++ = (s64)strips | GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST;
+                *cursor = 0;
+                GsGifTag* strip_tag = reinterpret_cast<GsGifTag*>(cursor - 1);
+                strip_tag->fields.register0 = GIF_REGISTER_UV;
+                strip_tag->fields.register1 = GIF_REGISTER_XYZ2;
+                strip_tag->fields.register2 = GIF_REGISTER_UV;
+                strip_tag->fields.register3 = GIF_REGISTER_XYZ2;
+                cursor++;
+
+                for (s32 i = 0; i < strips; i++)
+                {
+                    *cursor++ = (s64)(s32)((8 + i * 0x200) | 0x80000);
+                    *cursor++ = gs_xyz2(left + i * 0x200, top, 0xFFFFFF);
+                    *cursor++ = (s64)(s32)(((1 << height_log2) * 16 + 8) << 16 | ((i + 1) * 0x200 + 8));
+                    *cursor++ = gs_xyz2(left + (i + 1) * 0x200, top + (1 << height_log2) * 16, 0xFFFFFF);
+                }
+
+                *cursor++ = GIF_TAG_NREG(1) | 5;
+                *cursor = 0;
+                reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+                cursor++;
+                *cursor++ = 0;
+                *cursor++ = GS_REGISTER_TEXFLUSH;
+                tex0 =
+                    (s64)(s32)(address >> 6) | ((u64)height_log2 << 30 | (u32)(width_log2 << 26 | (((1 << width_log2) / 64) << 14 | psm << 20)) | 4ULL << 32);
+                *cursor++ = (u32)(frame_psm | (vram_address >> 11 | ((1 << width_log2) / 64) << 16));
+                *cursor++ = GS_REGISTER_FRAME_1;
+                *cursor++ = tex0;
+                *cursor++ = GS_REGISTER_TEX0_1;
+                *cursor++ = 0x156;
+                *cursor++ = GS_REGISTER_PRIM;
+                *cursor++ = unkb0;
+                *cursor++ = GS_REGISTER_RGBAQ;
+                *cursor++ = 1 | GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST;
+                *cursor = 0;
+                strip_tag = reinterpret_cast<GsGifTag*>(cursor - 1);
+                strip_tag->fields.register0 = GIF_REGISTER_UV;
+                strip_tag->fields.register1 = GIF_REGISTER_XYZ2;
+                strip_tag->fields.register2 = GIF_REGISTER_UV;
+                strip_tag->fields.register3 = GIF_REGISTER_XYZ2;
+                cursor++;
+                *cursor++ = 0x80008;
+                s32 x = left + (s32)(16.0f * unka0[0]);
+                s32 y = top + (s32)(16.0f * unka0[1]);
+                *cursor++ = (u64)x | (u64)y << 16 | 0xFFFFFFULL << 32;
+                *cursor++ = (s64)(s32)(((1 << width_log2) * 16 + 8) | ((1 << height_log2) * 16 + 8) << 16);
+                x = (s32)(16.0f * unka0[2]) + (left + (1 << width_log2) * 16);
+                y = (s32)(16.0f * unka0[3]) + (top + (1 << height_log2) * 16);
+                *cursor++ = (u64)x | (u64)y << 16 | 0xFFFFFFULL << 32;
+            }
+        }
+        else
+        {
+            *cursor++ = GIF_TAG_NREG(1) | 5;
+            *cursor = 0;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+            cursor++;
+            *cursor++ = 0;
+            *cursor++ = GS_REGISTER_TEXFLUSH;
+            *cursor++ =
+                (s64)(s32)(vram_address >> 6) | ((u64)height_log2 << 30 | (u32)(width_log2 << 26 | (((1 << width_log2) / 64) << 14 | psm << 20)) | 4ULL << 32);
+            *cursor++ = GS_REGISTER_TEX0_1;
+            *cursor++ = unkb0;
+            *cursor++ = GS_REGISTER_RGBAQ;
+            *cursor++ = 0x30000;
+            *cursor++ = GS_REGISTER_TEST_1;
+            *cursor++ = 0x156;
+            *cursor++ = GS_REGISTER_PRIM;
+            s32 strips = (1 << width_log2) / 32;
+            *cursor++ = (s64)strips | GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST;
+            *cursor = 0;
+            GsGifTag* strip_tag = reinterpret_cast<GsGifTag*>(cursor - 1);
+            strip_tag->fields.register0 = GIF_REGISTER_UV;
+            strip_tag->fields.register1 = GIF_REGISTER_XYZ2;
+            strip_tag->fields.register2 = GIF_REGISTER_UV;
+            strip_tag->fields.register3 = GIF_REGISTER_XYZ2;
+            cursor++;
+
+            for (s32 i = 0; i < strips; i++)
+            {
+                *cursor++ = (s64)(s32)((8 + i * 0x200) | 0x80000);
+                *cursor++ = gs_xyz2(left + i * 0x200, top, 0xFFFFFF);
+                *cursor++ = (s64)(s32)(((1 << height_log2) * 16 + 8) << 16 | ((i + 1) * 0x200 + 8));
+                *cursor++ = gs_xyz2(left + (i + 1) * 0x200, top + (1 << height_log2) * 16, 0xFFFFFF);
+            }
+        }
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | 5;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+    u32 base = (u32)(func_004DBC70(display) << 13) >> 8;
+    *cursor++ = (s64)(s32)(area->unk10 << 20 | (base | (area->width / 64) << 14) | 0x28000000) | (0x8000ULL << 16 | 6ULL << 32);
+    *cursor++ = GS_REGISTER_TEX0_1;
+    *cursor++ = unkb4;
+    *cursor++ = GS_REGISTER_RGBAQ;
+    *cursor++ = 0x30805;
+    *cursor++ = GS_REGISTER_TEST_1;
+    s32 height = area->height;
+    s32 strips = area->width / 32;
+    *cursor++ = (s64)(s32)(128.0f * unk11c) << 32 | 0x29;
+    *cursor++ = GS_REGISTER_ALPHA_1;
+    *cursor++ = 0x156;
+    *cursor++ = GS_REGISTER_PRIM;
+
+    if (unk99)
+    {
+        *cursor++ = (s64)strips | GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST;
+        *cursor = 0;
+        GsGifTag* strip_tag = reinterpret_cast<GsGifTag*>(cursor - 1);
+        strip_tag->fields.register0 = GIF_REGISTER_UV;
+        strip_tag->fields.register1 = GIF_REGISTER_XYZ2;
+        strip_tag->fields.register2 = GIF_REGISTER_UV;
+        strip_tag->fields.register3 = GIF_REGISTER_XYZ2;
+        cursor++;
+
+        for (s32 i = 0; i < strips; i++)
+        {
+            *cursor++ = (s64)(s32)(i * 0x200);
+            *cursor++ = gs_xyz2(left + i * ((1 << width_log2) * 16) / strips, top, 0xFFFFFF);
+            *cursor++ = (s64)(s32)(height << 20 | (i + 1) << 9);
+            *cursor++ = gs_xyz2(left + (i + 1) * ((1 << width_log2) * 16) / strips, top + (1 << height_log2) * 16, 0xFFFFFF);
+        }
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | 8;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+    *cursor++ = 0;
+    *cursor++ = GS_REGISTER_TEXFLUSH;
+    *cursor++ = func_004DBCA0(display, 0);
+    *cursor++ = GS_REGISTER_FRAME_1;
+    *cursor++ = func_004DBCA0(display, 2);
+    *cursor++ = GS_REGISTER_XYOFFSET_1;
+    *cursor++ = func_004DBCA0(display, 3);
+    *cursor++ = GS_REGISTER_SCISSOR_1;
+    *cursor++ = (s64)(s32)(vram_address >> 6) | ((u64)height_log2 << 30 | (u32)(width_log2 << 26 | (((1 << width_log2) / 64) << 14 | psm << 20)) | 4ULL << 32);
+    *cursor++ = GS_REGISTER_TEX0_1;
+    *cursor++ = 0x3C00D;
+    *cursor++ = GS_REGISTER_TEST_1;
+    *cursor++ = 0x156;
+    *cursor++ = GS_REGISTER_PRIM;
+    *cursor++ = 0x44;
+    *cursor++ = GS_REGISTER_ALPHA_1;
+    float weight = unkd8 / unk9e;
+
+    for (s32 i = 0; i < unk9e - 1; i++)
+    {
+        weight /= 1.0f - weight;
+    }
+
+    strips = area->width / 32;
+
+    for (s32 pass = 0; pass < unk9e; pass++)
+    {
+        *cursor++ = GIF_TAG_NREG(1) | 1;
+        *cursor = 0;
+        reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+        cursor++;
+        *cursor++ = (u32)(unkb8[pass] | (u32)(128.0f * weight) << 24);
+        *cursor++ = GS_REGISTER_RGBAQ;
+        weight *= 1.0f - unkd8 / unk9e;
+        *cursor++ = (s64)strips | GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST;
+        *cursor = 0;
+        GsGifTag* strip_tag = reinterpret_cast<GsGifTag*>(cursor - 1);
+        strip_tag->fields.register0 = GIF_REGISTER_UV;
+        strip_tag->fields.register1 = GIF_REGISTER_XYZ2;
+        strip_tag->fields.register2 = GIF_REGISTER_UV;
+        strip_tag->fields.register3 = GIF_REGISTER_XYZ2;
+        cursor++;
+        s32 offset_x = 16.0f * unkdc[pass];
+        s32 offset_y = 16.0f * unkfc[pass];
+
+        for (s32 i = 0; i < strips; i++)
+        {
+            *cursor++ = (s64)(s32)((1 << width_log2) * (i * 16) / strips);
+            *cursor++ = gs_xyz2(offset_x + (left + i * 0x200), top + offset_y, 0xFFFFFF);
+            *cursor++ = (s64)(s32)((1 << height_log2) << 20 | (1 << width_log2) * ((i + 1) * 16) / strips);
+            *cursor++ = gs_xyz2(offset_x + (left + (i + 1) * 0x200), offset_y + (top + area->height * 16), 0xFFFFFF);
+        }
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | 3;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+    *cursor++ = func_004DBCA0(display, 4);
+    *cursor++ = GS_REGISTER_TEST_1;
+    *cursor++ = func_004DBCA0(display, 1);
+    *cursor++ = GS_REGISTER_ZBUF_1;
+    *cursor++ = 0xFFFFFFFF0ULL;
+    *cursor++ = GS_REGISTER_CLAMP_1;
+    resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor));
+    packet_quadwords = resident_packet_end_unmask_path3(packet);
+    *direct = VIF_DIRECTHL(packet_quadwords - 2);
+    unk63 = 1;
+}
 
 /**
  * @brief Allocate VRAM for a power-of-two image and record its size, slot and address.
@@ -1147,7 +1511,169 @@ LibClass1728A0::LibClass1728A0() : unk14(0), unk18(0)
     coverage = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650__14LibClass1728E0FPvUifffffff);
+/**
+ * @brief Pack a screen position as a GS XY value in 12.4 fixed point.
+ * @param x Horizontal position in pixels.
+ * @param y Vertical position in pixels.
+ * @return XY part of an XYZ2 value.
+ */
+static inline u64 lib_screen_xy(float x, float y)
+{
+    return (s64)(s32)(16.0f * x) | ((s64)(s32)(16.0f * y) << 16);
+}
+
+/**
+ * @brief Scale a packed RGB color by another, channel by channel as fractions of 255.
+ * @param color Color to scale.
+ * @param scale Scaling color.
+ * @return Scaled color, alpha zero.
+ */
+static inline u32 lib_modulate_rgb(u32 color, u32 scale)
+{
+    u32 red = (color & 0xFF) * (scale & 0xFF) / 255;
+    u32 green = ((color >> 8) & 0xFF) * ((scale >> 8) & 0xFF) / 255;
+    u32 blue = ((color >> 16) & 0xFF) * ((scale >> 16) & 0xFF) / 255;
+
+    if (red > 0xFF)
+    {
+        red = 0xFF;
+    }
+
+    if (green > 0xFF)
+    {
+        green = 0xFF;
+    }
+
+    if (blue > 0xFF)
+    {
+        blue = 0xFF;
+    }
+
+    return (blue << 16) | (red | (green << 8));
+}
+
+/**
+ * @brief Write the light's rays as triangle fans from the centre: each ray is a run of segments whose points sit at
+ *        the ray's two lengths, shading from the centre color to the edge color. Nothing is written when the rays
+ *        would leave the 4096-pixel drawing area.
+ * @param cursor Where to write.
+ * @param x Centre x, in screen pixels.
+ * @param y Centre y, in screen pixels.
+ * @param color Packed RGB color the light's colors are modulated by.
+ * @param scale Size scale.
+ * @param angle Rotation in radians.
+ * @param alpha Opacity and size scale.
+ * @param scale_x Horizontal stretch.
+ * @param scale_y Vertical stretch.
+ * @return The cursor after the data.
+ */
+void* LibClass1728E0::func_00421650(void* cursor, float x, float y, u32 color, float scale, float angle, float alpha, float scale_x, float scale_y)
+{
+    LibVector4 previous;
+    LibVector4 tip;
+    LibVector4 next;
+    u64* out = static_cast<u64*>(cursor);
+    scale *= 0.5f + 0.5f * alpha;
+    float extent = max_length * scale;
+
+    if (x - extent < 0.0f)
+    {
+        return out;
+    }
+
+    if (!(x + extent <= 4095.0f))
+    {
+        return out;
+    }
+
+    if (y - extent < 0.0f)
+    {
+        return out;
+    }
+
+    if (!(y + extent <= 4095.0f))
+    {
+        return out;
+    }
+
+    u32 opacity = (u32)(128.0f * (alpha * this->alpha));
+
+    if (opacity > 0x80)
+    {
+        opacity = 0x80;
+    }
+
+    GsGifTag* tag = reinterpret_cast<GsGifTag*>(out);
+    tag->tag = GIF_TAG_NREG(1) | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    s32 count = unk1c;
+    out[2] = 0x4C;
+    out[3] = GS_REGISTER_PRIM;
+    tag = reinterpret_cast<GsGifTag*>(out + 4);
+    tag->tag = GIF_TAG_NREG(7) | GIF_TAG_FLG_REGLIST | (unk20 * count);
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_RGBAQ;
+    tag->fields.register1 = GIF_REGISTER_XYZ3;
+    tag->fields.register2 = GIF_REGISTER_RGBAQ;
+    tag->fields.register3 = GIF_REGISTER_XYZ3;
+    tag->fields.register4 = GIF_REGISTER_XYZ2;
+    tag->fields.register5 = GIF_REGISTER_RGBAQ;
+    tag->fields.register6 = GIF_REGISTER_XYZ2;
+    out += 6;
+    u32 centre = lib_modulate_rgb(centre_color, color) | (opacity << 24);
+    u32 edge = lib_modulate_rgb(edge_color, color);
+    u32 faded = edge | (opacity << 24);
+
+    for (s32 i = 0; i < count; i++)
+    {
+        float direction = angle + rays[i].angle;
+        float length = scale * rays[i].second[0];
+
+        lib_compute_sine_cosine_pair(direction, &previous);
+        previous.z *= scale_x;
+        previous.w *= scale_y;
+        direction += 0.5f * unk3c;
+
+        for (s32 k = 0; k < unk20; k++)
+        {
+            out[0] = centre;
+            out[1] = lib_screen_xy(x, y);
+            float px = x + previous.z * length;
+            float py = y + previous.w * length;
+            lib_compute_sine_cosine_pair(direction, &tip);
+            tip.z *= scale_x;
+            tip.w *= scale_y;
+            direction += 0.5f * unk3c;
+            out[2] = faded;
+            out[3] = lib_screen_xy(px, py);
+            lib_compute_sine_cosine_pair(direction, &next);
+            next.z *= scale_x;
+            next.w *= scale_y;
+            direction += 0.5f * unk3c;
+            length = scale * rays[i].second[k];
+            // TODO: Copies added to in place keep both sums ahead of the conversions; find the original form.
+            float nx = x;
+            nx += next.z * length;
+            float ny = y;
+            ny += next.w * length;
+            out[4] = lib_screen_xy(nx, ny);
+            u64 tip_xy = lib_screen_xy(x + tip.z * (scale * rays[i].first[k]), y + tip.w * (scale * rays[i].first[k]));
+
+            out[5] = edge;
+            out[6] = tip_xy;
+            copy_vector(&previous, &next);
+            out += 7;
+        }
+    }
+
+    if ((count * unk20) & 1)
+    {
+        out++;
+    }
+
+    return out;
+}
 
 /**
  * @brief Lay out the builder's rays: random angles kept apart (the spacing halves after ten failed tries) and two
@@ -1241,23 +1767,12 @@ LibClass1728E0::LibClass1728E0() : rays(0)
 }
 
 /**
- * @brief Pack a screen position as a GS XY value in 12.4 fixed point.
- * @param x Horizontal position in pixels.
- * @param y Vertical position in pixels.
- * @return XY part of an XYZ2 value.
- */
-static inline u64 lib_screen_xy(float x, float y)
-{
-    return (s64)(s32)(16.0f * x) | ((s64)(s32)(16.0f * y) << 16);
-}
-
-/**
  * @brief Write a ring: a fan filling the inner circle in the modulated color, then a strip out to the outer edge that
  *        fades to transparent. Nothing is written when the ring would leave the 4096-pixel drawing area.
  * @param cursor Where to write.
- * @param color Packed RGB color the ring's own color is modulated by.
  * @param x Centre x, in screen pixels.
  * @param y Centre y, in screen pixels.
+ * @param color Packed RGB color the ring's own color is modulated by.
  * @param scale Size scale.
  * @param angle Rotation in radians.
  * @param alpha Opacity scale.
@@ -1265,8 +1780,7 @@ static inline u64 lib_screen_xy(float x, float y)
  * @param scale_y Vertical stretch.
  * @return The cursor after the data.
  */
-void* LibClass172900::func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
-                                    float scale_x, float scale_y)
+void* LibClass172900::func_00421650(void* cursor, float x, float y, u32 color, float scale, float angle, float alpha, float scale_x, float scale_y)
 {
     float cosines[48];
     float sines[48];
@@ -1419,9 +1933,250 @@ void* LibClass172900::func_00421650(void* cursor, u32 color, float x, float y, f
     return out;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650__14LibClass172920FPvUifffffff);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650__14LibClass172920FPvffUifffff);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422F70);
+/**
+ * @brief Write a banded ring: a fan filling the inner circle, a solid band out to the middle radius, then a band out
+ *        to the outer edge that fades to the last color. The segment count follows the ring's size. Nothing is written
+ *        when the ring would leave the 4096-pixel drawing area.
+ * @param cursor Where to write.
+ * @param x Centre x, in screen pixels.
+ * @param y Centre y, in screen pixels.
+ * @param color Packed RGB color the ring's centre, rim and outer colors are modulated by.
+ * @param scale Size scale.
+ * @param angle Rotation in radians.
+ * @param alpha Opacity scale.
+ * @param scale_x Horizontal stretch.
+ * @param scale_y Vertical stretch.
+ * @return The cursor after the data.
+ */
+void* LibClass172940::func_00421650(void* cursor, float x, float y, u32 color, float scale, float angle, float alpha, float scale_x, float scale_y)
+{
+    float cosines[48];
+    float sines[48];
+    float px;
+    float py;
+    u64* out = static_cast<u64*>(cursor);
+    float outer = scale * (inner_radius + (widths[1] + widths[0]));
+
+    if (x - outer < 0.0f)
+    {
+        return out;
+    }
+
+    if (!(x + outer <= 4095.0f))
+    {
+        return out;
+    }
+
+    if (y - outer < 0.0f)
+    {
+        return out;
+    }
+
+    if (!(y + outer <= 4095.0f))
+    {
+        return out;
+    }
+
+    float middle = scale * (widths[0] + inner_radius);
+    float inner = inner_radius * scale;
+    u32 opacity = (u32)(128.0f * (alpha * this->alpha));
+
+    if (opacity > 0x80)
+    {
+        opacity = 0x80;
+    }
+
+    s32 count = (s32)(0.2f * middle) + 9;
+
+    if (count > 0x30)
+    {
+        count = 0x30;
+    }
+
+    if (count <= 0)
+    {
+        return out;
+    }
+
+    GsGifTag* tag = reinterpret_cast<GsGifTag*>(out);
+    tag->tag = GIF_TAG_NREG(1) | 2;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    out[2] = 0x4D;
+    out[3] = GS_REGISTER_PRIM;
+    u32 red = (colors[0] & 0xFF) * (color & 0xFF) / 255;
+    u32 green = ((colors[0] >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    u32 blue = ((colors[0] >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (red > 0xFF)
+    {
+        red = 0xFF;
+    }
+
+    if (green > 0xFF)
+    {
+        green = 0xFF;
+    }
+
+    if (blue > 0xFF)
+    {
+        blue = 0xFF;
+    }
+
+    u32 alpha_bits = opacity << 24;
+    out[4] = alpha_bits | ((blue << 16) | (red | (green << 8)));
+    out[5] = GS_REGISTER_RGBAQ;
+    tag = reinterpret_cast<GsGifTag*>(out + 6);
+    tag->tag = GIF_TAG_NREG(1) | GIF_TAG_FLG_REGLIST | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_XYZ2;
+    out[8] = lib_screen_xy(x, y);
+    tag = reinterpret_cast<GsGifTag*>(out + 10);
+    tag->tag = GIF_TAG_NREG(1) | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    red = (colors[1] & 0xFF) * (color & 0xFF) / 255;
+    green = ((colors[1] >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    blue = ((colors[1] >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (red > 0xFF)
+    {
+        red = 0xFF;
+    }
+
+    if (green > 0xFF)
+    {
+        green = 0xFF;
+    }
+
+    if (blue > 0xFF)
+    {
+        blue = 0xFF;
+    }
+
+    out[12] = alpha_bits | ((blue << 16) | (red | (green << 8)));
+    out[13] = GS_REGISTER_RGBAQ;
+
+    if (count <= 0)
+    {
+        count = 1;
+    }
+
+    tag = reinterpret_cast<GsGifTag*>(out + 14);
+    tag->tag = GIF_TAG_NREG(1) | GIF_TAG_FLG_REGLIST | count;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_XYZ2;
+    out += 16;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibVector4 pair;
+
+        lib_compute_sine_cosine_pair(angle + 6.2831855f * (float)i / (float)(count - 1), &pair);
+        cosines[i] = pair.z * scale_x;
+        sines[i] = pair.w * scale_y;
+        px = x + inner * cosines[i];
+        py = y + inner * sines[i];
+        *out++ = lib_screen_xy(px, py);
+    }
+
+    if (count & 1)
+    {
+        out++;
+    }
+
+    tag = reinterpret_cast<GsGifTag*>(out);
+    tag->tag = GIF_TAG_NREG(1) | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    out[2] = 0x4C;
+    out[3] = GS_REGISTER_PRIM;
+    tag = reinterpret_cast<GsGifTag*>(out + 4);
+    tag->tag = GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST | (count * 2);
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_RGBAQ;
+    tag->fields.register1 = GIF_REGISTER_XYZ2;
+    out += 6;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        px = x + inner * cosines[i];
+        py = y + inner * sines[i];
+        out[0] = colors[1] | alpha_bits;
+        out[1] = lib_screen_xy(px, py);
+        out[2] = colors[2] | alpha_bits;
+        out[3] = lib_screen_xy(x + middle * cosines[i], y + middle * sines[i]);
+        out += 4;
+    }
+
+    tag = reinterpret_cast<GsGifTag*>(out);
+    tag->tag = GIF_TAG_NREG(1) | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    out[2] = 0x4C;
+    out[3] = GS_REGISTER_PRIM;
+    tag = reinterpret_cast<GsGifTag*>(out + 4);
+    tag->tag = GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST | (count * 2);
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_RGBAQ;
+    tag->fields.register1 = GIF_REGISTER_XYZ2;
+    out += 6;
+    red = (colors[2] & 0xFF) * (color & 0xFF) / 255;
+    green = ((colors[2] >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    blue = ((colors[2] >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (red > 0xFF)
+    {
+        red = 0xFF;
+    }
+
+    if (green > 0xFF)
+    {
+        green = 0xFF;
+    }
+
+    if (blue > 0xFF)
+    {
+        blue = 0xFF;
+    }
+
+    u32 centre = alpha_bits | ((blue << 16) | (red | (green << 8)));
+    u32 rim_red = (colors[3] & 0xFF) * (color & 0xFF) / 255;
+    u32 rim_green = ((colors[3] >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    u32 rim_blue = ((colors[3] >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (rim_red > 0xFF)
+    {
+        rim_red = 0xFF;
+    }
+
+    if (rim_green > 0xFF)
+    {
+        rim_green = 0xFF;
+    }
+
+    if (rim_blue > 0xFF)
+    {
+        rim_blue = 0xFF;
+    }
+
+    u32 edge = (rim_blue << 16) | (rim_red | (rim_green << 8));
+
+    for (s32 i = 0; i < count; i++)
+    {
+        px = x + middle * cosines[i];
+        py = y + middle * sines[i];
+        out[0] = centre;
+        out[1] = lib_screen_xy(px, py);
+        out[2] = edge;
+        out[3] = lib_screen_xy(x + outer * cosines[i], y + outer * sines[i]);
+        out += 4;
+    }
+
+    return out;
+}
 
 /**
  * @brief Send the data on VIF1 in normal mode.
@@ -1451,7 +2206,214 @@ void LibClass172960::render()
     resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004239C0);
+/**
+ * @brief Rebuild the glare packet: take the colour from a parent light, project the object's position, fade the glare
+ *        by how far it faces the camera and how far it is off screen, flash the whole display when facing it, then let
+ *        every builder draw its sprite along the line from the object through the screen centre.
+ * @param matrix Camera.
+ * @param context Packet building context; unused.
+ */
+void LibClass172960::build_packet(const void* matrix, void* context)
+{
+    LibCamera* camera = (LibCamera*)matrix;
+    resident_packet_rewind(packet);
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(packet, 0));
+    *cursor++ = 0;
+    u32* direct = reinterpret_cast<u32*>(cursor) + 1;
+    *reinterpret_cast<u32*>(cursor) = 0x06008000;
+    *cursor++ = 0;
+    resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor));
+
+    if (unk23d)
+    {
+        LibLight* light = static_cast<LibLight*>(parent_transform);
+
+        if (light && light->type_id == 3)
+        {
+            unk22c = light->color.w;
+            float green = light->color.y;
+            float red = light->color.x;
+            float blue = light->color.z;
+            unk230 = (u32)(255.0f * red) | (u32)(255.0f * green) << 8 | (u32)(255.0f * blue) << 16;
+        }
+    }
+
+    float size = 0.001953125f * camera->projection_distance;
+    float angle = -camera->roll;
+    float scale_x = (camera->screen_max.x - camera->screen_min.x) / 640.0f;
+    float scale_y = (camera->screen_max.y - camera->screen_min.y) / 448.0f;
+
+    if (!matrix_ready)
+    {
+        update_transform_matrix();
+    }
+
+    LibMatrix44Value screen;
+    screen = func_004CF7C0(camera->projection_matrix, camera->view_matrix);
+    ee_transpose_matrix(&screen, &screen);
+    FieldVec4B camera_position;
+    camera_position.x = matrix_row(&camera->transform, 0)->w;
+    camera_position.y = matrix_row(&camera->transform, 1)->w;
+    camera_position.z = matrix_row(&camera->transform, 2)->w;
+    camera_position.w = 1.0f;
+    FieldVec4B position;
+    position.x = matrix_row(&transform, 0)->w;
+    position.y = matrix_row(&transform, 1)->w;
+    position.z = matrix_row(&transform, 2)->w;
+    position.w = 1.0f;
+    FieldVec4B axis;
+    LibMatrix44Value inverse;
+    const LibMatrix44Value* camera_matrix = &camera->transform;
+    inverse = func_004CF0B0(*camera_matrix);
+    FieldVec4B view(0.0f, 0.0f, camera->unk244, 1.0f);
+    view = func_004CF830(view, inverse);
+    FieldVec4B to_object;
+    axis = camera_position + view - position;
+    to_object = position - camera_position;
+    lib_normalize_vector3(&to_object.x);
+    lib_normalize_vector3(&view.x);
+    float dot = to_object.x * view.x + to_object.y * view.y + to_object.z * view.z;
+    vu0_load_matrix(&screen);
+    float glare = dot * (unk22c * dot);
+
+    if (dot < 0.0f)
+    {
+        return;
+    }
+
+    glare *= glare;
+    FieldVec4A screen_position;
+    vu0_start_microprogram_vf5(&position);
+    vu0_wait_microprogram();
+    vu0_read_vf6(&screen_position);
+
+    if (screen_position.x < camera->screen_min.x)
+    {
+        glare -= 0.004f * (camera->screen_min.x - screen_position.x);
+    }
+
+    if (screen_position.y < camera->screen_min.y)
+    {
+        glare -= 0.004f * (camera->screen_min.y - screen_position.y);
+    }
+
+    if (screen_position.x > camera->screen_max.x)
+    {
+        glare -= 0.004f * (screen_position.x - camera->screen_max.x);
+    }
+
+    if (screen_position.y > camera->screen_max.y)
+    {
+        glare -= 0.004f * (screen_position.y - camera->screen_max.y);
+    }
+
+    if (unk240)
+    {
+        glare *= unk240->coverage;
+        unk240->set_query((s32)(screen_position.x - camera->screen_min.x), (s32)(screen_position.y - camera->screen_min.y), (u32)screen_position.z);
+    }
+
+    if (glare <= 0.0f)
+    {
+        return;
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | 3;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+    *cursor++ = 0x48;
+    *cursor++ = GS_REGISTER_ALPHA_1;
+    u64 zbuf = 0x32000000 | ((u64)1 << 32);
+    *cursor++ = zbuf;
+    *cursor++ = GS_REGISTER_ZBUF_1;
+    *cursor++ = 0x30000;
+    *cursor++ = GS_REGISTER_TEST_1;
+    resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor));
+    LibCameraContext* display = static_cast<LibRenderer*>(owner)->display;
+
+    if (unk23e)
+    {
+        float flash = dot * dot;
+        flash *= flash;
+        flash *= flash;
+        flash *= flash;
+        flash -= 0.5f;
+
+        if (unk240)
+        {
+            flash *= unk240->coverage;
+        }
+
+        if (flash > 0.0f)
+        {
+            flash = ee_min(flash, 1.0f);
+            cursor = reinterpret_cast<u64*>(resident_packet_reserve(packet, 0));
+            *cursor++ = GIF_TAG_NREG(1) | 2;
+            *cursor = 0;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+            cursor++;
+            *cursor++ = GS_PRIM_SPRITE | GS_PRIM_ABE;
+            *cursor++ = GS_REGISTER_PRIM;
+            *cursor++ = (u32)(unk230 | (s32)(128.0f * flash) << 24);
+            *cursor++ = GS_REGISTER_RGBAQ;
+            LibDisplayArea* area = &display->display_area;
+            s32 strips = area->width / 64;
+            s32 left = (0x800 - area->width / 2) * 16;
+            s32 top = (0x800 - area->height / 2) * 16;
+            *cursor++ = (s64)strips | GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST;
+            *cursor = 0;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_XYZ2;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register1 = GIF_REGISTER_XYZ2;
+            cursor++;
+
+            for (s32 i = 0; i < strips; i++)
+            {
+                *cursor++ = (s64)top << 16 | (s64)(left + i * 0x400);
+                *cursor++ = (s64)(top + area->height * 16) << 16 | (s64)(left + (i + 1) * 0x400);
+            }
+
+            resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor));
+        }
+    }
+
+    LibListSentinel* node = sentinel.next;
+
+    for (;;)
+    {
+        if (at_list_end(&sentinel, node))
+        {
+            break;
+        }
+
+        LibClass1728C0* builder = static_cast<LibClass1728C0*>(node);
+        FieldVec4B point;
+        point = position + axis * builder->axis_offset;
+        vu0_start_microprogram_vf5(&point);
+        vu0_wait_microprogram();
+        vu0_read_vf6(&point);
+        resident_packet_align_cursor(packet, reinterpret_cast<u8*>(builder->func_00421650(resident_packet_reserve(packet, 0), point.x, point.y, unk230, size,
+                                                                                          angle, glare, scale_x, scale_y)));
+        node = node->next;
+    }
+
+    cursor = reinterpret_cast<u64*>(resident_packet_reserve(packet, 0));
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 3;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+    *cursor++ = 0x44;
+    *cursor++ = GS_REGISTER_ALPHA_1;
+    *cursor++ = func_004DBCA0(display, 4);
+    *cursor++ = GS_REGISTER_TEST_1;
+    *cursor++ = func_004DBCA0(display, 1);
+    *cursor++ = GS_REGISTER_ZBUF_1;
+    resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor));
+    packet_quadwords = resident_packet_end_unmask_path3(packet);
+    *direct = VIF_DIRECTHL(packet_quadwords - 2);
+    packet_address = resident_packet_get_address(packet);
+    unk63 = 1;
+}
 
 /** @brief Destroy the list receiver and its embedded sentinel. */
 inline LibListReceiver::~LibListReceiver()
@@ -1626,27 +2588,6 @@ static inline void copy_matrix(LibMatrix44Value* destination, const LibMatrix44V
     ((unsigned __int128*)destination)[3] = ((const unsigned __int128*)source)[3];
 }
 
-/**
- * @brief Report whether the transform's transpose is current.
- * @param transform Transform to check.
- * @return Nonzero when the transpose was rebuilt since the matrix last changed.
- */
-static inline s32 transpose_is_current(const LibTransform* transform)
-{
-    return transform->unk20e_0;
-}
-
-/**
- * @brief Mark the transpose current and rebuild it from the transform.
- * @param transform Transform to update.
- */
-static inline void transpose_transform(LibTransform* transform)
-{
-    transform->unk20e_0 = 1;
-    transform->unk20e_1 = 0;
-    ee_transpose_matrix(&transform->transposed_transform, &transform->transform);
-}
-
 /** @brief Update the matrix and the world position. */
 void LibClass172B40::update()
 {
@@ -1780,7 +2721,7 @@ void LibClass172B40::func_00428500(const LibVector4* position, const void* unk, 
 {
     u32 skip = static_cast<const LibFieldTarget*>(source)->skip_mask;
 
-    if (unk210 & skip)
+    if (field_mask & skip)
     {
         *(unsigned __int128*)output = 0;
         return;
@@ -1830,7 +2771,7 @@ void LibClass172C60::func_00428500(const LibVector4* position, const void* unk, 
 {
     u32 skip = static_cast<const LibFieldTarget*>(source)->skip_mask;
 
-    if (unk210 & skip)
+    if (field_mask & skip)
     {
         *(unsigned __int128*)output = 0;
         return;
@@ -1876,7 +2817,7 @@ void LibClass172CF0::func_00428500(const LibVector4* position, const void* unk, 
 {
     u32 skip = static_cast<const LibFieldTarget*>(source)->skip_mask;
 
-    if (unk210_mask & skip)
+    if (field_mask & skip)
     {
         *(unsigned __int128*)output = 0;
         return;
@@ -2319,8 +3260,9 @@ extern "C" void func_004261E0(LibClass173070* node, LibClass173070Link* link, Li
  * @param node First node.
  * @param link Link between them.
  * @param other Second node.
+ * @param step Unused; the solver passes it to both link functions.
  */
-extern "C" void func_00426370(LibClass173070* node, LibClass173070Link* link, LibClass173070* other)
+extern "C" void func_00426370(LibClass173070* node, LibClass173070Link* link, LibClass173070* other, float step)
 {
     LibVector4 length;
 
@@ -2597,7 +3539,14 @@ struct SmallConditionalInput04
     float unk04;
 };
 
-extern "C" s32 func_004284A0(void* object, const void* value, float* zero_output, float* small_output)
+/**
+ * @brief Set the output values when the input float is positive.
+ * @param value Input record; its float at 0x4 is tested.
+ * @param zero_output Receives zero.
+ * @param small_output Receives 0.05.
+ * @return 1 when the outputs were set, otherwise 0.
+ */
+s32 LibClass1730D8::func_004284A0(const void* value, float* zero_output, float* small_output)
 {
     const SmallConditionalInput04* state = (const SmallConditionalInput04*)value;
 
@@ -2979,7 +3928,6 @@ LibClass172EA0::~LibClass172EA0()
 LibClass172F30::~LibClass172F30()
 {
 }
-
 
 /** @brief Destroy the array and release both buffers. */
 LibClass173050::~LibClass173050()

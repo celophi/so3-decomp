@@ -6,6 +6,7 @@
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_data.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/model_packet.h"
 #include "overlays/lib/transform_owner_inlines.h"
 #include "ee.h"
 #include "clamp.h"
@@ -17,10 +18,14 @@
 #include "overlays/lib/grid_frame_vu0.h"
 #include "overlays/lib/emission_vu0.h"
 #include "overlays/lib/morph_vu0.h"
+#include "overlays/lib/bounding_sphere_vu0.h"
+#include "overlays/lib/matrix_vu0.h"
+#include "main/object_list.h"
+#include "overlays/lib/link_vu0.h"
+#include "overlays/lib/particle_step_vu0.h"
 
 /** ABE as it sits in the upper word of a GIF tag's first doubleword. */
 #define GIF_TAG_HIGH_PRIM_ABE ((u32)(GIF_TAG_PRIM(GS_PRIM_ABE) >> 32))
-
 
 
 /**
@@ -34,7 +39,6 @@ static inline LibModelPart* lib_model_uncached_part(void* parts, s32 index)
     return reinterpret_cast<LibModelPart*>(
         reinterpret_cast<u32>(static_cast<u8*>(parts) + index * LIB_MODEL_PART_SIZE) | EE_UNCACHED_ACCELERATED);
 }
-
 
 
 #define LIB_MODEL_UNSCALED_MIN 0.999f
@@ -160,9 +164,250 @@ extern "C" void func_0049DA60(LibGridEmitterB0* object, const LibGridEmitterB0* 
     object->unkb4 = other->unkb4;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049DB40);
+/** Particle cell of the 0x80-byte grids; travel holds the distance moved in xyz and the age in w. */
+struct LibGridCell80View
+{
+    u8 unk00[0x10];
+    LibGridVector4 position;
+    LibGridVector4 color;
+    LibGridVector4 velocity;
+    LibGridVector4 acceleration;
+    LibGridVector4 travel;
+    LibGridVector4 color_velocity;
+    LibGridVector4 color_acceleration;
+};
 
-struct LibColliderList;
+/** Particle cell of the 0xB0-byte grids; travel holds the distance moved in xyz and the age in w. */
+struct LibGridCellB0View
+{
+    u8 unk00[0x10];
+    LibGridVector4 position;
+    LibGridVector4 color;
+    LibGridVector4 velocity;
+    LibGridVector4 acceleration;
+    LibGridVector4 travel;
+    LibGridVector4 color_velocity;
+    LibGridVector4 color_acceleration;
+    u8 unk80[0x30];
+};
+
+/**
+ * @brief Add up the force a grid's force field gives at a point.
+ * @param force Force field.
+ * @param point Point.
+ * @param velocity Velocity at the point.
+ * @param result Receives the force.
+ */
+extern "C" void func_004348E0(void* force, const LibVector4* point, const LibVector4* velocity, LibVector4* result);
+
+extern "C" void func_004A1320(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale);
+
+extern "C" void func_004A14A0(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale);
+
+extern "C" void func_004A1670(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale);
+
+extern "C" void func_004A17F0(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale);
+
+/**
+ * @brief Step the live particles of a grid with 0x80-byte cells (force field, colliders, trails) into draw records.
+ * @param object Grid.
+ * @param capacity Draw records available.
+ * @param output Draw records; each live particle fills one row of the grid's columns.
+ * @return Draw records used.
+ */
+extern "C" s32 func_0049DB40(LibGridEmitterB0* object, s32 capacity, LibGridParticleOutput20* output)
+{
+    s32 consumed = 0;
+    s32 index = object->index;
+    s32 columns = object->columns;
+    u64* words = object->active->bits;
+    u64 mask = (u64)1 << (index & 63);
+    s32 word_index = index / 64;
+    u64 active_word;
+    s32 cells;
+    active_word = words[word_index++];
+    cells = object->cell_count;
+    float limit = object->unk30;
+    bool trail = object->unk38 != 1.0f ? true : false;
+    LibVector4 scratch;
+    LibVector4 corrected;
+
+    while (consumed < capacity && index < cells)
+    {
+        u64 active = active_word & mask;
+        mask <<= 1;
+
+        if (mask == 0)
+        {
+            mask = 1;
+            active_word = words[word_index++];
+        }
+
+        if (active == 0)
+        {
+            index++;
+            continue;
+        }
+
+        LibGridCell80View* cell = &static_cast<LibGridCell80View*>(object->cells)[index];
+        void* position = &cell->position;
+        vu0_particle_load_position(position);
+        void* velocity = &cell->velocity;
+        vu0_particle_load_velocity(velocity);
+        void* travel = &cell->travel;
+        vu0_particle_load_travel(travel);
+        void* acceleration = &cell->acceleration;
+        vu0_particle_load_acceleration(acceleration);
+        void* color = &cell->color;
+        vu0_particle_load_color(color);
+        void* color_velocity = &cell->color_velocity;
+        vu0_particle_load_color_velocity(color_velocity);
+        void* color_acceleration = &cell->color_acceleration;
+        vu0_particle_load_color_acceleration(color_acceleration);
+
+        if (object->unkb0 && static_cast<u8*>(object->unkb0)[0x20])
+        {
+            func_004348E0(object->unkb0, (LibVector4*)position, (LibVector4*)velocity, &scratch);
+            vu0_particle_load_force(&scratch);
+        }
+
+        vu0_particle_step_with_force(color_acceleration);
+        vu0_particle_store_position(output);
+
+        if (object->unkb4)
+        {
+            vu0_particle_store_velocity(velocity);
+
+            if (func_0043CBF0(static_cast<LibColliderList*>(object->unkb4), (LibVector4*)position, (LibVector4*)output,
+                             (LibVector4*)velocity, &scratch, &corrected))
+            {
+                vu0_particle_load_bounce(&scratch);
+                vu0_particle_load_position(&corrected);
+                output->position.packed = *(unsigned __int128*)&corrected;
+                vu0_particle_add_bounce();
+            }
+        }
+
+        vu0_particle_store_output_color(output);
+        output += columns;
+        consumed += columns;
+
+        switch (object->unk4C)
+        {
+            case 1:
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+
+                if (limit <= reinterpret_cast<float*>(travel)[3])
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1670(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            case 3:
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+
+                if (reinterpret_cast<float*>(color)[3] < 1.0f)
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1670(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            case 2:
+            {
+                LibVector4 length;
+
+                vu0_particle_store_state_travel_length(travel, position, velocity, acceleration, color, color_velocity);
+                vu0_particle_store_travel_length(&length);
+
+                if (!(length.x < limit))
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1670(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            }
+            case 5:
+            {
+                LibVector4 local;
+
+                vu0_particle_to_local(&object->unk60);
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+                vu0_particle_store_local(&local);
+
+                if (limit <= local.y)
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1670(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            }
+            case 6:
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+
+                if (D_001B6540 && D_001B6540->collide(reinterpret_cast<const LibVector4*>(&object->unk60), position, &cell->color, travel, limit))
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1670(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            default:
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+                break;
+        }
+
+        if (trail)
+        {
+            LibGridParticleOutput20* first = output - columns;
+
+            vu0_particle_load_position(first);
+            vu0_particle_trail_start(object->unk38);
+
+            for (s32 i = 1; i < columns; i++)
+            {
+                vu0_particle_trail_step(&first[i]);
+            }
+        }
+
+        if (object->secondary_emitter && reinterpret_cast<float*>(velocity)[3] <= 0.0f)
+        {
+            func_004A17F0(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, 0);
+        }
+
+        index++;
+    }
+
+    object->index = index;
+    return consumed;
+}
 
 /**
  * @brief Move a grid's colliders with the transform it emits from.
@@ -245,7 +490,202 @@ extern "C" void func_0049E360(LibGridEmitterB0* object, const LibGridEmitterB0* 
     object->unkb4 = other->unkb4;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049E440);
+/**
+ * @brief Step the live particles of a grid with 0xB0-byte cells (force field, colliders, trails) into draw records.
+ * @param object Grid.
+ * @param capacity Draw records available.
+ * @param output Draw records; each live particle fills one row of the grid's columns.
+ * @return Draw records used.
+ */
+extern "C" s32 func_0049E440(LibGridEmitterB0* object, s32 capacity, LibGridParticleOutput20* output)
+{
+    s32 consumed = 0;
+    s32 index = object->index;
+    s32 columns = object->columns;
+    u64* words = object->active->bits;
+    u64 mask = (u64)1 << (index & 63);
+    s32 word_index = index / 64;
+    u64 active_word;
+    s32 cells;
+    active_word = words[word_index++];
+    cells = object->cell_count;
+    float limit = object->unk30;
+    bool trail = object->unk38 != 1.0f ? true : false;
+    LibVector4 scratch;
+    LibVector4 corrected;
+
+    while (consumed < capacity && index < cells)
+    {
+        u64 active = active_word & mask;
+        mask <<= 1;
+
+        if (mask == 0)
+        {
+            mask = 1;
+            active_word = words[word_index++];
+        }
+
+        if (active == 0)
+        {
+            index++;
+            continue;
+        }
+
+        LibGridCellB0View* cell = &static_cast<LibGridCellB0View*>(object->cells)[index];
+        void* position = &cell->position;
+        vu0_particle_load_position(position);
+        void* velocity = &cell->velocity;
+        vu0_particle_load_velocity(velocity);
+        void* travel = &cell->travel;
+        vu0_particle_load_travel(travel);
+        void* acceleration = &cell->acceleration;
+        vu0_particle_load_acceleration(acceleration);
+        void* color = &cell->color;
+        vu0_particle_load_color(color);
+        void* color_velocity = &cell->color_velocity;
+        vu0_particle_load_color_velocity(color_velocity);
+        void* color_acceleration = &cell->color_acceleration;
+        vu0_particle_load_color_acceleration(color_acceleration);
+
+        if (object->unkb0 && static_cast<u8*>(object->unkb0)[0x20])
+        {
+            func_004348E0(object->unkb0, (LibVector4*)position, (LibVector4*)velocity, &scratch);
+            vu0_particle_load_force(&scratch);
+        }
+
+        vu0_particle_step_with_force(color_acceleration);
+        vu0_particle_store_position(output);
+
+        if (object->unkb4)
+        {
+            vu0_particle_store_velocity(velocity);
+
+            if (func_0043CBF0(static_cast<LibColliderList*>(object->unkb4), (LibVector4*)position, (LibVector4*)output,
+                             (LibVector4*)velocity, &scratch, &corrected))
+            {
+                vu0_particle_load_bounce(&scratch);
+                vu0_particle_load_position(&corrected);
+                output->position.packed = *(unsigned __int128*)&corrected;
+                vu0_particle_add_bounce();
+            }
+        }
+
+        vu0_particle_store_output_color(output);
+        output += columns;
+        consumed += columns;
+
+        switch (object->unk4C)
+        {
+            case 1:
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+
+                if (limit <= reinterpret_cast<float*>(travel)[3])
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1320(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            case 3:
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+
+                if (reinterpret_cast<float*>(color)[3] < 1.0f)
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1320(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            case 2:
+            {
+                LibVector4 length;
+
+                vu0_particle_store_state_travel_length(travel, position, velocity, acceleration, color, color_velocity);
+                vu0_particle_store_travel_length(&length);
+
+                if (!(length.x < limit))
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1320(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            }
+            case 5:
+            {
+                LibVector4 local;
+
+                vu0_particle_to_local(&object->unk60);
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+                vu0_particle_store_local(&local);
+
+                if (limit <= local.y)
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1320(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            }
+            case 6:
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+
+                if (D_001B6540 && D_001B6540->collide(reinterpret_cast<const LibVector4*>(&object->unk60), position, &cell->color, travel, limit))
+                {
+                    object->active->clear_bit(index);
+
+                    if (object->primary_emitter)
+                    {
+                        func_004A1320(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, (LibVector4*)color);
+                    }
+                }
+
+                break;
+            default:
+                vu0_particle_store_state(travel, position, velocity, acceleration, color, color_velocity);
+                break;
+        }
+
+        if (trail)
+        {
+            LibGridParticleOutput20* first = output - columns;
+
+            vu0_particle_load_position(first);
+            vu0_particle_trail_start(object->unk38);
+
+            for (s32 i = 1; i < columns; i++)
+            {
+                vu0_particle_trail_step(&first[i]);
+            }
+        }
+
+        if (object->secondary_emitter && reinterpret_cast<float*>(velocity)[3] <= 0.0f)
+        {
+            func_004A14A0(object, (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, 0);
+        }
+
+        index++;
+    }
+
+    object->index = index;
+    return consumed;
+}
 
 /**
  * @brief Start a grid's emission pass: reset its cursor, copy the source's transposed transform, update its colliders
@@ -318,14 +758,572 @@ void LibClass177090::copy_settings(const LibClass173A40* source)
     // TODO: The copy marks its own storage borrowed by storing the same pointers back. I think this was
     // an inline setter given unkb0 and unkb4, but every helper form I tried loads them in the other order.
     u8* first = unkb0;
-    FieldVec4A* second = unkb4;
+    LibClass173490Entry* second = unkb4;
     unkc9 = 1;
     unkb0 = first;
     unkb4 = second;
     unkc4 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049ED80);
+extern "C" void func_004A08F0(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale);
+
+extern "C" void func_004A0A70(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale);
+
+/**
+ * @brief Run each live particle's script and step it (force field, colliders, swirl, color jitter, trails) into
+ *        draw records.
+ * @param object Grid.
+ * @param capacity Draw records available.
+ * @param output Draw records; each live particle fills one row of the grid's columns.
+ * @return Draw records used.
+ */
+extern "C" s32 func_0049ED80(LibClass177090* object, s32 capacity, LibGridParticleOutput20* output)
+{
+    s32 consumed = 0;
+    LibVector4 scratch;
+    LibVector4 corrected;
+    s32 index = object->unk2c;
+    s32 columns = object->unk10;
+    u64* words = object->unk1c->bits;
+    u64 mask = (u64)1 << (index & 63);
+    s32 word_index = index / 64;
+    u64 active_word;
+    s32 cells;
+    active_word = words[word_index++];
+    cells = object->unk0c;
+    float limit = object->unk30;
+    bool trail = object->unk38 != 0.0f ? true : false;
+
+    while (consumed < capacity && index < cells)
+    {
+        u64 active = active_word & mask;
+        mask <<= 1;
+
+        if (mask == 0)
+        {
+            mask = 1;
+            active_word = words[word_index++];
+        }
+
+        if (active == 0)
+        {
+            index++;
+            continue;
+        }
+
+        LibVector4 second;
+        LibVector4 first;
+        LibVector4 delta;
+        u8 stop_on_hit = 0;
+        LibClass1741F8* element = &object->unk14[index];
+        LibGridParticleCell* cell = reinterpret_cast<LibGridParticleCell*>(element);
+        void* acceleration = &cell->acceleration;
+        void* position = &cell->position;
+        s32 state = 0;
+        void* velocity = &cell->velocity;
+        void* travel = &cell->travel;
+        void* color = &cell->color;
+
+        while (state != 2)
+        {
+            s32 wait = cell->wait_mode;
+
+            if (wait == 0)
+            {
+                s32 pc = cell->script_pc;
+
+                while (state == 0)
+                {
+                    LibClass173490Entry* arg = &object->unkb4[pc];
+
+                    switch (object->unkb0[pc])
+                    {
+                    case 1:
+                        cell->velocity.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 2:
+                        cell->acceleration.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 3:
+                        cell->angle_velocity.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 4:
+                        cell->angle_acceleration.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 5:
+                        cell->radius_velocity.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 6:
+                        cell->radius_acceleration.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 7:
+                        cell->acceleration.floats[0] = arg->x * cell->velocity.floats[0];
+                        cell->acceleration.floats[1] = arg->y * cell->velocity.floats[1];
+                        cell->acceleration.floats[2] = arg->z * cell->velocity.floats[2];
+                        break;
+                    case 8:
+                        cell->angle_acceleration.floats[0] = arg->x * cell->angle_velocity.floats[0];
+                        cell->angle_acceleration.floats[1] = arg->y * cell->angle_velocity.floats[1];
+                        cell->angle_acceleration.floats[2] = arg->z * cell->angle_velocity.floats[2];
+                        break;
+                    case 9:
+                        cell->radius_acceleration.floats[0] = arg->x * cell->radius_velocity.floats[0];
+                        cell->radius_acceleration.floats[1] = arg->y * cell->radius_velocity.floats[1];
+                        cell->radius_acceleration.floats[2] = arg->z * cell->radius_velocity.floats[2];
+                        break;
+                    case 10:
+                        cell->flags |= 2;
+                        break;
+                    case 11:
+                        cell->flags &= ~2;
+                        break;
+                    case 12:
+                        cell->color_velocity.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 13:
+                        cell->color_acceleration.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 14:
+                        cell->color_acceleration.floats[0] = arg->x * cell->color_velocity.floats[0];
+                        cell->color_acceleration.floats[1] = arg->y * cell->color_velocity.floats[1];
+                        cell->color_acceleration.floats[2] = arg->z * cell->color_velocity.floats[2];
+                        cell->color_acceleration.floats[3] = arg->w * cell->color_velocity.floats[3];
+                        break;
+                    case 15:
+                        cell->color_mode = 0;
+                        break;
+                    case 16:
+                        cell->color_mode = 1;
+                        cell->unkf0.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 17:
+                        cell->color_mode = 2;
+                        cell->unkf0.packed = *(unsigned __int128*)arg;
+                        break;
+                    case 18:
+                    {
+                        cell->color_mode = 2;
+                        cell->unk100.packed = *(unsigned __int128*)arg;
+                        lib_grid_clear_vector(&cell->unk110);
+                        lib_grid_clear_vector(&cell->unk120);
+                        break;
+                    }
+                    case 19:
+                        state = 2;
+                        break;
+                    case 20:
+                        state = 1;
+                        cell->wait_mode = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 21:
+                        cell->wait_mode = 2;
+                        state = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 22:
+                        state = 1;
+                        cell->wait_mode = 3;
+                        break;
+                    case 23:
+                        state = 1;
+                        cell->wait_mode = 4;
+                        break;
+                    case 24:
+                        cell->wait_mode = 5;
+                        state = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 25:
+                        state = 1;
+                        cell->wait_mode = 6;
+                        break;
+                    case 26:
+                        state = 1;
+                        cell->wait_mode = 7;
+                        break;
+                    case 27:
+                        cell->wait_mode = 8;
+                        state = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 28:
+                        cell->wait_mode = 9;
+                        state = 1;
+                        cell->wait_value = arg->w;
+                        break;
+                    case 29:
+                        if (object->unk48)
+                        {
+                            object->unk4f = (s32)arg->w;
+                            func_004A08F0(reinterpret_cast<LibGridEmitter*>(object), (LibVector4*)position, (LibVector4*)velocity,
+                                          (LibVector4*)acceleration, (LibVector4*)color);
+                        }
+
+                        break;
+                    case 30:
+                        static_cast<LibGridFrameMotion*>(reinterpret_cast<LibGridCell170*>(element))->rate.floats[0] = arg->w;
+                        break;
+                    case 31:
+                    {
+                        LibGridFrameMotion* motion = static_cast<LibGridFrameMotion*>(reinterpret_cast<LibGridCell170*>(element));
+                        motion->rate.floats[1] = arg->x;
+                        motion->rate.floats[2] = arg->y;
+                        break;
+                    }
+                    case 32:
+                    {
+                        LibGridVector4* target = &cell->velocity;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 33:
+                    {
+                        LibGridVector4* target = &cell->acceleration;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 34:
+                    {
+                        LibGridVector4* target = &cell->angle_velocity;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 35:
+                    {
+                        LibGridVector4* target = &cell->angle_acceleration;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 36:
+                    {
+                        LibGridVector4* target = &cell->radius_velocity;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 37:
+                    {
+                        LibGridVector4* target = &cell->radius_acceleration;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        break;
+                    }
+                    case 38:
+                    {
+                        LibGridVector4* target = &cell->color_velocity;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        target->floats[3] += arg->w * (vu0_random_next() - 1.0f) - 0.5f * arg->w;
+                        break;
+                    }
+                    case 39:
+                    {
+                        LibGridVector4* target = &cell->color_acceleration;
+                        target->floats[0] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[1] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        target->floats[2] += arg->z * (vu0_random_next() - 1.0f) - 0.5f * arg->z;
+                        target->floats[3] += arg->w * (vu0_random_next() - 1.0f) - 0.5f * arg->w;
+                        break;
+                    }
+                    case 40:
+                    {
+                        LibGridFrameMotion* motion = static_cast<LibGridFrameMotion*>(reinterpret_cast<LibGridCell170*>(element));
+                        LibGridVector4* target = &motion->rate;
+                        target->floats[0] += arg->w * (vu0_random_next() - 1.0f) - 0.5f * arg->w;
+                        break;
+                    }
+                    case 41:
+                    {
+                        LibGridFrameMotion* motion = static_cast<LibGridFrameMotion*>(reinterpret_cast<LibGridCell170*>(element));
+                        LibGridVector4* target = &motion->rate;
+                        target->floats[1] += arg->x * (vu0_random_next() - 1.0f) - 0.5f * arg->x;
+                        target->floats[2] += arg->y * (vu0_random_next() - 1.0f) - 0.5f * arg->y;
+                        break;
+                    }
+                    }
+
+                    if (state == 2)
+                    {
+                        object->unk1c->clear_bit(index);
+                    }
+                    else
+                    {
+                        pc++;
+                    }
+                }
+
+                cell->script_pc = pc;
+            }
+            else
+            {
+                state = 0;
+
+                if (!(reinterpret_cast<float*>(travel)[3] < limit))
+                {
+                    wait = 0;
+                }
+
+                switch (wait)
+                {
+                case 1:
+                {
+                    float value = cell->wait_value;
+
+                    if (!(reinterpret_cast<float*>(travel)[3] < value))
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                }
+                case 2:
+                {
+                    LibVector4 length;
+                    vu0_particle_load_travel(travel);
+                    vu0_particle_squared_travel();
+                    vu0_particle_store_squared_travel(&length);
+
+                    if (!(length.x < cell->wait_value))
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                }
+                case 3:
+                    if (reinterpret_cast<float*>(color)[3] < 1.0f)
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                case 4:
+                    if (reinterpret_cast<float*>(color)[0] < 1.0f && reinterpret_cast<float*>(color)[1] < 1.0f &&
+                        reinterpret_cast<float*>(color)[2] < 1.0f)
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                case 5:
+                    if (reinterpret_cast<s32*>(position)[3] > (s32)cell->wait_value)
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                case 6:
+                    stop_on_hit = 1;
+                    break;
+                case 7:
+                {
+                    LibVector4 local;
+                    vu0_particle_point_through(position, object->unk60, &local);
+
+                    if (D_001B654C->height(&local, 0) <= local.y)
+                    {
+                        wait = 0;
+                    }
+
+                    vu0_particle_restore_time_step(g_frame_seconds);
+                    break;
+                }
+                case 8:
+                {
+                    LibVector4 local;
+                    vu0_particle_point_through(position, object->unk60, &local);
+
+                    if (!(local.y < cell->wait_value))
+                    {
+                        wait = 0;
+                    }
+
+                    vu0_particle_restore_time_step(g_frame_seconds);
+                    break;
+                }
+                case 9:
+                    if (D_001B6540 && D_001B6540->collide(object->unk60, reinterpret_cast<const LibVector4*>(position), lib_grid_particle_color(cell), travel, limit))
+                    {
+                        wait = 0;
+                    }
+
+                    break;
+                }
+
+                if (wait != 0)
+                {
+                    break;
+                }
+
+                cell->wait_mode = 0;
+            }
+        }
+
+        if (object->unkc8)
+        {
+            LibGridVector4* radius = &cell->radius;
+            LibGridVector4* angle = &cell->angle;
+            vu0_particle_load_radius(radius);
+            vu0_particle_load_angle(angle);
+            LibGridVector4* radius_velocity = &cell->radius_velocity;
+            vu0_particle_load_radius_velocity(radius_velocity);
+            LibGridVector4* angle_velocity = &cell->angle_velocity;
+            vu0_particle_load_angle_velocity(angle_velocity);
+            LibGridVector4* swirl = &cell->swirl;
+            vu0_particle_swirl_advance(&cell->velocity);
+            vu0_particle_store_radius(radius);
+            vu0_particle_store_angle(angle);
+            lib_compute_sine_cosine_pair(angle->floats[0], &first);
+            lib_compute_sine_cosine_pair(angle->floats[1], &second);
+            float x = first.z * (radius->floats[0] * second.z);
+            delta.x = x - swirl->floats[0];
+            swirl->floats[0] = x;
+            float y = radius->floats[1] * first.w;
+            delta.y = y - swirl->floats[1];
+            swirl->floats[1] = y;
+            float z = first.z * (radius->floats[2] * second.w);
+            delta.z = z - swirl->floats[2];
+            swirl->floats[2] = z;
+            vu0_particle_load_swirl_delta(&delta);
+            vu0_particle_load_radius_velocity(radius_velocity);
+            vu0_particle_load_radius_acceleration(&cell->radius_acceleration);
+            vu0_particle_load_angle_velocity(angle_velocity);
+            vu0_particle_load_angle_acceleration(&cell->angle_acceleration);
+            vu0_particle_swirl_accelerate();
+            vu0_particle_store_radius_velocity(radius_velocity);
+            vu0_particle_store_angle_velocity(angle_velocity);
+        }
+        else
+        {
+            vu0_particle_clear_swirl_delta();
+        }
+
+        s32 mode = cell->color_mode;
+
+        if (mode)
+        {
+            LibGridVector4* range = &cell->unkf0;
+
+            if (mode == 1)
+            {
+                LibVector4 offset;
+                offset.x = range->floats[0] * (vu0_random_next() - 1.0f) - 0.5f * range->floats[0];
+                offset.y = range->floats[1] * (vu0_random_next() - 1.0f) - 0.5f * range->floats[1];
+                offset.z = range->floats[2] * (vu0_random_next() - 1.0f) - 0.5f * range->floats[2];
+                offset.w = range->floats[3] * (vu0_random_next() - 1.0f) - 0.5f * range->floats[3];
+                vu0_particle_load_color_offset(&offset);
+            }
+            else
+            {
+                LibVector4 rotation;
+                LibVector4 saved;
+                LibGridVector4* base = &cell->unk100;
+                LibGridVector4* angles = &cell->unk120;
+                vu0_particle_load_spin_angles(angles);
+                vu0_particle_save_swirl_delta(&saved);
+                func_004CA090((FieldVec4A*)&rotation, angles->floats[0], angles->floats[1], angles->floats[2]);
+                rotation.w = lib_sine_degree9(angles->floats[3]);
+                vu0_particle_load_swirl_delta(&saved);
+                vu0_particle_clear_script_force();
+                vu0_particle_load_spin_rate(range);
+                vu0_particle_load_spin_rotation(&rotation);
+                vu0_particle_load_spin_offset(base);
+                LibGridVector4* rotated = &cell->unk110;
+                vu0_particle_load_spin_previous(rotated);
+                vu0_particle_spin();
+                vu0_particle_store_spin_angles(angles);
+                vu0_particle_store_spin_offset(rotated);
+            }
+        }
+        else
+        {
+            vu0_particle_clear_color_offset();
+        }
+
+        vu0_particle_load_position(position);
+        vu0_particle_load_velocity(velocity);
+        vu0_particle_load_acceleration(acceleration);
+        vu0_particle_load_travel(travel);
+        vu0_particle_load_color(color);
+        void* color_velocity = &cell->color_velocity;
+        vu0_particle_load_color_velocity(color_velocity);
+        void* color_acceleration = &cell->color_acceleration;
+        vu0_particle_load_color_acceleration(color_acceleration);
+
+        if (object->unkb8 && static_cast<u8*>(object->unkb8)[0x20])
+        {
+            func_004348E0(object->unkb8, (LibVector4*)position, (LibVector4*)velocity, &scratch);
+            vu0_particle_load_script_force(&scratch);
+        }
+
+        vu0_particle_step_scripted(color_acceleration);
+        vu0_particle_store_position(output);
+
+        if (object->unkbc)
+        {
+            vu0_particle_store_velocity(velocity);
+
+            if (func_0043CBF0(static_cast<LibColliderList*>(object->unkbc), (LibVector4*)position, (LibVector4*)output,
+                              (LibVector4*)velocity, &scratch, &corrected))
+            {
+                if (stop_on_hit)
+                {
+                    cell->wait_mode = 0;
+                }
+
+                vu0_particle_load_bounce(&scratch);
+                vu0_particle_load_position(&corrected);
+                output->position.packed = *(unsigned __int128*)&corrected;
+                vu0_particle_add_bounce();
+            }
+        }
+
+        vu0_particle_store_output_color(output);
+        vu0_particle_store_travel(travel);
+        vu0_particle_store_position(position);
+        vu0_particle_store_velocity(velocity);
+        vu0_particle_store_acceleration(acceleration);
+        vu0_particle_store_color(color);
+        vu0_particle_store_color_velocity(color_velocity);
+
+        if (trail)
+        {
+            vu0_particle_load_position(output);
+            vu0_particle_trail_start(object->unk38);
+
+            for (s32 i = 1; i < columns; i++)
+            {
+                vu0_particle_trail_step(&output[i]);
+            }
+        }
+
+        if (object->unk50 && reinterpret_cast<float*>(velocity)[3] <= 0.0f)
+        {
+            func_004A0A70(reinterpret_cast<LibGridEmitter*>(object), (LibVector4*)position, (LibVector4*)velocity, (LibVector4*)acceleration, 0);
+        }
+
+        output += columns;
+        consumed += columns;
+        index++;
+    }
+
+    object->unk2c = index;
+    return consumed;
+}
 
 /**
  * @brief Start the grid's emission pass: reset its cursor, copy the source's transposed transform, update its
@@ -1152,9 +2150,210 @@ s32 func_004A29D0(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2EF0);
+/**
+ * @brief Queue the uploads of a resident image object's texture and palette when the model has marked them dirty.
+ * @param model Model whose upload flags and transfer packets are used.
+ * @param source Resident image object; shared images are skipped.
+ * @param cursor DMA chain position to write REF tags at.
+ * @return The cursor after the written tags.
+ */
+extern "C" u64* func_004A2EF0(LibModel* model, ResidentImageObject* source, u64* cursor)
+{
+    if (source->shared_image)
+    {
+        return cursor;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3140);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(model->payload);
+    ResidentRenderDataRecord* binding = static_cast<ResidentRenderDataRecord*>(source->get_record());
+    s32 index = mesh->unk40;
+    LibImageHeader* image = reinterpret_cast<LibImageHeader*>(binding->data);
+
+    if (model->unk728[index] & 1)
+    {
+        model->unk728[index] &= ~1;
+        s32 offset = (index * 2 + 1) * sizeof(LibTextureUpload);
+        LibImageInfo* info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(image) + image->image_offset);
+        LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(image) + info->pixel_offset);
+        LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(
+            reinterpret_cast<u32>(reinterpret_cast<u8*>(model->texture_uploads) + offset) | EE_UNCACHED_ACCELERATED);
+
+        if (!(model->unk728[index] & 2))
+        {
+            unsigned __int128 bitbltbuf;
+            unsigned __int128 trxreg;
+            unsigned __int128 image_tag;
+            u64 unk68;
+
+            bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+            trxreg = *(unsigned __int128*)&packet->trxreg;
+            unk68 = *(u64*)&packet->unk64[4];
+            image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+            *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+            *(unsigned __int128*)&upload->trxreg = trxreg;
+            *(u64*)&upload->unk64[4] = unk68;
+            *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+            model->unk728[index] |= 2;
+        }
+
+        upload->bitbltbuf.data = binding->unk10[0];
+        s32 quadwords = (s32)(info->data_size + 15) / 16;
+        cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, reinterpret_cast<u8*>(model->texture_uploads) + offset);
+        cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+        cursor += 4;
+    }
+
+    if (model->unk728[index] & 4)
+    {
+        model->unk728[index] &= ~4;
+        LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(image) + image->palette_offset);
+        s32 offset = (index * 2 + 2) * sizeof(LibTextureUpload);
+        LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(
+            reinterpret_cast<u32>(reinterpret_cast<u8*>(model->texture_uploads) + offset) | EE_UNCACHED_ACCELERATED);
+
+        if (!(model->unk728[index] & 8))
+        {
+            unsigned __int128 bitbltbuf;
+            unsigned __int128 trxreg;
+            unsigned __int128 image_tag;
+            u64 unk68;
+
+            bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+            trxreg = *(unsigned __int128*)&packet->trxreg;
+            unk68 = *(u64*)&packet->unk64[4];
+            image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+            *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+            *(unsigned __int128*)&upload->trxreg = trxreg;
+            *(u64*)&upload->unk64[4] = unk68;
+            *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+            model->unk728[index] |= 8;
+        }
+
+        upload->bitbltbuf.data = binding->unk10[1];
+        s32 quadwords = (image->palette_size + 15) / 16;
+        cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, reinterpret_cast<u8*>(model->texture_uploads) + offset);
+        cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+        cursor += 4;
+    }
+
+    return cursor;
+}
+
+/**
+ * @brief Bind a resident image object's texture to the model: claim a shared image slot or load the image and its
+ *        palette into the texture cache, then point the draw packet at slot 0x1F's texture.
+ * @param model Model whose draw packet and upload flags are updated.
+ * @param source Resident image object holding the image record or shared image number.
+ * @return One when the texture cache has no room yet, otherwise zero.
+ */
+extern "C" s32 func_004A3140(LibModel* model, ResidentImageObject* source)
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(model->payload);
+    ResidentRenderDataRecord* record = static_cast<ResidentRenderDataRecord*>(source->get_record());
+    u32 shared = source->shared_image;
+
+    if (record != 0 || shared != 0)
+    {
+        if (source->animated && source->channel != 0)
+        {
+            reinterpret_cast<LibRenderChannel*>(source->channel)->update();
+        }
+
+        if (shared)
+        {
+            g_texture_cache->find_texture(0, LIB_TEXTURE_TAG_MLPS, (u8)shared, 0x1F, 0, 0, 0);
+            u32 bit = 1 << ((u8)shared - 1);
+            u32 stale = *reinterpret_cast<u32*>(model->unk784) & ~bit;
+
+            if (stale)
+            {
+                *reinterpret_cast<u32*>(model->unk784) = ~stale;
+                u32 previous = D_001B65BC;
+                model->unk8c &= ~stale;
+                D_001B65BC &= ~stale;
+
+                if (previous != D_001B65BC)
+                {
+                    D_001B65C0 = 1;
+                }
+            }
+
+            if (!(bit & model->unk8c))
+            {
+                *reinterpret_cast<u32*>(model->unk784) |= bit;
+                u32 previous = D_001B65BC;
+                model->unk8c |= bit;
+                D_001B65BC |= bit;
+
+                if (previous != D_001B65BC)
+                {
+                    D_001B65C0 = 1;
+                }
+            }
+        }
+        else
+        {
+            s32 index = mesh->unk40;
+            LibImageHeader* image = reinterpret_cast<LibImageHeader*>(record->data);
+            LibImageInfo* info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(image) + image->image_offset);
+            u32 address = g_texture_cache->find_texture(reinterpret_cast<LibTextureRequest*>(info), *reinterpret_cast<u32*>(image->name),
+                                                        image->id, 0x1F, image->flags, 0, reinterpret_cast<LibTextureUser*>(record));
+
+            if (address != 0)
+            {
+                if (address == 1)
+                {
+                    return 1;
+                }
+
+                u64 bitbltbuf = *reinterpret_cast<u64*>(reinterpret_cast<u8*>(image) + info->pixel_offset + 0x20);
+                record->unk10[0] = (bitbltbuf & ~(0x3FFFULL << 32)) | (((u64)address >> 6) << 32);
+                model->unk728[index] |= 1;
+                model->unk728[index] &= ~2;
+            }
+
+            if (image->unk02)
+            {
+                u8* palette = reinterpret_cast<u8*>(image) + image->palette_offset;
+                u32 clut = g_texture_cache->func_004A6EA0(image, 0x1F, 0);
+
+                if (clut != 0)
+                {
+                    record->unk10[1] = (*reinterpret_cast<u64*>(palette + 0x20) & ~(0x3FFFULL << 32)) | (((u64)clut >> 6) << 32);
+                    model->unk728[index] |= 4;
+                    model->unk728[index] &= ~8;
+                }
+            }
+        }
+
+        LibModelPacket* packet = reinterpret_cast<LibModelPacket*>(reinterpret_cast<u32>(&model->draw_packet) | EE_UNCACHED_ACCELERATED);
+        func_004D5C10(model->resource);
+        u8* part = static_cast<u8*>(func_004D5AC0(model->resource)) + 0x40;
+        u32* uncached = reinterpret_cast<u32*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT);
+        *reinterpret_cast<u32*>(&packet->unkf4[0x1C]) = D_004ED320[source->unk2be];
+        *reinterpret_cast<u32*>(&packet->unkf4[0x20]) = uncached[0x64 / 4] | 0x80000 | (source->unk2be ? 0x200000 : 0);
+        *reinterpret_cast<float*>(&packet->unk250[0xC]) = source->unk21c;
+        u64 tex0 = g_texture_cache->entries[g_texture_cache->slot_entries[0x1F]].tex0 | (4ULL << 32);
+
+        switch ((s32)((g_texture_cache->entries[g_texture_cache->slot_entries[0x1F]].tex0 >> 20) & 0x3F))
+        {
+        case GS_PSMT4:
+            *reinterpret_cast<u64*>(&packet->unk290[0x10]) = tex0 | (g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0x1F]].tex0 | (u64)source->unk2c1 << 56);
+            *reinterpret_cast<u64*>(&packet->unk290[0]) = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0x1F]].tex0 | 0x4000000621300000ULL;
+            break;
+        case GS_PSMT8:
+            *reinterpret_cast<u64*>(&packet->unk290[0x10]) = tex0 | g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0x1F]].tex0;
+            *reinterpret_cast<u64*>(&packet->unk290[0]) = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0x1F]].tex0 | 0x4000000621300000ULL;
+            break;
+        default:
+            *reinterpret_cast<u64*>(&packet->unk290[0]) = tex0;
+            *reinterpret_cast<u64*>(&packet->unk290[0x10]) = tex0;
+            break;
+        }
+    }
+
+    return 0;
+}
 
 /**
  * @brief Turn fogging on or off, in the model's part packets too.
@@ -1605,7 +2804,47 @@ s32 LibModel::get_box_cull_center(void* output)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", get_bounding_sphere__8LibModelFv);
+extern "C" LibVector4 g_default_bounding_sphere;
+
+/**
+ * @brief Return the mesh's bounding sphere moved by the transform, its radius scaled by the transform's x row
+ *        length, or the default sphere without a resource or payload.
+ * @return Bounding sphere.
+ */
+const LibVector4* LibModel::get_bounding_sphere()
+{
+    if (resource == 0)
+    {
+        return &g_default_bounding_sphere;
+    }
+
+    vu0_start_row_scale(&transform);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(payload);
+
+    if (mesh == 0)
+    {
+        // TODO: The game evaluates the resource payload here and drops it; only its branches are left.
+        lib_model_mesh(this);
+        return &g_default_bounding_sphere;
+    }
+
+    ee_transpose_matrix_to_registers(&transform);
+    LibVector4 sphere;
+    LibVector4 scale;
+    float radius = mesh->sphere_radius;
+    vu0_wait_microprogram();
+    vu0_store_vf6(&scale);
+    sphere.w = radius * scale.x;
+    // TODO: The centre is copied as words (lw/sw) in the game; float assignments go through the FPU.
+    u32 x = reinterpret_cast<const u32*>(mesh->sphere_center)[0];
+    u32 y = reinterpret_cast<const u32*>(mesh->sphere_center)[1];
+    u32 z = reinterpret_cast<const u32*>(mesh->sphere_center)[2];
+    reinterpret_cast<u32*>(&sphere)[0] = x;
+    reinterpret_cast<u32*>(&sphere)[1] = y;
+    reinterpret_cast<u32*>(&sphere)[2] = z;
+    vu0_transform_by_transposed(&sphere, &bounding_sphere);
+    return &bounding_sphere;
+}
 
 /** @brief Pick the draw bucket from the draw flags, blend mode and mesh. */
 void LibModel::set_default_draw_bucket()
@@ -1736,9 +2975,651 @@ void LibModel::apply_part_settings()
     unk770 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A4710);
+/** Entry of a model's part table: a mesh part record, the part it draws, and its view depth. */
+struct LibModelPartEntry
+{
+    u8* record;
+    LibModelPart* part;
+    float depth;
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A4ED0);
+/** Centre of the mesh part being sorted, as the microprogram reads it. */
+extern "C" s32 D_004ED2F0[4];
+
+/**
+ * @brief Fill the model's part table: each mesh part record, the part it draws and its view depth, with opaque parts
+ *        first and blended ones (or every part while the model blends) at the end; on the first pass the blended
+ *        ones are sorted by depth. While the model blends, switch the blended parts to its ALPHA setting and keep
+ *        their old values for apply_part_settings.
+ * @param model Model.
+ * @param matrix Camera the model is drawn with.
+ * @param first Nonzero for the pass of a mesh without unk3c.
+ * @return Zero when a table couldn't be allocated.
+ */
+extern "C" s32 func_004A4710(LibModel* model, const void* matrix, s32 first)
+{
+    const LibCamera* camera = static_cast<const LibCamera*>(matrix);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource));
+    s32 part_count = mesh->part_count;
+    s32 front = 0;
+    s32 back = part_count;
+    LibModelPartEntry** sorted;
+
+    if (first)
+    {
+        s32 size = part_count * 16;
+
+        if (model->unk77c != part_count || model->unk768 == 0)
+        {
+            delete model->unk768;
+
+            if (D_001B659C != 0)
+            {
+                model->unk768 = resident_heap_allocate(D_001B659C, size);
+            }
+            else
+            {
+                model->unk768 = malloc_guess(size);
+            }
+        }
+
+        if (model->unk768 == 0)
+        {
+            return 0;
+        }
+
+        func_004D5C10(model->resource);
+        LibModelPart* part = 0;
+        const LibMatrix44Value* parent = lib_get_parent_matrix(model);
+        LibMatrix44Value view;
+
+        if (parent == 0)
+        {
+            *(unsigned __int128*)&view.m[0] = *(const unsigned __int128*)&camera->view_matrix.m[0];
+            *(unsigned __int128*)&view.m[1] = *(const unsigned __int128*)&camera->view_matrix.m[1];
+            *(unsigned __int128*)&view.m[2] = *(const unsigned __int128*)&camera->view_matrix.m[2];
+            *(unsigned __int128*)&view.m[3] = *(const unsigned __int128*)&camera->view_matrix.m[3];
+        }
+        else
+        {
+            LibMatrix44Value* out = &view;
+            vu0_multiply_matrix(out, &camera->view_matrix, parent);
+        }
+
+        vu0_start_microprogram_1f0_vf5_vf8(&view);
+        LibModelPartEntry* entries = static_cast<LibModelPartEntry*>(model->unk768);
+        sorted = reinterpret_cast<LibModelPartEntry**>(static_cast<u8*>(model->unk768) + part_count * 12);
+
+        for (s32 i = 0; i < part_count; i++)
+        {
+            LibVector4 depth;
+            u8* record = static_cast<u8*>(func_004D5AC0(model->resource));
+            D_004ED2F0[0] = *reinterpret_cast<s16*>(record + 0xC);
+            D_004ED2F0[1] = *reinterpret_cast<s16*>(record + 0xE);
+            D_004ED2F0[2] = *reinterpret_cast<s16*>(record + 0x10);
+            vu0_start_microprogram_188_vf5(D_004ED2F0);
+            entries[i].record = record;
+
+            if (*reinterpret_cast<u16*>(record + 0x14) & 1)
+            {
+                part = reinterpret_cast<LibModelPart*>(record + 0x40);
+                u32 slot = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT)->slot;
+
+                if (slot != 0)
+                {
+                    part = reinterpret_cast<LibModelPart*>(static_cast<u8*>(model->parts) + (slot - 1) * LIB_MODEL_PART_SIZE);
+                }
+            }
+
+            entries[i].part = part;
+
+            if ((reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT)->first_tag_high & GIF_TAG_HIGH_PRIM_ABE) ||
+                model->blend_mode)
+            {
+                sorted[--back] = &entries[i];
+            }
+            else
+            {
+                sorted[front++] = &entries[i];
+            }
+
+            vu0_wait_microprogram();
+            vu0_read_vf6(&depth);
+            entries[i].depth = depth.z;
+        }
+
+        s32 j;
+        s32 k;
+        LibModelPartEntry* key;
+
+        for (k = front; k < part_count; k++)
+        {
+            key = sorted[k];
+            float depth = key->depth;
+            j = k - 1;
+
+            while (j >= front && sorted[k]->depth < depth)
+            {
+                sorted[j + 1] = sorted[j];
+                j--;
+            }
+
+            sorted[j + 1] = key;
+        }
+    }
+    else
+    {
+        s32 size = part_count * 16;
+
+        if (model->unk77c != part_count || model->unk76c == 0)
+        {
+            delete model->unk76c;
+
+            if (D_001B659C != 0)
+            {
+                model->unk76c = resident_heap_allocate(D_001B659C, size);
+            }
+            else
+            {
+                model->unk76c = malloc_guess(size);
+            }
+
+            if (model->unk76c == 0)
+            {
+                return 0;
+            }
+
+            func_004D5C10(model->resource);
+            LibModelPart* part = 0;
+            LibModelPartEntry* entries = static_cast<LibModelPartEntry*>(model->unk76c);
+            sorted = reinterpret_cast<LibModelPartEntry**>(static_cast<u8*>(model->unk76c) + part_count * 12);
+
+            for (s32 i = 0; i < part_count; i++)
+            {
+                u8* record = static_cast<u8*>(func_004D5AC0(model->resource));
+                entries[i].record = record;
+
+                if (*reinterpret_cast<u16*>(record + 0x14) & 1)
+                {
+                    part = reinterpret_cast<LibModelPart*>(record + 0x40);
+                    u32 slot = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT)->slot;
+
+                    if (slot != 0)
+                    {
+                        part = reinterpret_cast<LibModelPart*>(static_cast<u8*>(model->parts) + (slot - 1) * LIB_MODEL_PART_SIZE);
+                    }
+                }
+
+                entries[i].part = part;
+
+                if ((reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT)->first_tag_high & GIF_TAG_HIGH_PRIM_ABE) ||
+                    model->blend_mode)
+                {
+                    sorted[--back] = &entries[i];
+                }
+                else
+                {
+                    sorted[front++] = &entries[i];
+                }
+            }
+        }
+        else
+        {
+            sorted = reinterpret_cast<LibModelPartEntry**>(static_cast<u8*>(model->unk76c) + part_count * 12);
+        }
+    }
+
+    if (model->blend_mode && model->unk211 != model->blend_mode && front < part_count)
+    {
+        if (model->unk770 != 0 && model->unk211 != 0)
+        {
+            model->apply_part_settings();
+        }
+
+        model->unk774 = part_count - front;
+        model->unk778 = front;
+        delete model->unk770;
+
+        if (D_001B659C != 0)
+        {
+            model->unk770 = static_cast<LibModelPartSetting*>(resident_heap_allocate(D_001B659C, model->unk774 * 12));
+        }
+        else
+        {
+            model->unk770 = static_cast<LibModelPartSetting*>(malloc_guess(model->unk774 * 12));
+        }
+
+        if (model->unk770 == 0)
+        {
+            delete model->unk768;
+            model->unk768 = 0;
+            delete model->unk76c;
+            model->unk76c = 0;
+            return 0;
+        }
+
+        model->unk211 = model->blend_mode;
+        u32 alpha = D_004ED320[model->blend_mode];
+
+        for (s32 k = front; k < part_count; k++)
+        {
+            LibModelPartSetting* setting = &model->unk770[k - front];
+            LibModelPart* part = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(sorted[k]->part) | EE_UNCACHED_ACCELERATED);
+            setting->flags = 0;
+
+            if (!(part->first_tag_high & GIF_TAG_HIGH_PRIM_ABE))
+            {
+                setting->first_value = part->unk20;
+                part->unk20 = alpha;
+                part->first_tag_high |= GIF_TAG_HIGH_PRIM_ABE;
+                part->second_tag_high |= GIF_TAG_HIGH_PRIM_ABE;
+                setting->flags = 1;
+            }
+
+            if (part->unk84 != 0 && !(part->third_tag_high & GIF_TAG_HIGH_PRIM_ABE))
+            {
+                setting->second_value = part->unk90;
+                part->unk90 = alpha;
+                part->third_tag_high |= GIF_TAG_HIGH_PRIM_ABE;
+                part->fourth_tag_high |= GIF_TAG_HIGH_PRIM_ABE;
+                setting->flags |= 2;
+            }
+        }
+    }
+
+    return 1;
+}
+
+extern "C" u8 D_770[];
+extern "C" u8 D_880[];
+
+/**
+ * @brief Virtual slot 0xF0: write the model's DMA chain: the microprogram, the texture and palette uploads its records
+ *        mark dirty, the render channels' packets, the before/after blocks, and the part calls.
+ * @param count Image object func_004A76D0 found for the mesh, or zero.
+ * @param matrix Camera the model is drawn with.
+ */
+void LibModel::func_slotF0(s32 count, const void* matrix)
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(payload);
+    u64* tail;
+
+    if (uses_payload_override)
+    {
+        unk710 = reinterpret_cast<u32>(&packet_chains[packet_set]);
+        tail = reinterpret_cast<u64*>((reinterpret_cast<u32>(override_packets[packet_set]) + 0x40) | EE_UNCACHED_ACCELERATED);
+    }
+    else
+    {
+        unk710 = reinterpret_cast<u32>(chain);
+        tail = reinterpret_cast<u64*>((reinterpret_cast<u32>(packet) + 0x40) | EE_UNCACHED_ACCELERATED);
+    }
+
+    u64* cursor = reinterpret_cast<u64*>((reinterpret_cast<u32>(base_packet) + 0x40) | EE_UNCACHED_ACCELERATED);
+    s32 part_count = mesh->part_count;
+    s32 program;
+    u32 first_call;
+    u32 next_call;
+    u32 part_call;
+
+    // TODO: The game recomputes the three microprogram addresses in every branch; maybe they came from a macro.
+    if (unk66)
+    {
+        if (mesh->unk3d[2])
+        {
+            program = 1;
+            first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+            next_call = reinterpret_cast<u32>(D_880) >> 3;
+            part_call = reinterpret_cast<u32>(D_770) >> 3;
+        }
+        else
+        {
+            program = 2;
+            first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+            next_call = reinterpret_cast<u32>(D_880) >> 3;
+            part_call = reinterpret_cast<u32>(D_770) >> 3;
+        }
+    }
+    else
+    {
+        program = 0;
+        first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+        next_call = reinterpret_cast<u32>(D_880) >> 3;
+        part_call = reinterpret_cast<u32>(D_770) >> 3;
+    }
+
+    if (g_microcode_loader->select_program(program))
+    {
+        *cursor = g_microcode_loader->get_program_tag(program);
+        cursor += 2;
+    }
+
+    if (mesh->unk08 != 0 || count != 0)
+    {
+        ResidentRenderDataRecord* record = reinterpret_cast<ResidentRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + mesh->unk08);
+        cursor[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+        *(unsigned __int128*)(cursor + 2) = 0;
+        reinterpret_cast<u32*>(cursor)[7] = 0x06008000;
+        cursor += 4;
+
+        for (s32 i = 0; i < mesh->unk40; i++)
+        {
+            s16 kind = record->storage_kind;
+            ResidentRenderDataRecord* source = record;
+            s32 index;
+
+            // TODO: Only reading the index in both arms matched; maybe this was an inline that resolves the record.
+            if (kind == 1)
+            {
+                source = reinterpret_cast<ResidentRenderDataRecord*>(record->resolved_data);
+                index = record->index;
+
+                if (source != 0)
+                {
+                    kind = 0;
+                }
+            }
+            else
+            {
+                index = record->index;
+            }
+
+            if (kind == 0 || kind == 5)
+            {
+                LibImageHeader* image = source->data != 0 ? reinterpret_cast<LibImageHeader*>(source->data)
+                                                          : reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(source) + 0x40);
+
+                if (unk728[i] & 1)
+                {
+                    unk728[i] &= ~1;
+                    LibImageInfo* info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(image) + image->image_offset);
+                    LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(image) + info->pixel_offset);
+                    LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(
+                        reinterpret_cast<u32>(reinterpret_cast<u8*>(texture_uploads) + (i * 2 + 1) * sizeof(LibTextureUpload)) | EE_UNCACHED_ACCELERATED);
+
+                    if (!(unk728[i] & 2))
+                    {
+                        unsigned __int128 bitbltbuf;
+                        unsigned __int128 trxreg;
+                        unsigned __int128 image_tag;
+                        u64 unk68;
+
+                        bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+                        trxreg = *(unsigned __int128*)&packet->trxreg;
+                        unk68 = *(u64*)&packet->unk64[4];
+                        image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+                        *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+                        *(unsigned __int128*)&upload->trxreg = trxreg;
+                        *(u64*)&upload->unk64[4] = unk68;
+                        *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+                        unk728[i] |= 2;
+                    }
+
+                    upload->bitbltbuf.data = record->unk10[0];
+                    s32 quadwords = (s32)(info->data_size + 15) / 16;
+                    cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, reinterpret_cast<u8*>(texture_uploads) + (i * 2 + 1) * sizeof(LibTextureUpload));
+                    cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+                    cursor += 4;
+                }
+
+                if (unk728[i] & 4)
+                {
+                    unk728[i] &= ~4;
+
+                    if (unk798_0)
+                    {
+                        LibImageHeader* replacement = reinterpret_cast<LibImageHeader*>(replace_texture(image, index));
+
+                        if (replacement != 0)
+                        {
+                            image = replacement;
+                        }
+                    }
+
+                    LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(image) + image->palette_offset);
+                    s32 offset = (i * 2 + 2) * sizeof(LibTextureUpload);
+                    LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(
+                        reinterpret_cast<u32>(reinterpret_cast<u8*>(texture_uploads) + offset) | EE_UNCACHED_ACCELERATED);
+
+                    if (!(unk728[i] & 8))
+                    {
+                        unsigned __int128 bitbltbuf;
+                        unsigned __int128 trxreg;
+                        unsigned __int128 image_tag;
+                        u64 unk68;
+
+                        bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+                        trxreg = *(unsigned __int128*)&packet->trxreg;
+                        unk68 = *(u64*)&packet->unk64[4];
+                        image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+                        *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+                        *(unsigned __int128*)&upload->trxreg = trxreg;
+                        *(u64*)&upload->unk64[4] = unk68;
+                        *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+                        unk728[i] |= 8;
+                    }
+
+                    upload->bitbltbuf.data = record->unk10[1];
+                    s32 quadwords = (image->palette_size + 15) / 16;
+                    cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, reinterpret_cast<u8*>(texture_uploads) + offset);
+                    cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+                    cursor += 4;
+                }
+            }
+
+            record = reinterpret_cast<ResidentRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + record->next_offset);
+        }
+
+        if (render_channels.node_count != 0)
+        {
+            LibListSentinel* node = &render_channels.sentinel;
+
+            for (;;)
+            {
+                node = node->next;
+
+                if (&render_channels.sentinel == node)
+                {
+                    break;
+                }
+
+                cursor = static_cast<u64*>(static_cast<LibRenderChannel*>(node)->append_packets(cursor));
+            }
+        }
+
+        if (count != 0)
+        {
+            cursor = func_004A2EF0(this, reinterpret_cast<ResidentImageObject*>(count), cursor);
+        }
+    }
+
+    if (before_packet_size)
+    {
+        u64* end = reinterpret_cast<u64*>(build_before_packet(
+            (reinterpret_cast<u32>(before_packet) + 0x40) | EE_UNCACHED_ACCELERATED, reinterpret_cast<s32>(matrix)));
+        *end = DMA_TAG_ID_RET;
+    }
+
+    if (after_packet_size)
+    {
+        u64* end = reinterpret_cast<u64*>(build_after_packet(
+            (reinterpret_cast<u32>(after_packet) + 0x40) | EE_UNCACHED_ACCELERATED, reinterpret_cast<s32>(matrix)));
+        *end = DMA_TAG_ID_RET;
+    }
+
+    if (unk791)
+    {
+        cursor[0] = DMA_TAG_ID_RET;
+        tail[0] = DMA_TAG(4, DMA_TAG_ID_RET, 0);
+        *(unsigned __int128*)(tail + 2) = 0;
+        reinterpret_cast<u32*>(tail)[7] = VIF_DIRECTHL(2);
+        tail[4] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+        tail[5] = GIF_REGISTER_AD;
+        tail[6] = 0;
+        tail[7] = GS_REGISTER_TEXFLUSH;
+        *(unsigned __int128*)(tail + 8) = 0;
+        reinterpret_cast<u32*>(tail)[19] = 0x06000000;
+        unk791--;
+        return;
+    }
+
+    if (unk638 != 0)
+    {
+        cursor[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+        s32 quadwords = reinterpret_cast<LibModelMatrixSource*>(unk638)->unk34[1] * 4;
+        *(unsigned __int128*)(cursor + 2) = 0;
+        reinterpret_cast<u32*>(cursor)[7] = VIF_UNPACK(VIF_UNPACK_V4_32, quadwords, 0x290);
+        LibModelMatrixSource* matrices = reinterpret_cast<LibModelMatrixSource*>(unk638);
+        cursor[4] = DMA_TAG(quadwords, DMA_TAG_ID_REF,
+                            matrices->unk4c + ((matrices->unk34[1] * matrices->unk50) << 6) + 0x40);
+        cursor += 6;
+    }
+
+    *cursor = DMA_TAG_ID_RET;
+
+    if (unk793 != 0 || (uses_payload_override && packet_set == 1 && unk795 != 0))
+    {
+        tail[0] = DMA_TAG(0x31, DMA_TAG_ID_REF, &draw_packet);
+        tail[2] = DMA_TAG(6, DMA_TAG_ID_CNT, 0);
+        *(unsigned __int128*)(tail + 4) = 0;
+        reinterpret_cast<u32*>(tail)[11] = VIF_DIRECTHL(3);
+        tail[6] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 2;
+        tail[7] = GIF_REGISTER_AD;
+        tail[8] = 0;
+        tail[9] = GS_REGISTER_TEXFLUSH;
+        u32 vu_offset = unk638 ? 0x98 : 0xE0;
+
+        if (unk796 != 2 && (unk796 != 0 || unk797_5 || (mesh->unk54 & 1)))
+        {
+            tail[10] = 0xFFFFFFFF5ULL;
+            tail[11] = GS_REGISTER_CLAMP_1;
+            tail += 12;
+        }
+        else
+        {
+            tail[10] = 0xFFFFFFFF0ULL;
+            tail[11] = GS_REGISTER_CLAMP_1;
+            tail += 12;
+        }
+
+        *(unsigned __int128*)tail = 0;
+        reinterpret_cast<u32*>(tail)[3] = 0x02000000 | vu_offset;
+        *(unsigned __int128*)(tail + 2) = 0;
+        reinterpret_cast<u32*>(tail)[7] = 0x06008000;
+        tail += 4;
+        func_004D5C10(resource);
+        u8* previous = 0;
+
+        if (draw_bucket_choice && unk768 != 0)
+        {
+            LibModelPartEntry** sorted = reinterpret_cast<LibModelPartEntry**>(static_cast<u8*>(unk768) + part_count * 0xC);
+
+            for (s32 i = 0; i < part_count; i++)
+            {
+                tail[0] = DMA_TAG(*reinterpret_cast<s16*>(sorted[0]->record + 4) / 16, DMA_TAG_ID_REF, sorted[0]->record);
+                tail[2] = DMA_TAG(0xF, DMA_TAG_ID_REF, sorted[0]->part);
+                tail[4] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+
+                if (i == 0)
+                {
+                    *(unsigned __int128*)(tail + 6) = 0;
+                    reinterpret_cast<u32*>(tail)[15] = VIF_MSCALF(first_call);
+                    tail += 8;
+                }
+                else
+                {
+                    *(unsigned __int128*)(tail + 6) = 0;
+                    reinterpret_cast<u32*>(tail)[15] = VIF_MSCAL(part_call);
+                    tail += 8;
+                }
+
+                sorted++;
+            }
+        }
+        else
+        {
+            s32 pending = 0;
+
+            for (s32 i = 0; i < part_count; i++)
+            {
+                u8* part = static_cast<u8*>(func_004D5AC0(resource));
+                tail[0] = DMA_TAG(*reinterpret_cast<s16*>(part + 4) / 16, DMA_TAG_ID_REF, part);
+                tail += 2;
+                u16 flags = *reinterpret_cast<u16*>(part + 0x14);
+
+                if (!(flags & 1))
+                {
+                    if ((flags & 8) || count != 0)
+                    {
+                        tail[0] = DMA_TAG(0xF, DMA_TAG_ID_REF, previous);
+                        tail[2] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+                        *(unsigned __int128*)(tail + 4) = 0;
+                        reinterpret_cast<u32*>(tail)[11] = VIF_MSCAL(part_call);
+                        tail += 6;
+                    }
+                    else
+                    {
+                        if (pending)
+                        {
+                            pending = 0;
+                            tail[0] = DMA_TAG(0xF, DMA_TAG_ID_REF, previous);
+                            tail += 2;
+                        }
+
+                        tail[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+                        *(unsigned __int128*)(tail + 2) = 0;
+                        reinterpret_cast<u32*>(tail)[7] = VIF_MSCAL(next_call);
+                        tail += 4;
+                    }
+                }
+                else
+                {
+                    previous = part + 0x40;
+                    u32 slot = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(previous) | UNCACHED_SEGMENT)->slot;
+
+                    if (slot != 0)
+                    {
+                        previous = static_cast<u8*>(parts) + (slot - 1) * LIB_MODEL_PART_SIZE;
+                        tail[0] = DMA_TAG(0xF, DMA_TAG_ID_REF, previous);
+                        tail += 2;
+                    }
+
+                    pending = 1;
+                    tail[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+
+                    if (i == 0)
+                    {
+                        *(unsigned __int128*)(tail + 2) = 0;
+                        reinterpret_cast<u32*>(tail)[7] = VIF_MSCALF(first_call);
+                        tail += 4;
+                    }
+                    else
+                    {
+                        *(unsigned __int128*)(tail + 2) = 0;
+                        reinterpret_cast<u32*>(tail)[7] = VIF_MSCAL(part_call);
+                        tail += 4;
+                    }
+                }
+            }
+        }
+
+        tail[0] = DMA_TAG(1, DMA_TAG_ID_RET, 0);
+        tail[2] = 0;
+        reinterpret_cast<u32*>(tail)[6] = VIF_FLUSH;
+        reinterpret_cast<u32*>(tail)[7] = 0x06000000;
+
+        if (packet_set == 1)
+        {
+            unk795 = 0;
+            return;
+        }
+
+        if (unk793 != 0)
+        {
+            unk793--;
+        }
+    }
+}
 
 /**
  * @brief Append the channel's packets to a packet chain.
@@ -1750,36 +3631,167 @@ void* LibRenderChannel::append_packets(void* packet)
     return packet;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A59D0);
-
-/** Partial view of the model's draw packet at unk220, written through the uncached accelerated segment. */
-typedef struct LibModelPacketHeader
-{
-    u8 unk00[0xA0];
-    unsigned __int128 transform[4];
-    u8 unke0[0x24];
-    s32 unk104;
-    u8 unk108[4];
-    s32 unk10c;
-    u8 unk110[8];
-    float unk118;
-    s32 unk11c;
-    u64 unk120;
-    u8 unk128[8];
-    u64 test;
-    u8 unk138[0x118];
-    s32 unk250;
-    s32 unk254;
-    u8 unk258[0x50];
-    s32 unk2a8;
-} LibModelPacketHeader;
-
 /**
- * @brief Run the model's per-packet step that build_packet skips after unk797_2 was set.
+ * @brief Light the model for this frame: its colour times the light list's, the directional and local lights from the
+ *        list (filling the model's shadow light list when unk790 is set), and the white-colour flag, all written into
+ *        the draw packet.
  * @param model Model.
- * @param context Opaque caller context.
+ * @param context Light list, or null for none.
  */
-extern "C" void func_004A59D0(LibModel* model, void* context);
+extern "C" void func_004A59D0(LibModel* model, void* context)
+{
+    LibLightList* lights = static_cast<LibLightList*>(context);
+    LibModelPacketHeader* packet = (LibModelPacketHeader*)((u32)&model->draw_packet | EE_UNCACHED_ACCELERATED);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource));
+    LibVector4 color;
+
+    if (!(model->draw_flags & 0x10))
+    {
+        model->unk797_2 = 1;
+    }
+
+    model->shadow_lights.count = 0;
+
+    if (lights != 0)
+    {
+        vu0_multiply_xyzw_right_first(&color, &model->combined_color_factor, &lights->unk340);
+
+        if (mesh->unk3d[1] || lights->has_local_lights)
+        {
+            FieldVec4B position;
+            position.x = model->transform.m[0][3];
+            position.y = model->transform.m[1][3];
+            position.z = model->transform.m[2][3];
+            position.w = 1.0f;
+            lights->unk374 = 0;
+            lights->unk381 = 0;
+
+            if (mesh->unk3d[1])
+            {
+                LibVector4 ambient;
+
+                if (model->unk790)
+                {
+                    func_004E8510(lights, &color, &position, model->light_mask, &model->shadow_lights);
+                }
+                else
+                {
+                    func_004E8510(lights, &color, &position, model->light_mask, 0);
+                }
+
+                const unsigned __int128* matrix = reinterpret_cast<const unsigned __int128*>(&lights->unk90);
+                packet->light_matrix[0] = matrix[0];
+                packet->light_matrix[1] = matrix[1];
+                packet->light_matrix[2] = matrix[2];
+                packet->light_matrix[3] = matrix[3];
+                vu0_multiply_xyzw_vf1(&ambient, &lights->unk310, &color);
+                packet->ambient = *reinterpret_cast<unsigned __int128*>(&ambient);
+                ee_transpose_matrix_input_first(&packet->light_transposed, &lights->unk1d0);
+            }
+
+            if (lights->has_local_lights)
+            {
+                if (model->unk790)
+                {
+                    func_004E7AA0(lights, &model->bounding_sphere, &color, &position, model->light_mask,
+                                  &model->shadow_lights);
+                }
+                else
+                {
+                    func_004E7AA0(lights, &model->bounding_sphere, &color, &position, model->light_mask, 0);
+                }
+
+                s32 any = 0;
+
+                if (lights->unk37c)
+                {
+                    packet->unkf4 = 1;
+                    const unsigned __int128* rows = reinterpret_cast<const unsigned __int128*>(lights->unk210);
+                    packet->unk150[0] = rows[0];
+                    packet->unk150[1] = rows[1];
+                    packet->unk150[2] = rows[2];
+                    ee_transpose_matrix_input_first(&packet->unk180, &lights->unk240);
+                    const unsigned __int128* vector = reinterpret_cast<const unsigned __int128*>(&lights->unk280);
+                    packet->unk1c0 = *vector;
+                    any = 1;
+                }
+                else
+                {
+                    packet->unkf4 = 0;
+                }
+
+                s32 count = lights->unk37d;
+
+                if (count)
+                {
+                    packet->unkf8 = count;
+                    packet->unk1d0[0] = lights->unk2b0[0];
+                    packet->unk1d0[2] = lights->unk290[0];
+                    packet->unk1d0[4] = lights->unk2d0[0];
+                    packet->unk1d0[6] = lights->unk2f0[0];
+
+                    if (count == 2)
+                    {
+                        packet->unk1d0[1] = lights->unk2b0[1];
+                        packet->unk1d0[3] = lights->unk290[1];
+                        packet->unk1d0[5] = lights->unk2d0[1];
+                        packet->unk1d0[7] = lights->unk2f0[1];
+                    }
+
+                    any = 1;
+                }
+                else
+                {
+                    packet->unkf8 = 0;
+                }
+
+                if (any && !mesh->unk3d[1])
+                {
+                    packet->light_mode = 2;
+                }
+                else
+                {
+                    packet->light_mode = 1;
+                }
+            }
+            else
+            {
+                packet->light_mode = 0;
+            }
+
+            if (lights->unk381)
+            {
+                packet->unk260 = lights->unk350;
+                packet->unk29c = lights->unk380;
+            }
+        }
+        else
+        {
+            packet->light_mode = 0;
+        }
+    }
+    else
+    {
+        packet->light_mode = 0;
+        vu0_multiply_xyzw_right_first(&color, &model->combined_color_factor, &lights->unk340);
+    }
+
+    if (D_001B6550 && !model->unk59d_1 && !(color.w <= 0.993f))
+    {
+        color.w = 0.993f;
+    }
+
+    packet->color = *reinterpret_cast<unsigned __int128*>(&color);
+
+    if (color.w == 1.0f && color.x == 1.0f && color.y == 1.0f && color.z == 1.0f)
+    {
+        packet->white = 1;
+    }
+    else
+    {
+        packet->white = 0;
+    }
+}
 
 /**
  * @brief Count what a mesh with unk54 set adds to the packet.
@@ -1787,13 +3799,6 @@ extern "C" void func_004A59D0(LibModel* model, void* context);
  * @return The count build_packet passes on to func_004A62D0.
  */
 extern "C" s32 func_004A76D0(LibModel* model);
-
-/**
- * @brief Refresh the model's packet header from its flags and the camera's TEST register.
- * @param model Model.
- * @param camera Camera.
- */
-extern "C" void func_004A7AC0(LibModel* model, const LibCamera* camera);
 
 /**
  * @brief Copy the mesh's parts into the model's part table.
@@ -1807,15 +3812,6 @@ extern "C" void func_004A7D50(LibModel* model);
  * @param count Value func_004A76D0 returned for the mesh, or zero.
  */
 extern "C" void func_004A62D0(LibModel* model, s32 count);
-
-/**
- * @brief Write the model's parts for one pass.
- * @param model Model.
- * @param matrix Camera the model is drawn with.
- * @param first Nonzero for the pass of a mesh without unk3c.
- * @return Zero when the parts couldn't be written and the packets have to go.
- */
-extern "C" s32 func_004A4710(LibModel* model, const void* matrix, s32 first);
 
 /**
  * @brief Build the model's packet: rebuild the packets when the mesh changed, refresh the packet header from the
@@ -1836,7 +3832,7 @@ void LibModel::build_packet(const void* matrix, void* context)
         select_payload(payload_override, source->get_packet_set());
     }
 
-    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)unk220 | EE_UNCACHED_ACCELERATED);
+    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)&draw_packet | EE_UNCACHED_ACCELERATED);
     const unsigned __int128* from = reinterpret_cast<const unsigned __int128*>(&transform);
 
     if (unk5a1)
@@ -1977,7 +3973,367 @@ void LibModel::build_packet(const void* matrix, void* context)
     unk63 = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A62D0);
+extern "C" s32 D_001B6290;
+
+/** Partial view of a model part's texture registers, written through the uncached segment. */
+struct LibPartTextures
+{
+    u8 unk00[0x30];
+    u64 clut_tex0;
+    u8 unk38[8];
+    u64 tex0;
+    u8 unk48[0x3C];
+    u32 has_second;
+    u64 ref;
+    u8 unk90[0x10];
+    u64 second_clut_tex0;
+    u8 unka8[8];
+    u64 second_tex0;
+    u8 unkb8[0x30];
+    u64 second_ref;
+};
+
+/**
+ * @brief Find the record a by-key texture record refers to, looking it up again when it is missing or its inline
+ *        image no longer carries the record's keys.
+ * @param model Model whose resource is skipped in the lookup.
+ * @param record By-key record.
+ * @param header Receives the image header when it is already known, otherwise null.
+ * @return The record holding the image, or null.
+ */
+static inline ResidentRenderDataRecord* lib_model_resolve_record(LibModel* model, ResidentRenderDataRecord* record, LibImageHeader*& header)
+{
+    ResidentRenderDataRecord* source = reinterpret_cast<ResidentRenderDataRecord*>(record->resolved_data);
+
+    if (source == 0)
+    {
+        source = static_cast<ResidentRenderDataRecord*>(func_004D6230(model, record->key08, record->key0c));
+        record->resolved_data = reinterpret_cast<u32>(source);
+        return source;
+    }
+
+    header = reinterpret_cast<LibImageHeader*>(source->data);
+
+    if (header != 0)
+    {
+        return source;
+    }
+
+    header = reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(source) + 0x40);
+
+    if ((u32)header->id != record->key0c || *reinterpret_cast<u32*>(header->name) != record->key08)
+    {
+        source = static_cast<ResidentRenderDataRecord*>(func_004D6230(model, record->key08, record->key0c));
+        header = 0;
+        record->resolved_data = reinterpret_cast<u32>(source);
+    }
+
+    return source;
+}
+
+/**
+ * @brief Read the TEX0 of the texture loaded for a slot.
+ * @param cache Texture cache.
+ * @param slot Texture slot.
+ * @return TEX0 value.
+ */
+static inline u64 lib_slot_tex0(const LibTextureCache* cache, s32 slot)
+{
+    return cache->entries[cache->slot_entries[slot]].tex0;
+}
+
+/**
+ * @brief Clear the cache's stamp, the stamp of every block stamped 1, and the CLUT use flags.
+ * @param cache Texture cache.
+ */
+static inline void lib_texture_cache_clear_stamps(LibTextureCache* cache)
+{
+    cache->stamp = 0;
+
+    for (u32 index = cache->blocks[0].next_block; index != 0; index = cache->blocks[index].next_block)
+    {
+        if (cache->blocks[index].stamp == 1)
+        {
+            cache->blocks[index].stamp = 0;
+        }
+    }
+
+    unsigned __int128* flags = reinterpret_cast<unsigned __int128*>(cache->clut_used);
+    s32 count = cache->clut_count / 16;
+
+    for (s32 index = 0; index < count; index++)
+    {
+        *flags++ = 0;
+    }
+}
+
+/**
+ * @brief Write the packet data for a mesh with unk38 set or with a count from func_004A76D0.
+ * @param model Model.
+ * @param count Value func_004A76D0 returned for the mesh, or zero.
+ */
+extern "C" void func_004A62D0(LibModel* model, s32 count)
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(model->payload);
+
+    if (mesh->unk08 != 0 || count != 0)
+    {
+        LibListSentinel* node = &model->render_channels.sentinel;
+
+        for (;;)
+        {
+            node = node->next;
+
+            if (&model->render_channels.sentinel == node)
+            {
+                break;
+            }
+
+            static_cast<LibRenderChannel*>(node)->update();
+        }
+
+        u8 first = 1;
+
+        for (;;)
+        {
+            u8 failed = 0;
+            g_texture_cache->stamp = 1;
+            ResidentRenderDataRecord* record = reinterpret_cast<ResidentRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + mesh->unk08);
+
+            for (s32 i = 0; i < mesh->unk40; i++)
+            {
+                s16 storage = record->storage_kind;
+                ResidentRenderDataRecord* source = record;
+                LibImageHeader* header = 0;
+                s16 index;
+
+                if (storage == 1)
+                {
+                    index = record->index;
+                    source = lib_model_resolve_record(model, record, header);
+
+                    if (source != 0)
+                    {
+                        storage = source->storage_kind;
+                    }
+                    else
+                    {
+                        source = record;
+                    }
+                }
+                else
+                {
+                    if (storage == 4)
+                    {
+                        storage = 5;
+                        record->storage_kind = 5;
+                        record->data = reinterpret_cast<u8*>(record) + reinterpret_cast<u32>(record->data);
+                        record->resolved_data = reinterpret_cast<u32>(record->data);
+                    }
+
+                    index = record->index;
+                }
+
+                if (storage == 0 || storage == 5)
+                {
+                    if (header == 0)
+                    {
+                        LibImageHeader* data = reinterpret_cast<LibImageHeader*>(source->data);
+
+                        if (data != 0)
+                        {
+                            header = data;
+                        }
+                        else
+                        {
+                            header = reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(source) + 0x40);
+                        }
+                    }
+
+                    LibImageInfo* info = 0;
+
+                    if (header->image_offset)
+                    {
+                        info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(header) + header->image_offset);
+                    }
+
+                    s32 slot = index;
+                    u8* flags = &model->unk748[slot];
+
+                    if (*flags & 1)
+                    {
+                        u32 address = g_texture_cache->find_texture(reinterpret_cast<LibTextureRequest*>(info), *reinterpret_cast<u32*>(header->name),
+                                                                    header->id, slot, header->flags, 0, reinterpret_cast<LibTextureUser*>(source));
+
+                        if (address == 1)
+                        {
+                            failed = 1;
+                            break;
+                        }
+
+                        address = g_texture_cache->find_texture(reinterpret_cast<LibTextureRequest*>(info), 0x54655873, D_001B6290, slot + 0x80, header->flags,
+                                                                0, reinterpret_cast<LibTextureUser*>(source));
+
+                        if (address != 0)
+                        {
+                            if (address == 1)
+                            {
+                                failed = 1;
+                                break;
+                            }
+
+                            u64 bitbltbuf = *reinterpret_cast<u64*>(reinterpret_cast<u8*>(header) + info->pixel_offset + 0x20);
+                            record->unk10[0] = (bitbltbuf & ~(0x3FFFULL << 32)) | (((u64)address >> 6) << 32);
+                            model->unk728[i] |= 1;
+                        }
+
+                        if (++D_001B6290 == 0)
+                        {
+                            D_001B6290 = 1;
+                        }
+                    }
+                    else if (g_texture_cache->func_004A6D20(header, slot, reinterpret_cast<LibTextureUser*>(source)) && info)
+                    {
+                        u32 address = func_004A7100(g_texture_cache, reinterpret_cast<LibTextureRequest*>(info), *reinterpret_cast<u32*>(header->name),
+                                                    header->id, slot, header->flags, reinterpret_cast<LibTextureUser*>(source));
+
+                        if (address == 1)
+                        {
+                            failed = 1;
+                            break;
+                        }
+
+                        u64 bitbltbuf = *reinterpret_cast<u64*>(reinterpret_cast<u8*>(header) + info->pixel_offset + 0x20);
+                        record->unk10[0] = (bitbltbuf & ~(0x3FFFULL << 32)) | (((u64)address >> 6) << 32);
+                        model->unk728[i] |= 1;
+                    }
+
+                    if (model->unk798_0)
+                    {
+                        void* palette = reinterpret_cast<u8*>(header) + header->palette_offset;
+                        s32 address = model->place_texture(header, index, &palette);
+
+                        if (address != 0)
+                        {
+                            record->unk10[1] =
+                                (*reinterpret_cast<u64*>(static_cast<u8*>(palette) + 0x20) & ~(0x3FFFULL << 32)) | (((u64)(u32)address >> 6) << 32);
+                            model->unk728[i] |= 4;
+                            model->unk728[i] &= ~8;
+                        }
+                    }
+                    else if (header->unk02)
+                    {
+                        u8* palette = reinterpret_cast<u8*>(header) + header->palette_offset;
+                        u32 clut;
+
+                        if (*flags & 2)
+                        {
+                            clut = g_texture_cache->func_004A6EA0(header, slot, 1);
+                        }
+                        else
+                        {
+                            clut = g_texture_cache->func_004A6EA0(header, slot, 0);
+                        }
+
+                        if (clut != 0)
+                        {
+                            record->unk10[1] = (*reinterpret_cast<u64*>(palette + 0x20) & ~(0x3FFFULL << 32)) | (((u64)clut >> 6) << 32);
+                            model->unk728[i] |= 4;
+                        }
+                    }
+                }
+
+                record = reinterpret_cast<ResidentRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + record->next_offset);
+            }
+
+            if (count != 0 && func_004A3140(model, reinterpret_cast<ResidentImageObject*>(count)))
+            {
+                failed = 1;
+            }
+
+            if (!failed || !first)
+            {
+                break;
+            }
+
+            lib_texture_cache_clear_stamps(g_texture_cache);
+            g_texture_cache->release_unstamped();
+            first = 0;
+        }
+
+        lib_texture_cache_clear_stamps(g_texture_cache);
+    }
+
+    if (mesh->unk38 != 0)
+    {
+        s32 part_count = *reinterpret_cast<s32*>(reinterpret_cast<u8*>(mesh) + mesh->unk38);
+
+        for (s32 k = 0; k < part_count; k++)
+        {
+            LibPartTextures* part = reinterpret_cast<LibPartTextures*>((reinterpret_cast<u32>(model->parts) + k * LIB_MODEL_PART_SIZE) | UNCACHED_SEGMENT);
+            u64 ref = part->ref;
+            u64 tex0 = (part->tex0 & 0x0000001C00000000ULL) | g_texture_cache->entries[g_texture_cache->slot_entries[(s32)ref]].tex0;
+
+            // TODO: The CLUT reads cast the slot through s32 and s16 like an s16 parameter; find the original form.
+            switch ((s32)((g_texture_cache->entries[g_texture_cache->slot_entries[(s32)ref]].tex0 >> 20) & 0x3F))
+            {
+            case GS_PSMT4:
+                part->tex0 = tex0 | (g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)ref]].tex0 | (u64)(u32)(s32)(ref >> 32) << 56);
+                part->clut_tex0 = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)ref]].tex0 | 0x4000000621300000ULL;
+                break;
+            case GS_PSMT8:
+                part->tex0 = tex0 | g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)ref]].tex0;
+                part->clut_tex0 = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)ref]].tex0 | 0x4000000621300000ULL;
+                break;
+            default:
+                part->clut_tex0 = tex0;
+                part->tex0 = tex0;
+                break;
+            }
+
+            if (part->has_second)
+            {
+                u64 second = part->second_ref;
+                u64 second_tex0 = (part->second_tex0 & 0x0000001C00000000ULL) | g_texture_cache->entries[g_texture_cache->slot_entries[(s32)second]].tex0;
+
+                switch ((s32)((g_texture_cache->entries[g_texture_cache->slot_entries[(s32)second]].tex0 >> 20) & 0x3F))
+                {
+                case GS_PSMT4:
+                    part->second_tex0 =
+                        second_tex0 | (g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)second]].tex0 | (u64)(u32)(s32)(second >> 32) << 56);
+                    part->second_clut_tex0 = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)second]].tex0 | 0x4000000621300000ULL;
+                    break;
+                case GS_PSMT8:
+                    part->second_tex0 = second_tex0 | g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)second]].tex0;
+                    part->second_clut_tex0 = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)second]].tex0 | 0x4000000621300000ULL;
+                    break;
+                default:
+                    part->second_clut_tex0 = second_tex0;
+                    part->second_tex0 = second_tex0;
+                    break;
+                }
+            }
+        }
+
+        LibListSentinel* channel = &model->render_channels.sentinel;
+        u32 program = reinterpret_cast<u32>(D_678) >> 3;
+
+        for (;;)
+        {
+            channel = channel->next;
+
+            if (&model->render_channels.sentinel == channel)
+            {
+                break;
+            }
+
+            LibRenderChannel* render = static_cast<LibRenderChannel*>(channel);
+            render->source_tex0 = lib_slot_tex0(g_texture_cache, render->unk38 + 0x80);
+            render->destination_tex0 = lib_slot_tex0(g_texture_cache, render->unk38);
+            render->prepare_packets(model, program);
+        }
+    }
+}
 
 /**
  * @brief Default packet preparation that performs no work.
@@ -2167,8 +4523,7 @@ static inline s32 lib_texture_buffer_width(const LibTextureRequest* request, u16
  * @return VRAM word address of the texture, 0 when no spare block record is left, or 1 when no block is large
  *         enough.
  */
-extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 flags,
-                             LibTextureUser* user)
+extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, s32 id, s32 slot, u16 flags, LibTextureUser* user)
 {
     u32 index;
     s32 need;
@@ -2391,23 +4746,137 @@ void LibModel::update()
     LibModelBase::update();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A76D0);
-
+extern "C" void* D_001B6660;
 
 /**
- * @brief Return the camera's TEST register value with the model's destination alpha test applied.
- * @param model Model.
- * @param camera Camera.
- * @return TEST register value.
+ * @brief Return a row of a resident matrix.
+ * @param matrix Matrix to read.
+ * @param row Row index.
+ * @return The row.
  */
-static inline u32 lib_model_test_register(const LibModel* model, const LibCamera* camera)
+static inline const ResidentVector4* resident_matrix_row(const ResidentMatrix* matrix, s32 row)
 {
-    u32 test = camera->test;
-    u32 date = model->unk59c != 0 ? 0x4000 : 0;
-    u32 datm = model->unk59c == 2 ? 0x8000 : 0;
-
-    return datm | (date | (test & ~0xC000));
+    return &matrix->rows[row];
 }
+
+/**
+ * @brief Read an image object's unk2c7 flag.
+ * @param object Image object.
+ * @return The flag byte.
+ */
+static inline u8 image_object_unk2c7(const ResidentImageObject* object)
+{
+    // TODO: Read through a u8 accessor for the game's extra andi before the test.
+    return object->unk2c7;
+}
+
+/**
+ * @brief Update the model's packet for its mesh flags: scale and offset the texture coordinates (bit 0), follow the
+ *        image object the model's bounding sphere hits (bit 1: its transform relative to the model, the hit object's
+ *        position in model space, and the blend state), and copy the second coordinate pair (bit 2).
+ * @param model Model.
+ * @return The image object hit, or null.
+ */
+extern "C" s32 func_004A76D0(LibModel* model)
+{
+    LibModelPacket* packet;
+    u16 flags;
+    ResidentImageObject* hit;
+    flags = reinterpret_cast<LibMeshHeader*>(model->payload)->unk54;
+    packet = reinterpret_cast<LibModelPacket*>(reinterpret_cast<u32>(&model->draw_packet) | EE_UNCACHED_ACCELERATED);
+    hit = 0;
+
+    if (flags & 1)
+    {
+        const LibVector4* scale = D_00508210;
+        const LibVector4* offset = D_00508220;
+        LibVector4 value;
+        *(unsigned __int128*)&value = *(const unsigned __int128*)scale;
+        value.x *= model->unk7c0;
+        value.y *= model->unk7c4;
+        *(unsigned __int128*)&packet->unk270 = *(unsigned __int128*)&value;
+        *(unsigned __int128*)&value = *(const unsigned __int128*)offset;
+        value.x += *(float*)&model->unk7c8[0];
+        value.y += *(float*)&model->unk7c8[1];
+        *(unsigned __int128*)&packet->unk280 = *(unsigned __int128*)&value;
+    }
+
+    if (flags & 2)
+    {
+        model->unk780 = reinterpret_cast<u32>(hit = resident_update_list_hit_test(static_cast<ResidentUpdateList*>(D_001B6660), model->light_mask,
+                                            reinterpret_cast<const ResidentVector4*>(&model->bounding_sphere),
+                                            reinterpret_cast<ResidentImageObject*>(model->unk780)));
+
+        if (hit != 0)
+        {
+            LibMatrix44Value view;
+            LibVector4 position;
+            vu0_multiply_matrix(&view, &hit->unk270, &model->transform);
+            ee_transpose_matrix(&packet->unk2c0, &view);
+            position.x = resident_matrix_row(&hit->transform, 0)->w;
+            position.y = resident_matrix_row(&hit->transform, 1)->w;
+            position.z = resident_matrix_row(&hit->transform, 2)->w;
+            position.w = 1.0f;
+            const LibMatrix44Value& transform = model->transform;
+            view = func_004CF0B0(transform);
+            vu0_dot_matrix_rows(&view, &position, &packet->unk2b0);
+            *(u32*)&packet->unk290[8] = image_object_unk2c7(hit) ? 0 : 0x20;
+
+            if (!hit->unk2c6)
+            {
+                model->unk796 = 1;
+            }
+            else
+            {
+                model->unk796 = 2;
+            }
+
+            if (!model->unk797_6)
+            {
+                *(u32*)&packet->unk250[8] = 1;
+                model->unk797_6 = 1;
+
+                if (model->unk793 < 4)
+                {
+                    model->unk793++;
+                    model->unk795 = 1;
+                }
+            }
+        }
+        else
+        {
+            if (model->unk797_6)
+            {
+                *(u32*)&packet->unk250[8] = 0;
+                model->unk796 = 0;
+                model->unk797_6 = 0;
+
+                if (model->unk793 < 4)
+                {
+                    model->unk793++;
+                    model->unk795 = 1;
+                }
+            }
+
+            if (*(u32*)model->unk784)
+            {
+                model->unk88 &= ~*(u32*)model->unk784;
+                *(u32*)model->unk784 = 0;
+            }
+        }
+    }
+
+    if (flags & 4)
+    {
+        ((float*)&packet->unk270)[2] = *(float*)&model->unk7c8[2];
+        ((float*)&packet->unk270)[3] = *(float*)&model->unk7c8[3];
+        ((float*)&packet->unk280)[2] = *(float*)&model->unk7c8[4];
+        ((float*)&packet->unk280)[3] = *(float*)&model->unk7c8[5];
+    }
+
+    return reinterpret_cast<s32>(hit);
+}
+
 
 /**
  * @brief Refresh the model's packet header from its flags and the camera's TEST register.
@@ -2416,7 +4885,7 @@ static inline u32 lib_model_test_register(const LibModel* model, const LibCamera
  */
 extern "C" void func_004A7AC0(LibModel* model, const LibCamera* camera)
 {
-    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)model->unk220 | EE_UNCACHED_ACCELERATED);
+    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)&model->draw_packet | EE_UNCACHED_ACCELERATED);
 
     model->unk59d_0 = 0;
 
@@ -2792,7 +5261,7 @@ LibModel::LibModel()
         unk748[index] = 0;
     }
 
-    unk7e0 = 0;
+    shadow_lights.count = 0;
     before_packet = 0;
     after_packet = 0;
     box_cull_enabled = 0;

@@ -1,5 +1,6 @@
 #include "overlays/lib/dma_callbacks_inlines.h"
 #include "overlays/lib/ripple_vu0.h"
+#include "overlays/lib/env_map_vu0.h"
 #include "include_asm.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "angle.h"
@@ -15,400 +16,25 @@
 #include "sdk/main/libdma_0012B2C8.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/image_header.h"
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/transform_owner_inlines.h"
+#include "overlays/lib/transform_inlines.h"
 #include "main/system.h"
 #include "main/utility.h"
 #include "main/dma_queue.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/model_packet.h"
+#include "overlays/lib/model_entries.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/emission.h"
 #include "overlays/lib/transform_vu0.h"
-
-/** LibShortBitTableHeader with a colour after the records offset; the words start at 0x10. */
-struct LibColorBitTableHeader
-{
-    s16 bit_count;
-    s16 unk02;
-    s32 records_offset;
-    float color[4];
-    u32 unk18[2];
-    u32 words[1];
-};
-
-/** LibColorBitTableHeader whose colour holds texture offsets, a scale and a mapping mode. */
-struct LibOffsetBitTableHeader
-{
-    s16 bit_count;
-    s16 unk02;
-    s32 records_offset;
-    float offset[2];
-    float scale;
-    s32 mapping;
-    u32 unk18[2];
-    u32 words[1];
-};
-
-/** Record in a resource entry's record list; each starts with its size at 0x8. */
-struct LibEntryRecord
-{
-    u32 unk00[2];
-    s32 size;
-};
-
-/**
- * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
- * @param entry Resource entry.
- * @param cursor Entry's record cursor.
- * @param index Bit index.
- * @param size Receives the record's size.
- * @return Record, or null.
- */
-static inline u8* lib_entry_read_record(LibClass1779F0* entry, u8*& cursor, u32 index, u32* size)
-{
-    if (entry->unk19 || ((entry->bits.words[index / 32] >> (index % 32)) & 1))
-    {
-        *size = reinterpret_cast<LibEntryRecord*>(cursor)->size;
-        u8* record = cursor;
-        cursor += reinterpret_cast<LibEntryRecord*>(cursor)->size;
-        return record;
-    }
-
-    return 0;
-}
-
-/** Bit table at the start of a resource entry's data: one bit per record, then the records at records_offset. */
-struct LibBitTableHeader
-{
-    u32 bit_count;
-    s32 unk04;
-    s32 records_offset;
-    u32 unk0c;
-    u32 words[1];
-};
-
-/** LibBitTableHeader with a halfword bit count and the records offset in the second word. */
-struct LibShortBitTableHeader
-{
-    s16 bit_count;
-    s16 unk02;
-    s32 records_offset;
-    u32 unk08;
-    u32 unk0c;
-    u32 words[1];
-};
-
-/** LibClass174C90 subclass with vtable D_00174C70 in main data. */
-class LibClass174C70 : public LibClass174C90
-{
-public:
-    LibClass174C70();
-
-    virtual ~LibClass174C70();
-
-    /**
-     * @brief Return the entry's type code.
-     * @return 43.
-     */
-    virtual s32 func_slot14();
-
-    /**
-     * @brief Use a resource's bit table and the records after it, without owning them.
-     * @param value Resource data.
-     */
-    virtual void set_borrowed_data(void* value);
-
-    /**
-     * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
-     * @param index Bit index.
-     * @param size Receives the record's size.
-     * @return Record, or null.
-     */
-    virtual u8* read_record(u32 index, u32* size);
-
-    /**
-     * @brief Note whether every bit is set and rewind the records. With a camera, rebuild the rotation from the
-     *        root's matrix and move the camera's position into the root's space.
-     * @param root Model transform.
-     * @return One.
-     */
-    virtual s32 func_slot1C(LibTransform* root);
-
-    LibBitTableHeader* table;
-    u8* records;
-    u8* cursor;
-    u8 unk3c[4];
-    FieldVec4B camera_position;
-    LibMatrix44Value rotation;
-};
-
-/** LibClass174C90 subclass with vtable D_00174CB0 in main data. */
-class LibClass174CB0 : public LibClass174C90
-{
-public:
-    LibClass174CB0();
-
-    virtual ~LibClass174CB0();
-
-    /**
-     * @brief Return the entry's type code.
-     * @return 43.
-     */
-    virtual s32 func_slot14();
-
-    /**
-     * @brief Use a resource's bit table and the records after it, without owning them.
-     * @param value Resource data.
-     */
-    virtual void set_borrowed_data(void* value);
-
-    /**
-     * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
-     * @param index Bit index.
-     * @param size Receives the record's size.
-     * @return Record, or null.
-     */
-    virtual u8* read_record(u32 index, u32* size);
-
-    /**
-     * @brief Note whether every bit is set and rewind the records. With a camera, rebuild the rotation from the
-     *        root's matrix and move the camera's position into the root's space.
-     * @param root Model transform.
-     * @return One.
-     */
-    virtual s32 func_slot1C(LibTransform* root);
-
-    LibShortBitTableHeader* table;
-    u8* records;
-    u8* cursor;
-    u8 unk3c[4];
-    FieldVec4B camera_position;
-    LibMatrix44Value rotation;
-};
-
-/** LibClass174C90 subclass with vtable D_00174D10 in main data. */
-class LibClass174D10 : public LibClass174C90
-{
-public:
-    /** @brief Start as an entry of kind 5 with blend mode 0. */
-    LibClass174D10();
-
-    virtual ~LibClass174D10();
-
-    /**
-     * @brief Return the entry's type code.
-     * @return 40.
-     */
-    virtual s32 func_slot14();
-
-    /**
-     * @brief Use a resource's bit table, records and two offsets without owning them.
-     * @param value Resource data.
-     */
-    virtual void set_borrowed_data(void* value);
-
-    /**
-     * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
-     * @param index Bit index.
-     * @param size Receives the record's size.
-     * @return Record, or null.
-     */
-    virtual u8* read_record(u32 index, u32* size);
-
-    /**
-     * @brief Note whether every bit is set; in mapping mode 2 scroll the offsets by the camera's reflection off the
-     *        model, otherwise count the blend mode down. Rewind the records.
-     * @param root Model transform; unused.
-     * @return Zero on the step the countdown ends, otherwise one.
-     */
-    virtual s32 func_slot1C(LibTransform* root);
-
-    /**
-     * @brief Pick the blend mode: offsets other than zero mark the owning list the first time; zero offsets use
-     *        mode 2 once the list was marked.
-     */
-    void update_blend_mode()
-    {
-        if (offset_u != 0.0f || offset_v != 0.0f)
-        {
-            if (blend_mode == 0)
-            {
-                if (unk18 != 1 && list != 0)
-                {
-                    list->unk8d_1 = 1;
-                }
-
-                unk18 = 1;
-                blend_mode = 0;
-            }
-        }
-        else if (unk18)
-        {
-            blend_mode = 2;
-        }
-    }
-
-    /**
-     * @brief Set the first offset and refresh the blend mode.
-     * @param value Offset.
-     */
-    void set_offset_u(float value)
-    {
-        offset_u = value;
-        update_blend_mode();
-    }
-
-    /**
-     * @brief Set the second offset and refresh the blend mode.
-     * @param value Offset.
-     */
-    void set_offset_v(float value)
-    {
-        offset_v = value;
-        update_blend_mode();
-    }
-
-    LibOffsetBitTableHeader* table;
-    u8* records;
-    u8* cursor;
-    u8 unk3c[4];
-    float offset_u;
-    float offset_v;
-    u8 unk48[8];
-    s32 blend_mode;
-};
-
-/** LibClass1779F0 subclass with vtable D_00174D30 in main data; only its destructors are known. */
-class LibClass174D30 : public LibClass1779F0
-{
-public:
-    /** @brief Start unattached, with unk0e set to two. */
-    LibClass174D30();
-
-    virtual ~LibClass174D30()
-    {
-    }
-
-    /**
-     * @brief Return the entry's type code.
-     * @return Six.
-     */
-    virtual s32 func_slot14();
-};
-
-/** LibClass174D30 subclass with vtable D_00174D50 in main data. */
-class LibClass174D50 : public LibClass174D30
-{
-public:
-    /** @brief Start as an entry of kind 6 with a white colour. */
-    LibClass174D50();
-
-    virtual ~LibClass174D50();
-
-    /**
-     * @brief Return the entry's type code.
-     * @return 36.
-     */
-    virtual s32 func_slot14();
-
-    /**
-     * @brief Use a resource's bit table, records and colour without owning them; a colour other than white
-     *        marks the owning list.
-     * @param value Resource data.
-     */
-    virtual void set_borrowed_data(void* value);
-
-    /**
-     * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
-     * @param index Bit index.
-     * @param size Receives the record's size.
-     * @return Record, or null.
-     */
-    virtual u8* read_record(u32 index, u32* size);
-
-    /**
-     * @brief Note whether every bit is set, count the blend mode down and rewind the records.
-     * @param root Model transform; unused.
-     * @return Zero on the step the countdown ends, otherwise one.
-     */
-    virtual s32 func_slot1C(LibTransform* root);
-
-    LibColorBitTableHeader* table;
-    u8* records;
-    u8* cursor;
-    u8 unk3c[4];
-    FieldVec4B color;
-    s32 blend_mode;
-};
-
+#include "overlays/lib/screen_strip_vu0.h"
 
 class LibCameraContext;
-
-#define LIB_CLASS_1745F0_STRIP_WORDS 64
-#define LIB_CLASS_1745F0_CAPTURE_COUNT 5
-
-/** List object that keeps up to five VRAM captures and their positions, with vtable D_1745F0 in main data. */
-class LibClass1745F0 : public LibListObject
-{
-public:
-    /**
-     * @brief Set up the capture positions and one capture.
-     * @param display Display the captures read from.
-     * @param unk78 Object whose transform the update reads.
-     */
-    LibClass1745F0(LibCameraContext* display, void* unk78);
-
-    /** @brief Destroy the captures, then the list object. */
-    virtual ~LibClass1745F0();
-
-    /**
-     * @brief Return the fixed list kind 14.
-     * @return Always 14.
-     */
-    virtual s32 get_default_list_kind();
-
-    /** @brief Destroy the captures, then queue the object for release. */
-    virtual void destroy();
-
-    /** @brief Queue this frame's captures. */
-    virtual void update();
-
-    /**
-     * @brief Destroy the current captures and create new ones, registering each with the renderer.
-     * @param count Captures to create.
-     */
-    void set_capture_count(s32 count);
-
-    /** @brief Detach and destroy every capture. */
-    void release_captures()
-    {
-        for (s32 i = 0; i < LIB_CLASS_1745F0_CAPTURE_COUNT; i++)
-        {
-            if (captures[i])
-            {
-                lib_object_detach_owner(captures[i]);
-                captures[i]->destroy();
-                captures[i] = 0;
-            }
-        }
-    }
-
-    u8 unk14[0xC];
-    FieldVec4A positions[LIB_CLASS_1745F0_CAPTURE_COUNT];
-    s32 capture_count;
-    LibCameraContext* display;
-    void* unk78;
-    u8 unk7c[8];
-    float unk84;
-    u8 unk88;
-    u8 recreated;
-    u8 unk8a[6];
-    u32 strips[LIB_CLASS_1745F0_CAPTURE_COUNT][LIB_CLASS_1745F0_STRIP_WORDS];
-    LibImageCapture* captures[LIB_CLASS_1745F0_CAPTURE_COUNT];
-};
 
 /** Corner of a LibClass174790 quad, relative to the widget's position. */
 struct LibQuadCorner
@@ -569,7 +195,7 @@ LibClass1745F0::LibClass1745F0(LibCameraContext* display, void* unk78)
     this->unk78 = unk78;
     unk88 = 1;
     recreated = 1;
-    unk84 = 10.0f;
+    focus_acceleration = 10.0f;
 
     for (s32 i = 0; i < LIB_CLASS_1745F0_CAPTURE_COUNT; i++)
     {
@@ -998,7 +624,105 @@ s32 LibClass1746D0::init(u32 flags, s32 color, s32 slot, s32 key)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", draw__14LibClass174790Fv);
+/** Screen position in GS units. */
+struct LibQuadPoint
+{
+    /** @brief Start at the origin. */
+    LibQuadPoint()
+    {
+        y = 0;
+        x = 0;
+    }
+
+    s32 x;
+    s32 y;
+};
+
+/**
+ * @brief Read a container's alpha.
+ * @param container Container.
+ * @return Its alpha.
+ */
+static inline float lib_quad_container_alpha(const LibContainer* container)
+{
+    return container->unkE0;
+}
+
+/**
+ * @brief Pack an XYZ2 value.
+ * @param x Screen x.
+ * @param y Screen y.
+ * @param z Depth.
+ * @return XYZ2 register value.
+ */
+static inline u64 lib_quad_xyz(s32 x, s32 y, s32 z)
+{
+    return (u64)z << 32 | ((u64)x | (u64)y << 16);
+}
+
+/** @brief Write the quad into the drawing packet; with no color, just mark it for drawing again. */
+void LibClass174790::draw()
+{
+    if (color == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        LibQuadPoint points[4];
+        float left;
+        float top;
+        float width_scale;
+        float height_scale;
+        float screen_scale_x;
+        float screen_scale_y;
+        float screen_offset_x;
+        float screen_offset_y;
+        LibContainer* owner = container;
+        LibCallbackTransform& transform = *owner;
+        FieldRuntime* runtime = g_field_runtime;
+        width_scale = scale_x;
+        left = transform.translation.x + unk18.unk00;
+        screen_scale_x = runtime->screen_scale_x;
+        screen_offset_x = runtime->screen_offset_x;
+        top = transform.translation.y + unk18.unk04;
+        height_scale = scale_y;
+        screen_scale_y = runtime->screen_scale_y;
+        screen_offset_y = runtime->screen_offset_y;
+
+        LibQuadPoint* point = points;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            point[i].x = (s32)(screen_offset_x + screen_scale_x * (left + corners[i].x * width_scale));
+            point[i].y = (s32)(screen_offset_y + screen_scale_y * (top + corners[i].y * height_scale));
+        }
+
+        u32 tint = color;
+        s32 depth = container->unka4;
+        float alpha = (draw_alpha * lib_quad_container_alpha(container)) / 128.0f;
+        u64* cursor = reinterpret_cast<u64*>(storage.dma_address);
+        packet = packet_tag = cursor;
+        cursor[0] = 0x70000006;
+        cursor[2] = GIF_TAG_NREG(10) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+        cursor[3] = 0x000000F515151510;
+        cursor[4] = 0x24C;
+        u64 bright = (u32)((s32)alpha << 24 | tint);
+        cursor[5] = bright;
+        cursor[6] = lib_quad_xyz(points[0].x, points[0].y, depth);
+        u64 faint = (u32)((s32)(0.1f * alpha) << 24 | tint);
+        cursor[7] = faint;
+        cursor[8] = lib_quad_xyz(points[1].x, points[1].y, depth);
+        cursor[9] = bright;
+        cursor[10] = lib_quad_xyz(points[2].x, points[2].y, depth);
+        cursor[11] = faint;
+        cursor[12] = lib_quad_xyz(points[3].x, points[3].y, depth);
+        cursor[13] = 0;
+        unk3b = 1;
+    }
+}
 
 /** @brief Advance the grow-in animation and request a redraw. */
 void LibClass174790::func_00413D20()
@@ -1177,7 +901,268 @@ extern "C" s32 func_0044C110(LibCallbackTransform* object)
     return resident_dma_queue_push(g_vif1_dma_queue, reinterpret_cast<DmaSubmission*>(submission));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C140);
+extern "C" float D_001B6554;
+extern "C" float D_001B6558;
+
+/**
+ * @brief Copy the current frame into a texture: draw it into a reserved area in vertical strips, then restore the
+ *        first drawing context.
+ * @param matrix Camera whose screen offset shifts the copy, or null.
+ * @param context Opaque caller context; unused.
+ */
+void LibClass174840::build_packet(const void* matrix, void* context)
+{
+    const LibCamera* camera = static_cast<const LibCamera*>(matrix);
+    D_001B655C = unk9d;
+
+    if (!unk9c)
+    {
+        unk63 = 0;
+        return;
+    }
+
+    resident_packet_rewind(packet);
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(packet, 0));
+    cursor[0] = 0;
+    u32* words = reinterpret_cast<u32*>(&cursor[1]);
+    words[0] = 0x06008000;
+    u32* tag = words + 1;
+    owner = static_cast<LibRenderer*>(g_renderer);
+    LibDisplayArea* area = &static_cast<LibCameraContext*>(unk94)->display_area;
+    LibTextureRequest request;
+
+    switch (unk9d)
+    {
+    case 0:
+        request.size = area->width * ((area->height + 63) & ~63) * 2;
+        request.width = area->width;
+        request.height = area->height;
+        break;
+    case 1:
+        request.size = 0x80000;
+        request.width = 0x200;
+        request.height = 0x200;
+        break;
+    case 2:
+        request.size = 0x80000;
+        request.width = 0x200;
+        request.height = 0x100;
+        break;
+    }
+
+    s32 psm = unk9d == 2 ? 0 : 2;
+
+    request.psm = psm;
+    request.width_log2 = unk9d == 0 ? 10 : 9;
+
+    D_001B6554 = unk9d == 0 ? 1.0f / 1024.0f : 1.0f / area->width;
+
+    D_00508210[0].x = 2045.0f / area->width;
+    D_00508210[0].y = 2045.0f / area->height;
+    D_00508220[0].x = 0.5f;
+    D_00508220[0].y = 0.5f;
+
+    switch (unk9d)
+    {
+    case 0:
+    {
+        D_00508210[0].x = (4090.0f * ((float)area->width / 2048.0f)) / (float)area->width;
+        D_00508210[0].y = (4090.0f * ((float)area->height / 2048.0f)) / (float)area->height;
+        D_00508220[0].x = 0.5f * (area->width / 1024.0f);
+        D_00508220[0].y = 0.5f * (area->height / 1024.0f);
+        D_001B6558 = 1.0f / 1024.0f;
+        request.height_log2 = 10;
+        break;
+    }
+    case 1:
+        D_001B6558 = 1.0f / area->height;
+        request.height_log2 = 9;
+        break;
+    case 2:
+        D_001B6558 = 1.0f / area->height;
+        request.height_log2 = 8;
+        break;
+    }
+
+    g_texture_cache->release_area_end(request.size);
+    g_texture_cache->stamp = 2;
+    u32 address = g_texture_cache->find_texture(&request, LIB_TEXTURE_TAG_LATF, 1, 0, 0, 1, 0);
+
+    if (address == 1)
+    {
+        g_texture_cache->release_unstamped();
+        address = g_texture_cache->find_texture(&request, LIB_TEXTURE_TAG_LATF, 1, 0, 0, 1, 0);
+
+        if (address < 2)
+        {
+            g_texture_cache->stamp = 0;
+            unk63 = 0;
+            return;
+        }
+    }
+
+    g_texture_cache->stamp = 0;
+    D_001B6560 = g_texture_cache->entries[g_texture_cache->slot_entries[0]].tex0;
+    cursor[2] = GIF_TAG_NREG(1) | 10;
+    cursor[3] = 0;
+    reinterpret_cast<GsGifTag*>(&cursor[2])->fields.register0 = GIF_REGISTER_AD;
+    cursor[4] = 0;
+    cursor[5] = GS_REGISTER_TEXFLUSH;
+    cursor[6] = (u32)(psm << 24 | (address >> 11 | ((u32)request.width >> 6) << 16));
+    cursor[7] = GS_REGISTER_FRAME_1;
+    cursor[8] = (u64)1 << 32 | 0x32000000;
+    cursor[9] = GS_REGISTER_ZBUF_1;
+    s32 offset_x = 0;
+    s32 offset_y = 0;
+
+    if (camera != 0)
+    {
+        offset_x = -16.0f * camera->unk3e0;
+        offset_y = -16.0f * camera->unk3e4;
+    }
+
+    cursor[10] = (s64)(((GS_COORDINATE_CENTRE - (area->width >> 1)) << 4) + offset_x) |
+                 ((((s64)GS_COORDINATE_CENTRE - (s64)(area->height >> 1)) << 4) + (s64)offset_y) << 32;
+    cursor[11] = GS_REGISTER_XYOFFSET_1;
+    cursor += 12;
+
+    switch (unk9d)
+    {
+    case 0:
+        *cursor++ = (area->width - 1) << 16 | ((s64)area->height - 1) << 48;
+        break;
+    case 1:
+        *cursor++ = 0x1FF0000ULL << 32 | 0x1FF0000;
+        break;
+    case 2:
+        *cursor++ = 0xFF0000ULL << 32 | 0x1FF0000;
+        break;
+    }
+
+    *cursor++ = GS_REGISTER_SCISSOR_1;
+    *cursor++ = 0x30000;
+    *cursor++ = GS_REGISTER_TEST_1;
+    *cursor++ = unk9d == 0 ? 1ULL : 0x61ULL;
+    *cursor++ = GS_REGISTER_TEX1_1;
+    u32 base = (u32)(func_004DBC70(static_cast<LibCameraContext*>(unk94)) << 13) >> 8;
+    *cursor++ = (s64)(s32)(area->unk10 << 20 | (base | (area->width / 64) << 14) | 0x28000000) |
+                (0x8000ULL << 16 | 2ULL << 32);
+    *cursor++ = GS_REGISTER_TEX0_1;
+    *cursor++ = 0x116;
+    *cursor++ = GS_REGISTER_PRIM;
+    *cursor++ = 0x8080ULL << 16 | 0x8080;
+    *cursor++ = GS_REGISTER_RGBAQ;
+    s32 strips = area->width / 32;
+    s32 left = (GS_COORDINATE_CENTRE - area->width / 2) << 4;
+    s32 top = (GS_COORDINATE_CENTRE - area->height / 2) << 4;
+    *cursor++ = (s64)strips | GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST;
+    *cursor = 0;
+    GsGifTag* strip_tag = reinterpret_cast<GsGifTag*>(cursor - 1);
+    strip_tag->fields.register0 = GIF_REGISTER_UV;
+    strip_tag->fields.register1 = GIF_REGISTER_XYZ2;
+    strip_tag->fields.register2 = GIF_REGISTER_UV;
+    strip_tag->fields.register3 = GIF_REGISTER_XYZ2;
+    cursor++;
+
+    switch (unk9d)
+    {
+    case 0:
+        for (s32 i = 0; i < strips; i++)
+        {
+            *cursor++ = (s64)(s32)(8 + i * 0x200);
+            *cursor++ = ((s64)top << 16 | (s64)(left + i * 0x200)) | (u64)GS_DEPTH_NEAREST << 32;
+            *cursor++ = (s64)(s32)(area->height << 20 | ((i + 1) * 0x200 + 8));
+            *cursor++ = ((s64)(top + (area->height << 4)) << 16 | (s64)(left + (i + 1) * 0x200)) |
+                        (u64)GS_DEPTH_NEAREST << 32;
+        }
+
+        break;
+    case 1:
+    {
+        float scale_x = 512.0f / area->width;
+        float scale_y = 512.0f / area->height;
+
+        for (s32 i = 0; i < strips; i++)
+        {
+            *cursor++ = (s64)(s32)((8 + i * 0x200) | 0x80000);
+            *cursor++ = ((s64)top << 16 | (s64)(left + (s32)(scale_x * (i * 0x200)))) | (u64)GS_DEPTH_NEAREST << 32;
+            *cursor++ = (s64)(s32)(area->height << 20 | ((i + 1) * 0x200 + 8));
+            *cursor++ = ((s64)(top + (s32)(8.0f + scale_y * (area->height << 4))) << 16 |
+                         (s64)(left + (s32)(scale_x * ((i + 1) * 0x200)))) |
+                        (u64)GS_DEPTH_NEAREST << 32;
+        }
+
+        break;
+    }
+    case 2:
+    {
+        float scale_x = 512.0f / area->width;
+        float scale_y = 256.0f / area->height;
+
+        for (s32 i = 0; i < strips; i++)
+        {
+            *cursor++ = (s64)(s32)((8 + i * 0x200) | 0x80000);
+            *cursor++ = ((s64)top << 16 | (s64)(left + (s32)(scale_x * (i * 0x200)))) | (u64)GS_DEPTH_NEAREST << 32;
+            *cursor++ = (s64)(s32)(area->height << 20 | ((i + 1) * 0x200 + 8));
+            *cursor++ = ((s64)(top + (s32)(8.0f + scale_y * (area->height << 4))) << 16 |
+                         (s64)(left + (s32)(scale_x * ((i + 1) * 0x200)))) |
+                        (u64)GS_DEPTH_NEAREST << 32;
+        }
+
+        break;
+    }
+    }
+
+    if (unk9d)
+    {
+        *cursor++ = GIF_TAG_NREG(1) | 2;
+        *cursor = 0;
+        reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+        cursor++;
+        *cursor++ = 2;
+        *cursor++ = GS_REGISTER_PRIM;
+        *cursor++ = 0;
+        *cursor++ = GS_REGISTER_RGBAQ;
+        *cursor++ = 5 | GIF_TAG_NREG(1) | GIF_TAG_FLG_REGLIST;
+        *cursor = 0;
+        reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_XYZ2;
+        cursor++;
+        s32 right = ((0x7FF - area->width / 2) + request.width) << 4;
+        s32 bottom = ((0x7FF - area->height / 2) + (u16)request.height) << 4;
+        u64 near_left = ((s64)left | (s64)top << 16) | (u64)1 << 32;
+        u64 near_right = ((s64)right | (s64)top << 16) | (u64)1 << 32;
+        cursor[0] = near_left;
+        cursor[1] = near_right;
+        cursor[2] = ((s64)right | (s64)bottom << 16) | (u64)1 << 32;
+        cursor[3] = ((s64)left | (s64)bottom << 16) | (u64)1 << 32;
+        cursor[4] = near_left;
+        cursor += 6;
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 7;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+    *cursor++ = 0x61;
+    *cursor++ = GS_REGISTER_TEX1_1;
+    *cursor++ = 0;
+    *cursor++ = GS_REGISTER_TEXFLUSH;
+    *cursor++ = func_004DBCA0(static_cast<LibCameraContext*>(unk94), 0);
+    *cursor++ = GS_REGISTER_FRAME_1;
+    *cursor++ = func_004DBCA0(static_cast<LibCameraContext*>(unk94), 1);
+    *cursor++ = GS_REGISTER_ZBUF_1;
+    *cursor++ = func_004DBCA0(static_cast<LibCameraContext*>(unk94), 2);
+    *cursor++ = GS_REGISTER_XYOFFSET_1;
+    *cursor++ = func_004DBCA0(static_cast<LibCameraContext*>(unk94), 3);
+    *cursor++ = GS_REGISTER_SCISSOR_1;
+    *cursor++ = func_004DBCA0(static_cast<LibCameraContext*>(unk94), 4);
+    *cursor++ = GS_REGISTER_TEST_1;
+    resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor));
+    qwc = resident_packet_end_unmask_path3(packet);
+    *tag = VIF_DIRECTHL(qwc - 2);
+    unk9c = 0;
+    unk63 = 1;
+}
 
 /** @brief Delete the packet and destroy the object. */
 LibClass174840::~LibClass174840()
@@ -1277,18 +1262,245 @@ void LibClass1748D0::render()
     resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D1D0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D600);
-
-/** Vertex of a screen-space polygon: texture coordinates, then the position relative to the screen centre. */
-struct LibScreenVertex
+/** GS XYZ words as microprogram 0x958 leaves them, with the drawing-kick-off bit in the fourth word. */
+struct LibScreenPoint
 {
-    float u;
-    float v;
-    float x;
-    float y;
-};
+    s32 x;
+    s32 y;
+    s32 z;
+    s32 adc;
+} __attribute__((aligned(16)));
+
+/**
+ * @brief Write a Gouraud-shaded strip or fan of perspective-textured vertices into the object's packet: each vertex's
+ *        colour, its ST from the projected screen point, and its XYZF2, with the drawing kick suppressed for the
+ *        vertex and the two after it when a vertex falls outside the drawing area or the depth range.
+ * @param object Object whose packet is written.
+ * @param count Number of vertices.
+ * @param positions Vertex positions.
+ * @param attributes Per-vertex attribute vectors for the 0x958 microprogram.
+ * @param colors Packed RGBA colour of each vertex.
+ * @param blend Nonzero to alpha blend.
+ * @param fan Nonzero for a fan, zero for a strip.
+ */
+extern "C" void func_0044D1D0(LibClass1748D0* object, s32 count, LibVector4* positions, LibVector4* attributes,
+                              u32* colors, u8 blend, s32 fan)
+{
+    if (object->packet == 0)
+    {
+        return;
+    }
+
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 0));
+    LibCameraContext* display = static_cast<LibRenderer*>(g_renderer)->display;
+    LibDisplayArea& area = display->display_area;
+    // TODO: Left over from the 2D sibling; only their loads survive, but the game has them.
+    s32 left = (GS_COORDINATE_CENTRE - area.width / 2) << 4;
+    s32 top = (GS_COORDINATE_CENTRE - area.height / 2) << 4;
+    float half_width = 0.5f * (float)area.width;
+    float half_height = 0.5f * (float)area.height;
+    float right = (float)area.width + (2048.0f - half_width);
+    float bottom = (float)area.height + (2048.0f - half_height);
+    s32 nearest = object->unk238;
+    s32 farthest = object->unk23c;
+    *cursor++ = GIF_TAG_NREG(1) | 1;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+
+    if (fan)
+    {
+        *cursor++ = (s32)((blend ? GS_PRIM_ABE : 0) | 0x1D);
+    }
+    else
+    {
+        *cursor++ = (s32)((blend ? GS_PRIM_ABE : 0) | 0x1C);
+    }
+
+    *cursor++ = GS_REGISTER_PRIM;
+    *cursor++ = (s64)count | GIF_TAG_NREG(3);
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_ST;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register1 = GIF_REGISTER_RGBAQ;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register2 = GIF_REGISTER_XYZF2;
+    cursor++;
+
+    LibVector4 screen;
+    LibScreenPoint xyz;
+    float s;
+    float t;
+    float s_scale = D_001B6554;
+    u8 unclipped = D_001B655C;
+    float t_scale = D_001B6558;
+    u32 clip = 0;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        vu0_transform_point(&positions[i]);
+        cursor[2] = (u64)(colors[i] & 0xFF) | (u64)(colors[i] & 0xFF00) << 24;
+        vu0_start_divide_by_w();
+        cursor[3] = (u64)((colors[i] & 0xFF0000) >> 16) | (u64)(colors[i] & 0xFF000000) << 8;
+        vu0_scale_by_q();
+        vu0_store_point_start_958(&attributes[i], &screen);
+        s = s_scale * (half_width + (screen.x - 2048.0f) * object->unk24c);
+        t = t_scale * (half_height + (screen.y - 2048.0f) * object->unk250);
+        cursor[0] = ((s64)*reinterpret_cast<s32*>(&s) & 0xFFFFFFFF) | (s64)*reinterpret_cast<s32*>(&t) << 32;
+        cursor[1] = 0x3F800000;
+        cursor += 4;
+
+        if (!unclipped)
+        {
+            if (!(screen.x <= right))
+            {
+                clip |= 1;
+            }
+            else if (!(screen.y <= bottom))
+            {
+                clip |= 1;
+            }
+        }
+
+        vu0_wait_store_vf6(&xyz);
+
+        if (xyz.x < 0 || xyz.x > 0xFFFF)
+        {
+            clip |= 1;
+        }
+        else if (xyz.y < 0 || xyz.y > 0xFFFF)
+        {
+            clip |= 1;
+        }
+        else if (xyz.z < nearest || farthest < xyz.z)
+        {
+            clip |= 1;
+        }
+
+        if (clip & 7)
+        {
+            xyz.adc = 0x8000;
+        }
+
+        *reinterpret_cast<unsigned __int128*>(cursor) = *reinterpret_cast<unsigned __int128*>(&xyz);
+        clip <<= 1;
+        cursor += 2;
+    }
+
+    resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+}
+
+/**
+ * @brief Add a textured, perspective-projected triangle strip or fan to the object's packet: each point is
+ *        transformed by the matrix in vf1-vf4, its ST coordinates come from the screen position scaled by unk24c /
+ *        unk250, and a vertex whose last three points left the screen or depth range is drawn without a kick.
+ * @param object Object whose packet to extend.
+ * @param count Number of vertices.
+ * @param positions Vertex positions.
+ * @param attributes Vertex vectors for microprogram 0x958.
+ * @param color Vertex color.
+ * @param blend Nonzero to alpha blend.
+ * @param fan Nonzero for a fan, zero for a strip.
+ */
+extern "C" void func_0044D600(LibClass1748D0* object, s32 count, LibVector4* positions, LibVector4* attributes,
+                              u32 color, u8 blend, s32 fan)
+{
+    if (object->packet == 0)
+    {
+        return;
+    }
+
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 0));
+    LibCameraContext* display = static_cast<LibRenderer*>(g_renderer)->display;
+    LibDisplayArea& area = display->display_area;
+    // TODO: Left over from the 2D sibling; only their loads survive, but the game has them.
+    s32 left = (GS_COORDINATE_CENTRE - area.width / 2) << 4;
+    s32 top = (GS_COORDINATE_CENTRE - area.height / 2) << 4;
+    float half_width = 0.5f * (float)area.width;
+    float half_height = 0.5f * (float)area.height;
+    float right = (float)area.width + (2048.0f - half_width);
+    float bottom = (float)area.height + (2048.0f - half_height);
+    s32 nearest = object->unk238;
+    s32 farthest = object->unk23c;
+    *cursor++ = GIF_TAG_NREG(1) | 2;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+
+    if (fan)
+    {
+        *cursor++ = (s32)((blend ? GS_PRIM_ABE : 0) | 0x15);
+    }
+    else
+    {
+        *cursor++ = (s32)((blend ? GS_PRIM_ABE : 0) | 0x14);
+    }
+
+    *cursor++ = GS_REGISTER_PRIM;
+    *cursor++ = (u64)0x3F800000 << 32 | color;
+    *cursor++ = GS_REGISTER_RGBAQ;
+    *cursor++ = (s64)count | GIF_TAG_NREG(2);
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_ST;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register1 = GIF_REGISTER_XYZF2;
+    cursor++;
+
+    LibVector4 screen;
+    LibScreenPoint xyz;
+    float s;
+    float t;
+    float s_scale = D_001B6554;
+    u8 unclipped = D_001B655C;
+    float t_scale = D_001B6558;
+    u32 clip = 0;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        vu0_transform_point(&positions[i]);
+        vu0_start_divide_by_w();
+        vu0_store_projected_start_958(&attributes[i], &screen);
+        s = s_scale * (half_width + (screen.x - 2048.0f) * object->unk24c);
+        t = t_scale * (half_height + (screen.y - 2048.0f) * object->unk250);
+        cursor[0] = ((s64)*reinterpret_cast<s32*>(&s) & 0xFFFFFFFF) | (s64)*reinterpret_cast<s32*>(&t) << 32;
+
+        if (!unclipped)
+        {
+            if (!(screen.x <= right))
+            {
+                clip |= 1;
+            }
+            else if (!(screen.y <= bottom))
+            {
+                clip |= 1;
+            }
+        }
+
+        cursor += 2;
+        vu0_wait_store_vf6(&xyz);
+
+        if (xyz.x < 0 || xyz.x > 0xFFFF)
+        {
+            clip |= 1;
+        }
+        else if (xyz.y < 0 || xyz.y > 0xFFFF)
+        {
+            clip |= 1;
+        }
+        else if (xyz.z < nearest || farthest < xyz.z)
+        {
+            clip |= 1;
+        }
+
+        if (clip & 7)
+        {
+            xyz.adc = 0x8000;
+        }
+
+        *reinterpret_cast<unsigned __int128*>(cursor) = *reinterpret_cast<unsigned __int128*>(&xyz);
+        clip <<= 1;
+        cursor += 2;
+    }
+
+    resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+}
 
 /**
  * @brief Add a textured triangle strip or fan, in screen coordinates relative to the display's centre, to the
@@ -1489,131 +1701,6 @@ LibClass1748D0::~LibClass1748D0()
     delete packet;
 }
 
-/** LibClass1748D0 with its own packet builder, with vtables D_174970 and D_1749F4 in main data. */
-class LibClass174970 : public LibClass1748D0
-{
-public:
-    /** @brief Start with type ID 0xA02 and no buffers. */
-    LibClass174970();
-
-    /** @brief Destroy the transform. */
-    virtual ~LibClass174970();
-
-    virtual void build_packet(const void* matrix, void* context);
-
-    /**
-     * @brief Set the grid size and replace the packet buffer with one big enough for it.
-     * @param columns Number of columns.
-     * @param rows Number of rows.
-     */
-    void set_grid_size(s32 columns, s32 rows);
-
-    float row_amplitude;
-    float row_frequency;
-    float row_phase;
-    u8 unk26c[4];
-    float column_amplitude;
-    float column_frequency;
-    float column_phase;
-    u8 unk27c[4];
-    s32 columns;
-    s32 rows;
-    float left;
-    float top;
-    float width;
-    float height;
-    u32 unk298;
-    u32 alpha;
-};
-
-/** LibClass1748D0 that LibClass174AC0 and LibClass174B70 build on, with vtables D_174A10 and D_174A94 in main data. */
-class LibClass174A10 : public LibClass1748D0
-{
-public:
-    /** @brief Construct the transform. */
-    LibClass174A10()
-    {
-    }
-
-    /** @brief Destroy the transform. */
-    virtual ~LibClass174A10()
-    {
-    }
-};
-
-/** LibClass174A10 with a sample grid and two angle setters, with vtables D_174AC0 and D_174B44 in main data. */
-class LibClass174AC0 : public LibClass174A10
-{
-public:
-    /** @brief Start with type ID 0xA02 and no buffers. */
-    LibClass174AC0();
-
-    /** @brief Free the sample buffer. */
-    virtual ~LibClass174AC0();
-
-    virtual void build_packet(const void* matrix, void* context);
-
-    virtual void func_0044FDA0(s32 columns, s32 rows);
-
-    /**
-     * @brief Store three values: the first as degrees, the third as turns.
-     * @param values Three values.
-     */
-    virtual void func_00451AD0(const float* values);
-
-    /**
-     * @brief Store three values, the first and third as degrees.
-     * @param values Three values.
-     */
-    virtual void func_00451B20(const float* values);
-
-    s32 columns;
-    s32 rows;
-    float unk268;
-    float unk26c;
-    float unk270;
-    float unk274;
-    float unk278;
-    float unk27c;
-    void* samples;
-};
-
-/** LibClass174A10 with a sample grid and two setters, with vtables D_174B70 and D_174BF4 in main data. */
-class LibClass174B70 : public LibClass174A10
-{
-public:
-    /** @brief Start with type ID 0xA01 and no buffers. */
-    LibClass174B70();
-
-    /** @brief Free the sample buffer. */
-    virtual ~LibClass174B70();
-
-    virtual void build_packet(const void* matrix, void* context);
-
-    virtual void func_00451850(s32 columns, s32 rows);
-
-    /**
-     * @brief Store three values, the third as turns.
-     * @param values Three values.
-     */
-    virtual void func_00451A60(const float* values);
-
-    /**
-     * @brief Store three values, the first as degrees.
-     * @param values Three values.
-     */
-    virtual void func_00451AA0(const float* values);
-
-    s32 columns;
-    s32 rows;
-    float unk268;
-    float unk26c;
-    float unk270;
-    float unk274;
-    float unk278;
-    float unk27c;
-    void* samples;
-};
 
 /** @brief Start with no packet buffer, type ID 0xA00 and the class's draw bucket. */
 LibClass1748D0::LibClass1748D0()
@@ -2062,7 +2149,62 @@ extern "C" void func_00452270(LibClass174C20* entry, const LibVector4* position,
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452390);
+/**
+ * @brief Find the grid cell a position falls in, in the space of the entry's transform, and where in the cell.
+ * @param entry Grid entry.
+ * @param position Position to look up.
+ * @param cell Receives the cell index (one cell of border on every side).
+ * @param x Receives the position across the cell, from 0 to 1.
+ * @param y Receives the position down the cell, from 0 to 1.
+ * @return One when the position is over the grid, otherwise zero.
+ */
+extern "C" s32 func_00452390(LibClass174C20* entry, const LibVector4* position, s32* cell, float* x, float* y)
+{
+    LibVector4 local;
+
+    if (entry->root == 0)
+    {
+        return 0;
+    }
+
+    if (!entry->root->matrix_ready)
+    {
+        entry->root->update_transform_matrix();
+        mark_transpose_current(entry->root);
+        func_004D9E70(entry->root);
+    }
+    else if (!entry->root->unk20e_0)
+    {
+        transpose_transform(entry->root);
+        func_004D9E70(entry->root);
+    }
+    else if (!entry->root->unk20e_2)
+    {
+        func_004D9E70(entry->root);
+    }
+
+    entry->root->to_local(position, &local);
+    s32 width = entry->header->columns;
+    s32 height = entry->header->rows;
+    float size = entry->header->cell_size;
+    float left = entry->header->left;
+    float top = entry->header->top;
+    float right = left + size * (width - 1);
+    float bottom = top + size * (height - 1);
+
+    if (local.x < left || !(local.x <= right) || local.z < top || !(local.z <= bottom))
+    {
+        return 0;
+    }
+
+    s32 column = (local.x - left) / size;
+    s32 row = (local.z - top) / size;
+    width += 2;
+    *x = (local.x - column * size - left) / size;
+    *y = (local.z - row * size - top) / size;
+    *cell = (column + 1) + (row + 1) * width;
+    return 1;
+}
 
 /**
  * @brief Fill the output's vertices for a bit: each vertex's cell index picks its depth (stored in y) and its
@@ -2172,7 +2314,7 @@ s32 LibClass174C20::func_slot1C(LibTransform* root)
     }
 
     LibVector4 slope;
-    slope.y = -header->normal_scale;
+    slope.y = -header->cell_size;
     vu0_set_vf31_one();
 
     for (s32 y = 1; y < depth; y++)
@@ -2332,9 +2474,295 @@ extern "C" s32 lib_indexed_resource_init(ItemCreationClass174C40* object, float 
     return func_00467800(object, func_00464EF0(g_field_runtime, state->current) + 0x22, 0, 0, 0, 0, x, y);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453150);
+/**
+ * @brief Upload an image animation's palette and image at a cursor (finding their VRAM in the texture cache) and
+ *        flush the texture cache.
+ * @param animation Animation whose resource to upload.
+ * @param cursor Packet cursor, moved past the packet.
+ * @param output Receives the drawing format, or null to store it in the animation.
+ * @return Nonzero when the upload was written.
+ */
+extern "C" s32 func_00453150(LibImageAnimation* animation, u64** cursor, LibImageFormat* output)
+{
+    if (!animation->unk00)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004535B0);
+    LibImageHeader* header = reinterpret_cast<LibImageHeader*>(animation->unk00 + 0x10);
+    LibImageInfo* image = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(header) + header->image_offset);
+    u32 clut = 0;
+
+    if (header->unk02)
+    {
+        u32 address = g_texture_cache->func_004A6EA0(header, 0x3F, 1);
+
+        if (!address)
+        {
+            return 0;
+        }
+
+        clut = address;
+    }
+
+    u32 texture = g_texture_cache->find_texture(reinterpret_cast<LibTextureRequest*>(image),
+                                                *reinterpret_cast<u32*>(header->name), header->id, 0xFF, header->flags,
+                                                1, 0);
+
+    if (texture < 2)
+    {
+        g_texture_cache->release_unstamped();
+        texture = g_texture_cache->find_texture(reinterpret_cast<LibTextureRequest*>(image),
+                                                *reinterpret_cast<u32*>(header->name), header->id, 0xFF, header->flags,
+                                                1, 0);
+
+        if (texture < 2)
+        {
+            return 0;
+        }
+    }
+
+    u64* packet;
+    LibImagePalette* pixels;
+    u8 width_log2;
+    u8 height_log2;
+    u16 palette_base;
+    s32 clut_block = clut >> 6;
+    palette_base = clut_block;
+    width_log2 = image->width_log2;
+    height_log2 = image->height_log2;
+    LibImagePalette* palette = reinterpret_cast<LibImagePalette*>(reinterpret_cast<u8*>(header) + header->palette_offset);
+    s32 palette_format = header->palette_format;
+    packet = *cursor;
+    s32 palette_width = (palette->bitbltbuf >> GS_BITBLTBUF_DBW_SHIFT) & GS_BITBLTBUF_DBW_MASK;
+    u64 palette_trxreg = palette->trxreg;
+    packet[0] = DMA_TAG(6, DMA_TAG_ID_CNT, 0);
+    packet[2] = GIF_TAG_NREG(1) | 4;
+    packet[3] = GIF_REGISTER_AD;
+    packet[4] = ((u64)palette_format << 56) |
+                (((u64)clut_block << 32) | ((u64)palette_width << 48));
+    packet[5] = GS_REGISTER_BITBLTBUF;
+    packet[6] = 0;
+    packet[7] = GS_REGISTER_TRXPOS;
+    packet[8] = (s32)(palette_trxreg & GS_TRXREG_SIZE_MASK) |
+                ((u64)(s32)((palette_trxreg >> GS_TRXREG_RRH_SHIFT) & GS_TRXREG_SIZE_MASK) << 32);
+    packet[9] = GS_REGISTER_TRXREG;
+    packet[10] = 0;
+    packet[11] = GS_REGISTER_TRXDIR;
+    packet[12] = (header->palette_size / 16) | (GIF_TAG_FLG_IMAGE | GIF_TAG_EOP);
+    packet[13] = 0;
+    packet[14] = DMA_TAG(header->palette_size / 16, DMA_TAG_ID_REF, palette->colors);
+    s32 texture_block = texture >> 6;
+    pixels = reinterpret_cast<LibImagePalette*>(reinterpret_cast<u8*>(header) + image->pixel_offset);
+    u16 texture_base = texture_block;
+    s32 texture_width = (pixels->bitbltbuf >> GS_BITBLTBUF_DBW_SHIFT) & GS_BITBLTBUF_DBW_MASK;
+    s32 code = image->texture_code;
+    u8 format = code;
+    u64 pixel_trxreg = pixels->trxreg;
+    u8 buffer_width = texture_width;
+    packet[16] = DMA_TAG(6, DMA_TAG_ID_CNT, 0);
+    packet[18] = GIF_TAG_NREG(1) | 4;
+    packet[19] = GIF_REGISTER_AD;
+    packet[20] = ((u64)code << 56) | (((u64)texture_block << 32) | ((u64)texture_width << 48));
+    packet[21] = GS_REGISTER_BITBLTBUF;
+    packet[22] = 0;
+    packet[23] = GS_REGISTER_TRXPOS;
+    packet[24] = (s32)(pixel_trxreg & GS_TRXREG_SIZE_MASK) |
+                 ((u64)(s32)((pixel_trxreg >> GS_TRXREG_RRH_SHIFT) & GS_TRXREG_SIZE_MASK) << 32);
+    packet[25] = GS_REGISTER_TRXREG;
+    packet[26] = 0;
+    packet[27] = GS_REGISTER_TRXDIR;
+    packet[28] = ((s32)image->data_size / 16) | (GIF_TAG_FLG_IMAGE | GIF_TAG_EOP);
+    packet[29] = 0;
+    packet[30] = DMA_TAG((s32)image->data_size / 16, DMA_TAG_ID_REF, pixels->colors);
+    packet[32] = DMA_TAG(4, DMA_TAG_ID_CNT, 0);
+    packet[34] = GIF_TAG_NREG(1) | 1;
+    packet[35] = GIF_REGISTER_AD;
+    packet[36] = 0;
+    packet[37] = GS_REGISTER_TEXFLUSH;
+    packet[38] = GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+    packet[39] = 0xF7;
+    packet[40] = 0x8007FF8001300000ULL;
+    packet[41] = 0;
+    *cursor = packet + 42;
+
+    if (output)
+    {
+        output->unk00 = texture_base;
+        output->unk02 = palette_base;
+        output->unk04 = buffer_width;
+        output->unk05 = format;
+        output->unk06 = width_log2;
+        output->unk07 = height_log2;
+    }
+    else
+    {
+        animation->format.unk00 = texture_base;
+        animation->format.unk02 = palette_base;
+        animation->format.unk04 = buffer_width;
+        animation->format.unk05 = format;
+        animation->format.unk06 = width_log2;
+        animation->format.unk07 = height_log2;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Write an ST value and step past it.
+ * @param p Where to write.
+ * @param s Horizontal texture coordinate.
+ * @param t Vertical texture coordinate.
+ * @return The word after it.
+ */
+static inline u64* lib_put_st(u64* p, float s, float t)
+{
+    reinterpret_cast<float*>(p)[0] = s;
+    reinterpret_cast<float*>(p)[1] = t;
+    return p + 1;
+}
+
+/**
+ * @brief Write an XYZ2 value and step past it.
+ * @param p Where to write.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Depth already shifted into the upper word.
+ * @return The word after it.
+ */
+static inline u64* lib_put_xyz(u64* p, float x, float y, u64 z)
+{
+    *p = z | ((u64)(s32)x | (u64)(s32)y << 16);
+    return p + 1;
+}
+
+/**
+ * @brief Write an image animation's current frame as a sprite quad: its texture registers, the colour (tinted when
+ *        given) and the frame's four corners scaled about one pivot and rotated about another.
+ * @param animation Animation to draw.
+ * @param cursor Packet cursor, advanced past the quad.
+ * @param origin Position the animation is drawn relative to.
+ * @param depth Z value of the vertices.
+ * @param scale Alpha scale, 128 for the animation's own alpha.
+ * @param tint Colour scale, 128 for none, or null.
+ */
+extern "C" void func_004535B0(LibImageAnimation* animation, u64** cursor, const LibVector4* origin, u32 depth, float scale,
+                              const LibVector4* tint)
+{
+    if (animation->resource == 0)
+    {
+        return;
+    }
+
+    u64* packet = *cursor;
+    LibImageFrame* frame = &animation->frame[animation->index];
+    packet[0] = GIF_TAG_NREG(12) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+    packet[1] = 0x0000525252521077ULL;
+    packet[2] = 0x8000000001300000ULL | (u64)animation->format.unk02 << 37;
+    packet[3] = ((u64)animation->format.unk00 | (u64)animation->format.unk04 << 14 | (u64)animation->format.unk05 << 20 |
+                 (u64)animation->format.unk06 << 26 | (u64)animation->format.unk07 << 30 | 4ULL << 32 |
+                 (u64)animation->format.unk02 << 37) |
+                (u64)(s32)(animation->unk5e < 0 ? frame->csa : animation->unk5e) << 56;
+    packet[4] = 0x254;
+    s32 red;
+    s32 green;
+    s32 blue;
+
+    if (tint == 0)
+    {
+        red = animation->unk44;
+        green = animation->unk48;
+        blue = animation->unk4c;
+    }
+    else
+    {
+        red = (tint->x * animation->unk44) / 128.0f;
+        green = (tint->y * animation->unk48) / 128.0f;
+        blue = (tint->z * animation->unk4c) / 128.0f;
+    }
+
+    packet[5] = (((u64)blue << 16 | ((u64)red | (u64)green << 8)) | (u64)(s32)((scale * animation->unk50) / 128.0f) << 24) |
+                (u64)0x3F800000 << 32;
+    float xs[4];
+    float ys[4];
+    xs[0] = -animation->unk20;
+    ys[0] = -animation->unk24;
+    xs[3] = xs[0] + frame->width;
+    ys[3] = ys[0] + frame->height;
+
+    if (animation->unk30 != 1.0f)
+    {
+        float pivot = animation->unk28 * (1.0f - animation->unk30);
+        xs[0] = pivot + xs[0] * animation->unk30;
+        xs[3] = pivot + xs[3] * animation->unk30;
+    }
+
+    if (animation->unk34 != 1.0f)
+    {
+        float pivot = animation->unk2c * (1.0f - animation->unk34);
+        ys[0] = pivot + ys[0] * animation->unk34;
+        ys[3] = pivot + ys[3] * animation->unk34;
+    }
+
+    xs[1] = xs[3];
+    ys[1] = ys[0];
+    xs[2] = xs[0];
+    ys[2] = ys[3];
+
+    if (animation->unk40 != 0.0f)
+    {
+        float radians = (3.1415927f * animation->unk40) / 180.0f;
+        float sine = lib_sine_degree9(radians);
+        float cosine = lib_cosine_degree9(radians);
+        float centre_x = animation->unk38;
+        float centre_y = animation->unk3c;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            float dx = xs[i] - centre_x;
+            float dy = ys[i] - centre_y;
+            xs[i] = centre_x + (dx * cosine - dy * sine);
+            ys[i] = centre_y + (dx * sine + dy * cosine);
+        }
+    }
+
+    // TODO: Declared up front and assigned in this order for the target's float registers; a guessed shape.
+    float x;
+    float y;
+    float scale_x;
+    float scale_y;
+    float offset_x;
+    float offset_y;
+    FieldRuntime* runtime = g_field_runtime;
+    scale_x = runtime->screen_scale_x;
+    x = origin->x + animation->unk18;
+    y = origin->y + animation->unk1c;
+    scale_y = runtime->screen_scale_y;
+    offset_x = runtime->screen_offset_x;
+    offset_y = runtime->screen_offset_y;
+
+    for (s32 i = 3; i >= 0; i--)
+    {
+        xs[i] = offset_x + scale_x * (x + xs[i]);
+        ys[i] = offset_y + scale_y * (y + ys[i]);
+    }
+
+    float u0 = (float)(frame->uv0 & 0xFFFF) / 4096.0f;
+    float v0 = (float)(frame->uv0 >> 16) / 4096.0f;
+    float u1 = (float)(frame->uv1 & 0xFFFF) / 4096.0f;
+    float v1 = (float)(frame->uv1 >> 16) / 4096.0f;
+    u64 z = (u64)(s32)depth << 32;
+    u64* vertex = packet + 6;
+    vertex = lib_put_st(vertex, u0, v0);
+    vertex = lib_put_xyz(vertex, xs[0], ys[0], z);
+    vertex = lib_put_st(vertex, u1, v0);
+    vertex = lib_put_xyz(vertex, xs[1], ys[1], z);
+    vertex = lib_put_st(vertex, u0, v1);
+    vertex = lib_put_xyz(vertex, xs[2], ys[2], z);
+    vertex = lib_put_st(vertex, u1, v1);
+    vertex = lib_put_xyz(vertex, xs[3], ys[3], z);
+    *cursor = vertex;
+}
 
 /**
  * @brief Count the frame time down and move on when it runs out.
@@ -2478,7 +2906,140 @@ s32 LibClass174C70::func_slot14()
     return 0x2B;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004540E0);
+/** Record of vertex indices a LibClass174C70 maps for one bit: a vertex index and a seam group per vertex. */
+struct LibEnvMapRecord
+{
+    u8 unk00[0x10];
+    u8 pairs[1];
+};
+
+/** What microprogram 0x3B0 leaves in vf25: the u coordinate as a float, then v already converted. */
+union LibEnvMapResult
+{
+    float u;
+    u32 words[4];
+} __attribute__((aligned(16)));
+
+/**
+ * @brief Fill the record's texture coordinates from the environment map on VU0, one vertex behind the
+ *        microprogram. Within a seam group, a jump in u of more than 0.4 shifts the rest of the group by a whole
+ *        turn so the coordinates stay continuous.
+ * @param output Output whose coordinates change.
+ * @param index Bit index, which picks the record of vertex indices.
+ */
+void LibClass174C70::func_slot10(LibEntryOutput* output, s32 index)
+{
+    LibEnvMapRecord* record;
+    LibClass173490Entry* values;
+    LibVector4* vectors;
+    u8* pairs;
+    u32 vertex;
+    u32 group;
+    u32* uv;
+    LibVector4* vector;
+    LibClass173490Entry* normal;
+    u32* uvs;
+    s32 count;
+    float wrap;
+    float u;
+    float limit;
+    float scale;
+    float previous_u;
+    float delta;
+    u32 previous_group;
+    s32 i;
+    u32 v;
+    u32 next_group;
+    s32 packed;
+    LibEnvMapResult result;
+
+    record = static_cast<LibEnvMapRecord*>(output->records[index]);
+    pairs = record->pairs;
+    values = output->values;
+    vectors = output->vectors;
+    vu0_load_env_map_basis(&camera_position, &rotation);
+    vertex = pairs[0];
+    group = pairs[1];
+    vector = &vectors[vertex];
+    normal = &values[vertex];
+    vu0_start_env_map(vector, normal);
+    uvs = output->uvs;
+    count = output->count;
+    wrap = 0.0f;
+    previous_group = 0;
+    i = 1;
+    previous_u = 0.0f;
+    limit = 0.4f;
+    // TODO: The game loads this dead 0.25 too; I haven't found what it was for.
+    delta = 0.25f;
+    scale = 4096.0f;
+
+    // TODO: The loop starts at its second half in the game, so I've entered it with a goto; there may be a
+    // cleaner shape.
+    goto next;
+
+    for (;;)
+    {
+        u = result.u;
+        delta = ee_abs(u - previous_u);
+
+        if (previous_group == group)
+        {
+            if (!(delta <= limit))
+            {
+                delta = u > previous_u ? -1.0f : 1.0f;
+                wrap += delta;
+            }
+        }
+        else
+        {
+            wrap = 0.0f;
+        }
+
+        previous_group = group;
+        next_group = pairs[i * 2 + 1];
+        v = result.words[1];
+        i++;
+        group = next_group;
+        previous_u = u;
+        packed = scale * (u + wrap);
+        *uv = ee_join_halfwords(v, packed);
+
+        if (i == count)
+        {
+            break;
+        }
+
+    next:
+        uv = &uvs[vertex];
+        vertex = pairs[i * 2];
+        vector = &vectors[vertex];
+        normal = &values[vertex];
+        vu0_restart_env_map(&result, vector, normal);
+    }
+
+    uv = &uvs[vertex];
+    vu0_wait_store_vf25(&result);
+    u = result.u;
+    v = result.words[1];
+    delta = ee_abs(u - previous_u);
+
+    if (previous_group == group)
+    {
+        if (!(delta <= limit))
+        {
+            delta = u > previous_u ? -1.0f : 1.0f;
+            wrap += delta;
+        }
+    }
+    else
+    {
+        wrap = 0.0f;
+    }
+
+    packed = scale * (u + wrap);
+    *uv = (v << 16) | (packed & 0xFFFF);
+}
 
 /**
  * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
@@ -2613,7 +3174,124 @@ s32 LibClass174CB0::func_slot14()
     return 0x2B;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004547C0);
+/**
+ * @brief LibClass174C70::func_slot10 with microprogram 0x5B0 and the table's parameter in vf29.
+ * @param output Output whose coordinates change.
+ * @param index Bit index, which picks the record of vertex indices.
+ */
+void LibClass174CB0::func_slot10(LibEntryOutput* output, s32 index)
+{
+    LibEnvMapRecord* record;
+    LibClass173490Entry* values;
+    LibVector4* vectors;
+    u8* pairs;
+    u32 vertex;
+    u32 group;
+    u32* uv;
+    LibVector4* vector;
+    LibClass173490Entry* normal;
+    u32* uvs;
+    s32 count;
+    float wrap;
+    float u;
+    float limit;
+    float scale;
+    float previous_u;
+    float delta;
+    u32 previous_group;
+    s32 i;
+    u32 v;
+    u32 next_group;
+    s32 packed;
+    LibEnvMapResult result;
+
+    record = static_cast<LibEnvMapRecord*>(output->records[index]);
+    pairs = record->pairs;
+    values = output->values;
+    vectors = output->vectors;
+    vu0_load_env_map_basis_vf29(&camera_position, &rotation, table->unk08);
+    vertex = pairs[0];
+    group = pairs[1];
+    vector = &vectors[vertex];
+    normal = &values[vertex];
+    vu0_start_env_map_5b0(vector, normal);
+    uvs = output->uvs;
+    count = output->count;
+    wrap = 0.0f;
+    previous_group = 0;
+    i = 1;
+    previous_u = 0.0f;
+    limit = 0.4f;
+    // TODO: The game loads this dead 0.25 too; I haven't found what it was for.
+    delta = 0.25f;
+    scale = 4096.0f;
+
+    // TODO: The loop starts at its second half in the game, so I've entered it with a goto; there may be a
+    // cleaner shape.
+    goto next;
+
+    for (;;)
+    {
+        u = result.u;
+        delta = ee_abs(u - previous_u);
+
+        if (previous_group == group)
+        {
+            if (!(delta <= limit))
+            {
+                delta = u > previous_u ? -1.0f : 1.0f;
+                wrap += delta;
+            }
+        }
+        else
+        {
+            wrap = 0.0f;
+        }
+
+        previous_group = group;
+        next_group = pairs[i * 2 + 1];
+        v = result.words[1];
+        i++;
+        group = next_group;
+        previous_u = u;
+        packed = scale * (u + wrap);
+        *uv = ee_join_halfwords(v, packed);
+
+        if (i == count)
+        {
+            break;
+        }
+
+    next:
+        uv = &uvs[vertex];
+        vertex = pairs[i * 2];
+        vector = &vectors[vertex];
+        normal = &values[vertex];
+        vu0_restart_env_map_5b0(&result, vector, normal);
+    }
+
+    uv = &uvs[vertex];
+    vu0_wait_store_vf25(&result);
+    u = result.u;
+    v = result.words[1];
+    delta = ee_abs(u - previous_u);
+
+    if (previous_group == group)
+    {
+        if (!(delta <= limit))
+        {
+            delta = u > previous_u ? -1.0f : 1.0f;
+            wrap += delta;
+        }
+    }
+    else
+    {
+        wrap = 0.0f;
+    }
+
+    packed = scale * (u + wrap);
+    *uv = (v << 16) | (packed & 0xFFFF);
+}
 
 /**
  * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
@@ -2764,7 +3442,64 @@ void* LibResourceBuffer::resolve_offset(const u32* offset)
     return lib_resource_payload(this) + byte_offset;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454E90);
+#define LIB_DRAW_STAGED_PACKETS (EE_SCRATCHPAD + 0x1800)
+
+/**
+ * @brief Point the setup packet at the buffer's texture packets, then stage one packet per texture in the scratchpad
+ *        (each linked to the next) and copy them into the block packets with DMA channel 8.
+ * @param buffer Draw buffer whose textures to stage.
+ */
+extern "C" void func_00454E90(LibDrawBuffer* buffer)
+{
+    s32 count = buffer->texture_count;
+
+    if (count == 0)
+    {
+        buffer->setup_packet->texture_offset = 0;
+        buffer->setup_packet->texture_count = 0;
+        return;
+    }
+
+    u8* packets = buffer->block_packets + 0x30;
+    LibDrawTexturePacket* staged = reinterpret_cast<LibDrawTexturePacket*>(LIB_DRAW_STAGED_PACKETS);
+
+    buffer->setup_packet->texture_count = count;
+    buffer->setup_packet->texture_offset = packets - reinterpret_cast<u8*>(buffer->command_begin);
+
+    s32 i;
+
+    for (i = 0; i < buffer->texture_count - 1; i++)
+    {
+        // TODO: An unsigned next index is what stops the multiply turning into a running offset like the game.
+        u32 next = i + 1;
+
+        staged[i].next_offset = packets + next * LIB_DRAW_TEXTURE_PACKET_SIZE - reinterpret_cast<u8*>(buffer->command_begin);
+    }
+
+    staged[buffer->texture_count - 1].next_offset = 0;
+
+    for (s32 j = 0; j < buffer->texture_count; j++)
+    {
+        staged->unk04 = 0;
+        staged->index = j;
+        staged->unk08 = 0;
+        staged->unk0c = 0;
+        staged->unk20 = 0;
+        staged->texture = buffer->textures[j];
+        staged++;
+    }
+
+    while (!(*D_STAT & D_STAT_CIS8))
+    {
+    }
+
+    sceDmaSync(sceDmaGetChan(D_001B6604->channel), 0, 0);
+    *D8_SADR = LIB_DRAW_STAGED_PACKETS;
+    *D8_MADR = reinterpret_cast<u32>(packets);
+    *D8_QWC = (u32)(buffer->texture_count * LIB_DRAW_TEXTURE_PACKET_SIZE) / LIB_DRAW_QWORD_SIZE;
+    *D_STAT = D_STAT_CIS8;
+    *D8_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
 
 /**
  * @brief Add an image's texture to the draw buffer's next texture slot.
@@ -3333,7 +4068,7 @@ s32 LibClass174D10::func_slot14()
     return 40;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456210);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_slot10__14LibClass174D10FP14LibEntryOutputi);
 
 /**
  * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
@@ -3486,7 +4221,7 @@ s32 LibClass174D50::func_slot14()
     return 36;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004569D0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_slot10__14LibClass174D50FP14LibEntryOutputi);
 
 /**
  * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
@@ -3887,10 +4622,9 @@ void lib_trophy_record_encode(void* record)
 #pragma pop
 
 // TODO: This only matches at optimization level 0, and with an unused local cleared at the start; I don't know
-// what the local was for. The grid functions below inline it, so auto inlining is on for it too.
+// what the local was for.
 #pragma push
 #pragma optimization_level 0
-#pragma auto_inline on
 
 /**
  * @brief Compute the checksum the game stores with its saved records.
@@ -3900,6 +4634,30 @@ void lib_trophy_record_encode(void* record)
  * @return Checksum.
  */
 u16 lib_compute_checksum(u16 seed, const void* data, s32 size)
+{
+    u32 checksum = seed;
+    u32 total = 0;
+    const u8* bytes = (const u8*)data;
+
+    for (s32 i = 0; i < size; i++)
+    {
+        u8 value = *bytes++;
+        checksum = (value << 8) + (checksum * LIB_CHECKSUM_MULTIPLIER + LIB_CHECKSUM_INCREMENT);
+    }
+
+    return checksum;
+}
+
+// TODO: The settings functions below inline the checksum, but func_004588E0 still calls lib_compute_checksum for
+// the encoded words and the extra block, so the inlined sites use this copy instead of auto inlining.
+/**
+ * @brief Inline copy of lib_compute_checksum.
+ * @param seed Starting value, usually the record's key.
+ * @param data Bytes to check.
+ * @param size Number of bytes.
+ * @return Checksum.
+ */
+static inline u16 lib_inline_checksum(u16 seed, const void* data, s32 size)
 {
     u32 checksum = seed;
     u32 total = 0;
@@ -4013,7 +4771,7 @@ void lib_trophy_flags_checksum(LibTrophyFlags* flags, const u32* seed, u32* chec
  */
 void func_004577A0(LibSystemSettings* settings, s32 row, s32 column, s32 value)
 {
-    if (settings->checksum != lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    if (settings->checksum != lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
     {
         return;
     }
@@ -4033,7 +4791,7 @@ void func_004577A0(LibSystemSettings* settings, s32 row, s32 column, s32 value)
     value -= 40597;
     settings->unk40[row - 1][column - 1] = value ^ LIB_RECORD_XOR_BYTE;
     settings->key = resident_next_random_word();
-    settings->checksum = lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start);
+    settings->checksum = lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start);
 }
 
 #pragma pop
@@ -4051,7 +4809,7 @@ void func_004577A0(LibSystemSettings* settings, s32 row, s32 column, s32 value)
  */
 s32 func_00457980(LibSystemSettings* settings, s32 row, s32 column)
 {
-    if (settings->checksum != lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    if (settings->checksum != lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
     {
         return 0;
     }
@@ -4212,7 +4970,236 @@ void func_004587C0(LibSystemSettings* settings)
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004588E0);
+/** Settings grid defaults, XOR-encoded, indexed [column][row]. */
+extern "C" const u8 D_004ED140[LIB_SETTINGS_GRID_SIZE][LIB_SETTINGS_GRID_SIZE];
+
+#define LIB_SETTINGS_GRID_TABLE_KEY 0xF7
+
+// TODO: Like the saved-data functions around it, this only matches at optimization level 0.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Pick a new key for the settings and recompute their checksum.
+ * @param settings System settings.
+ */
+static inline void settings_reseal(LibSystemSettings* settings)
+{
+    settings->key = resident_next_random_word();
+    settings->checksum = lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start);
+}
+
+/**
+ * @brief Pick a new key for the extra protected block and recompute its checksum.
+ * @param settings System settings.
+ */
+static inline void settings_reseal_extra(LibSystemSettings* settings)
+{
+    settings->extra_key = resident_next_random_word();
+    settings->extra_checksum = lib_compute_checksum(settings->extra_key, &settings->extra_checksum_start, (u8*)&settings->extra_checksum - &settings->extra_checksum_start);
+}
+
+/**
+ * @brief Store unk27 when the settings checksum is valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param value Value to store.
+ */
+static inline void settings_set_unk27(LibSystemSettings* settings, u8 value)
+{
+    if (settings->checksum == lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        settings->unk27 = value;
+        settings_reseal(settings);
+    }
+}
+
+/**
+ * @brief Store the first checksummed byte when the settings checksum is valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param value Value to store.
+ */
+static inline void settings_set_checksum_start(LibSystemSettings* settings, u8 value)
+{
+    if (settings->checksum == lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        settings->checksum_start = value;
+        settings_reseal(settings);
+    }
+}
+
+/**
+ * @brief Save a difficulty when the settings checksum is valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param value Difficulty to save.
+ */
+static inline void settings_set_difficulty(LibSystemSettings* settings, u8 value)
+{
+    if (settings->checksum == lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        settings->difficulty = value;
+        settings_reseal(settings);
+    }
+}
+
+/**
+ * @brief Store unk2C, XOR-encoded, when the settings checksum is valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param value Value to store.
+ */
+static inline void settings_set_unk2C(LibSystemSettings* settings, u32 value)
+{
+    if (settings->checksum == lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        settings->unk2C = value ^ LIB_RECORD_XOR_WORD;
+        settings_reseal(settings);
+    }
+}
+
+/**
+ * @brief Store an encoded word, limited to 0 through a maximum, when the settings checksum is valid, and reseal the
+ *        checksum.
+ * @param settings System settings.
+ * @param field Encoded word to store.
+ * @param value Value to store.
+ * @param maximum Largest value kept.
+ */
+static inline void settings_set_encoded(LibSystemSettings* settings, u32* field, s32 value, s32 maximum)
+{
+    if (settings->checksum == lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        value += 40597;
+        value = clamp(value, 40597, maximum + 40597);
+        value -= 40597;
+        *field = value ^ LIB_RECORD_XOR_WORD;
+        settings->key = resident_next_random_word();
+        settings->checksum = lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start);
+    }
+}
+
+// TODO: An inline copy of lib_trophy_flags_update_checksum, which isn't inlined here on its own.
+/**
+ * @brief Pick a new random checksum seed for the trophy flags and recompute their checksum.
+ * @param flags Trophy flags.
+ */
+static inline void trophy_flags_update_checksum(LibTrophyFlags* flags)
+{
+    flags->checksum_seed = resident_next_random_word();
+    u32 value = flags->checksum_seed;
+    u32 sum = 0;
+
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
+    {
+        u32 index = i;
+        s32 bit = lib_trophy_flag(flags, index);
+
+        if (value & 1)
+        {
+            bit ^= 1;
+        }
+
+        value = value * LIB_CHECKSUM_MULTIPLIER + LIB_CHECKSUM_INCREMENT;
+        sum += bit * value;
+        value = (u64)(value * value) + 0xD45666F2;
+    }
+
+    sum += flags->trophy_key ^ value;
+    flags->checksum = sum;
+}
+
+/**
+ * @brief Give the system settings their defaults: buttons, options, sealed record, trophy flags, protected values,
+ *        speaker angles from the sound system, colours, the settings grid and the factor counts.
+ * @param settings System settings.
+ */
+extern "C" void func_004588E0(LibSystemSettings* settings)
+{
+    memset_guess(settings, 0, 4);
+    settings_reseal(settings);
+    memset_guess(&settings->unk188, 0, 0x20);
+    settings_reseal_extra(settings);
+    lib_options_set_unk18(&settings->unk188, 0);
+    lib_options_set_universe_unlocked(&settings->unk188, 0);
+    lib_options_set_fourth_dimension_unlocked(&settings->unk188, 0);
+    lib_options_set_color_unlock_level(&settings->unk188, 0);
+    memset_guess(&settings->sealed_record, 0, sizeof(LibSealedRecord));
+    lib_seal_record(&settings->sealed_record);
+    settings->confirm_buttons = 0x4000;
+    settings->cancel_buttons = 0x2000;
+    settings->alternate_buttons = 0x1000;
+    settings->extra_buttons = 0x8000;
+    settings->unk08[0] = 0x400;
+    settings->unk08[1] = 0x800;
+    settings->unk08[2] = 0x100;
+    settings->unk08[3] = 0x200;
+    settings->unk20 = 0;
+    settings->unk21 = 1;
+    settings->unk24_low = 0;
+    settings->unk24_mid = 0;
+    settings->sound_output = LIB_SOUND_STEREO;
+    settings->vibration = 0;
+    settings->trophy_flags.flags.resize(LIB_TROPHY_COUNT);
+    settings->trophy_flags.flags.clear();
+    trophy_flags_update_checksum(&settings->trophy_flags);
+    settings->unk188 = resident_next_random_word();
+    settings->unk24_bit4 = 1;
+    settings_set_unk27(settings, 0);
+    settings_set_checksum_start(settings, 1);
+    settings_set_difficulty(settings, LIB_DIFFICULTY_GALAXY);
+    settings_set_encoded(settings, &settings->unk30, 0, 99999);
+    settings_set_encoded(settings, &settings->encoded_fol, 0, 99999999);
+    settings_set_encoded(settings, &settings->unk38, 0, 99999);
+    settings_set_encoded(settings, &settings->unk3C, 0, 9999);
+    settings_set_unk2C(settings, 0);
+    settings->unk22 = 1;
+    settings->unk23 = 0;
+    settings->widescreen = 0;
+    settings->unk24_bit6 = 0;
+    settings->event_skip = 0;
+    settings->unk18D = 0;
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        // TODO: Written as a byte offset; indexing the array adds the operands the other way round.
+        *(float*)((u8*)settings->speaker_angles + i * 4) = resident_system_get_sound(resident_get_system())->speaker_angles[i];
+    }
+
+    settings->unk10[0] = 0x80A0A000;
+    settings->unk10[1] = 0x80505000;
+    settings->unk10[2] = 0x80505000;
+    settings->unk10[3] = 0x80101000;
+    u8 invalid = 0;
+
+    for (s32 row = 0; row < LIB_SETTINGS_GRID_SIZE; row++)
+    {
+        for (s32 column = 0; column < LIB_SETTINGS_GRID_SIZE; column++)
+        {
+            s32 value = D_004ED140[column][row] ^ LIB_SETTINGS_GRID_TABLE_KEY;
+
+            // TODO: A test for values above 26, but only the negated form matches.
+            if (-(value + 10) < -36)
+            {
+                invalid = 1;
+            }
+
+            func_004577A0(settings, row + 1, column + 1, value);
+        }
+    }
+
+    if (invalid)
+    {
+        for (s32 row = 0; row < LIB_SETTINGS_GRID_SIZE; row++)
+        {
+            for (s32 column = 0; column < LIB_SETTINGS_GRID_SIZE; column++)
+            {
+                func_004577A0(settings, row + 1, column + 1, 1);
+            }
+        }
+    }
+
+    lib_factor_counts_reset(&settings->factor_counts);
+}
+
+#pragma pop
 
 // TODO: This only matches with tree transformation, constant folding, lifetime splitting and loop rotation
 // off: the inlined checksum keeps unfolded loop bounds and one accumulator register. I haven't found the
@@ -4265,7 +5252,7 @@ extern "C" void lib_seal_record(LibSealedRecord* record)
         }
 
         record->key = resident_next_random_word();
-        record->checksum = lib_compute_checksum(record->key * LIB_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
+        record->checksum = lib_inline_checksum(record->key * LIB_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
     }
     else if (record->sealed != LIB_RECORD_SEALED)
     {
@@ -4286,13 +5273,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", lib_options_set
 
 
 
-
-// TODO: Freeing the settings inlines the trophy flags' destructor, which text_004095C0 keeps out of line, so it's
-// only inline in this unit.
-/** @brief Destroy the flags. */
-inline LibTrophyFlags::~LibTrophyFlags()
-{
-}
 
 // TODO: Like the saved-data functions before it, this only matches at optimization level 0.
 #pragma push

@@ -127,19 +127,39 @@ extern "C" void func_00428C80(LibListObject* object);
  */
 extern "C" void func_004289B0(LibListObject* object);
 
+/**
+ * @brief Add an object to the first retained set, reusing a free slot first.
+ * @param object Object to retain.
+ * @param kind Kind byte stored with it.
+ */
+extern "C" void func_00428D20(LibListObject* object, u8 kind);
+
+/**
+ * @brief Add an object to the second retained set, reusing a free slot first.
+ * @param object Object to retain.
+ * @param kind Kind byte stored with it.
+ */
+extern "C" void func_00428A50(LibListObject* object, u8 kind);
+
 /** Point (0, 0, 0, 1): the transforms' local origin. */
-extern "C" LibVector4 D_00507F60;
+extern "C" LibClass173490Entry D_00507F60;
 
 /** Link solver constants: x and y unused here, z the share a fixed point's partner takes when its weight is tiny, w a scale for the correction. */
-extern "C" LibVector4 D_00507F50;
+extern "C" LibClass173490Entry D_00507F50;
 
 /** Direction (0, -1, 0, 1): the transforms' local down axis. */
-extern "C" LibVector4 D_00507F70;
+extern "C" LibClass173490Entry D_00507F70;
 
 /** Partial Lib transform with vtable D_172A20 in main data, kept in the second retained set. */
 class LibClass172A20 : public LibTransform
 {
 public:
+    LibClass172A20()
+    {
+        unk210 = 0;
+        unk214 = 0;
+    }
+
     /** @brief Take the transform out of the second retained set unless unk210 is set, then destroy it. */
     virtual ~LibClass172A20()
     {
@@ -155,13 +175,28 @@ public:
      */
     virtual s32 get_default_list_kind();
 
+    /**
+     * @brief Keep a sphere on the outside of the shape.
+     * @param position Sphere centre, in world space.
+     * @param output Receives the corrected centre.
+     * @param radius Sphere radius.
+     * @return Whether the centre was moved.
+     */
+    virtual bool func_00425870(const LibVector4* position, LibVector4* output, float radius) = 0;
+
     u8 unk210;
+    float unk214;
 };
 
 /** Partial Lib transform with vtable D_172AB0 in main data, kept in the first retained set. */
 class LibClass172AB0 : public LibTransform
 {
 public:
+    LibClass172AB0()
+    {
+        unk210 = 0;
+    }
+
     /** @brief Take the transform out of the first retained set unless unk210 is set, then destroy it. */
     virtual ~LibClass172AB0()
     {
@@ -206,12 +241,28 @@ public:
                               float* second);
 
     u8 unk210;
+    float unk214;
 };
+
+/** Field mask new LibClass172BD0 fields start with. */
+extern "C" u32 D_001B6508;
+
+/** Word new LibClass173050 objects start with at 0x1C. */
+extern "C" u32 D_001B6504;
+
+/** Flag byte new LibClass173050 objects start with at 0x1B. */
+extern "C" u8 D_001B6510;
 
 /** Partial Lib transform with vtable D_172BD0 in main data. */
 class LibClass172BD0 : public LibTransform
 {
 public:
+    /** @brief Start with the default field mask. */
+    LibClass172BD0()
+    {
+        field_mask = D_001B6508;
+    }
+
     virtual ~LibClass172BD0()
     {
     }
@@ -224,12 +275,18 @@ public:
      * @param source Object the effect applies to; its word at 0x1C is a mask.
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
+
+    u32 field_mask;
 };
 
 /** Partial LibClass172BD0 with vtable D_172B40 in main data. */
 class LibClass172B40 : public LibClass172BD0
 {
 public:
+    LibClass172B40()
+    {
+    }
+
     virtual ~LibClass172B40();
 
     /**
@@ -250,8 +307,19 @@ public:
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
 
-    u32 unk210;
-    u8 unk214[0xC];
+    /**
+     * @brief Set the shape's three parameters.
+     * @param first Value at 0x220.
+     * @param second Value at 0x224.
+     * @param third Value at 0x228.
+     */
+    void set_parameters(float first, float second, float third)
+    {
+        unk220 = first;
+        unk224 = second;
+        unk228 = third;
+    }
+
     float unk220;
     float unk224;
     float unk228;
@@ -263,6 +331,10 @@ public:
 class LibClass172C60 : public LibClass172BD0
 {
 public:
+    LibClass172C60()
+    {
+    }
+
     virtual ~LibClass172C60();
 
     /** @brief Update the matrices, the inverse copy and the world down axis. */
@@ -277,8 +349,21 @@ public:
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
 
-    u32 unk210;
-    u8 unk214[0xC];
+    /**
+     * @brief Set the shape's four parameters.
+     * @param first Value at 0x270.
+     * @param second Value at 0x274.
+     * @param third Value at 0x278.
+     * @param fourth Value at 0x27C.
+     */
+    void set_parameters(float first, float second, float third, float fourth)
+    {
+        unk270 = first;
+        unk274 = second;
+        unk278 = third;
+        unk27c = fourth;
+    }
+
     LibMatrix44Value inverse;
     LibVector4 down;
     float unk270;
@@ -291,6 +376,10 @@ public:
 class LibClass172CF0 : public LibClass172BD0
 {
 public:
+    LibClass172CF0()
+    {
+    }
+
     virtual ~LibClass172CF0();
 
     /** @brief Update the matrix and the world down axis. */
@@ -305,8 +394,17 @@ public:
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
 
-    u32 unk210_mask;
-    u8 unk214[0xC];
+    /**
+     * @brief Set the shape's two parameters.
+     * @param first Value at 0x220.
+     * @param second Value at 0x224.
+     */
+    void set_parameters(float first, float second)
+    {
+        unk220 = first;
+        unk224 = second;
+    }
+
     float unk220;
     float unk224;
     u8 unk228[8];
@@ -317,6 +415,10 @@ public:
 class LibClass172D80 : public LibClass172A20
 {
 public:
+    LibClass172D80()
+    {
+    }
+
     virtual ~LibClass172D80();
 
     /** @brief Update the matrices, the world position and the world down axis. */
@@ -341,6 +443,10 @@ public:
 class LibClass172E10 : public LibClass172A20
 {
 public:
+    LibClass172E10()
+    {
+    }
+
     virtual ~LibClass172E10();
 
     /** @brief Update the matrices. */
@@ -362,6 +468,10 @@ public:
 class LibClass172EA0 : public LibClass172A20
 {
 public:
+    LibClass172EA0()
+    {
+    }
+
     virtual ~LibClass172EA0();
 
     /** @brief Update the matrix, the world position and the world down axis. */
@@ -384,6 +494,10 @@ public:
 class LibClass172F30 : public LibClass172AB0
 {
 public:
+    LibClass172F30()
+    {
+    }
+
     virtual ~LibClass172F30();
 
     /** @brief Update the matrix and the world position. */
@@ -420,6 +534,10 @@ public:
 class LibClass172FC0 : public LibClass172AB0
 {
 public:
+    LibClass172FC0()
+    {
+    }
+
     virtual ~LibClass172FC0();
 
     /** @brief Update the matrix and move the local point and axis into world space. */
@@ -501,11 +619,11 @@ public:
      */
     virtual void complete_dma(u32 channel);
 
-    u8 unk94[4];
+    LibCameraContext* display;
     LibPacketBuffer* packet;
     u32 packet_quadwords;
     float unka0;
-    u32 unka4;
+    float unka4;
     u32 color;
     u8 unkac;
     u8 unkad;
@@ -558,7 +676,7 @@ public:
      */
     virtual void complete_dma(u32 channel);
 
-    u8 unk94[4];
+    LibCameraContext* display;
     LibPacketBuffer* packet;
     u32 packet_quadwords;
     float unka0;
@@ -688,7 +806,7 @@ public:
     float unk11c;
     u32 packet_quadwords;
     u32 vram_address;
-    u8 unk128[4];
+    LibCameraContext* display;
     LibPacketBuffer* packet;
 };
 
@@ -729,6 +847,19 @@ public:
     /** @brief Detach and destroy the image capture, if there is one. */
     inline void release_capture();
 
+    /**
+     * @brief Set the screen point to sample and the depth to compare against.
+     * @param px Screen x.
+     * @param py Screen y.
+     * @param depth Depth threshold.
+     */
+    void set_query(s32 px, s32 py, u32 depth)
+    {
+        x = px;
+        y = py;
+        threshold = depth;
+    }
+
     void* unk14;
     void* unk18;
     u8 unk1c;
@@ -739,6 +870,7 @@ public:
     u32 threshold;
     float coverage;
     LibImageCapture* capture;
+    u8 unk434[0xC];
 };
 
 /** One ray of a LibClass1728E0 burst: its angle and two lengths for each segment. */
@@ -753,6 +885,10 @@ struct LibLightRay
 class LibClass1728C0 : public LibListSentinel
 {
 public:
+    LibClass1728C0()
+    {
+    }
+
     virtual ~LibClass1728C0()
     {
     }
@@ -760,9 +896,9 @@ public:
     /**
      * @brief Write the object's GIF data at a cursor.
      * @param cursor Where to write.
-     * @param color Packed RGB color the object's own color is modulated by.
      * @param x Centre x, in screen pixels.
      * @param y Centre y, in screen pixels.
+     * @param color Packed RGB color the object's own color is modulated by.
      * @param scale Size scale.
      * @param angle Rotation in radians.
      * @param alpha Opacity scale.
@@ -770,7 +906,7 @@ public:
      * @param scale_y Vertical stretch.
      * @return The cursor after the data.
      */
-    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+    virtual void* func_00421650(void* cursor, float x, float y, u32 color, float scale, float angle, float alpha,
                                 float scale_x, float scale_y) = 0;
 
     /**
@@ -778,6 +914,8 @@ public:
      * @return Size, in quadwords.
      */
     virtual s32 func_00424860() = 0;
+
+    float axis_offset;
 };
 
 /** Partial packet builder with vtable D_1728E0 in main data and an owned buffer. */
@@ -793,9 +931,9 @@ public:
     /**
      * @brief Write the object's GIF data at a cursor.
      * @param cursor Where to write.
-     * @param color Packed RGB color the object's own color is modulated by.
      * @param x Centre x, in screen pixels.
      * @param y Centre y, in screen pixels.
+     * @param color Packed RGB color the object's own color is modulated by.
      * @param scale Size scale.
      * @param angle Rotation in radians.
      * @param alpha Opacity scale.
@@ -803,7 +941,7 @@ public:
      * @param scale_y Vertical stretch.
      * @return The cursor after the data.
      */
-    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+    virtual void* func_00421650(void* cursor, float x, float y, u32 color, float scale, float angle, float alpha,
                                 float scale_x, float scale_y);
 
     /**
@@ -812,7 +950,43 @@ public:
      */
     virtual s32 func_00424860();
 
-    u8 unk0c[4];
+    /**
+     * @brief Set the colors the rays shade between.
+     * @param centre Color at the centre.
+     * @param edge Color at the ends.
+     */
+    void set_colors(u32 centre, u32 edge)
+    {
+        centre_color = centre;
+        edge_color = edge;
+    }
+
+    /**
+     * @brief Set the range and jitter of each ray's first length.
+     * @param minimum Shortest length.
+     * @param maximum Longest length.
+     * @param jitter Random extra per segment.
+     */
+    void set_first_length(float minimum, float maximum, float jitter)
+    {
+        unk24 = minimum;
+        unk28 = maximum;
+        unk34 = jitter;
+    }
+
+    /**
+     * @brief Set the range and jitter of each ray's second length.
+     * @param minimum Shortest length.
+     * @param maximum Longest length.
+     * @param jitter Random extra per segment.
+     */
+    void set_second_length(float minimum, float maximum, float jitter)
+    {
+        unk2c = minimum;
+        unk30 = maximum;
+        unk38 = jitter;
+    }
+
     float alpha;
     u32 edge_color;
     u32 centre_color;
@@ -833,14 +1007,20 @@ public:
 class LibClass172900 : public LibClass1728C0
 {
 public:
+    /** @brief Start with five segments. */
+    LibClass172900()
+    {
+        segments = 5;
+    }
+
     virtual ~LibClass172900();
 
     /**
      * @brief Write the object's GIF data at a cursor.
      * @param cursor Where to write.
-     * @param color Packed RGB color the object's own color is modulated by.
      * @param x Centre x, in screen pixels.
      * @param y Centre y, in screen pixels.
+     * @param color Packed RGB color the object's own color is modulated by.
      * @param scale Size scale.
      * @param angle Rotation in radians.
      * @param alpha Opacity scale.
@@ -848,7 +1028,7 @@ public:
      * @param scale_y Vertical stretch.
      * @return The cursor after the data.
      */
-    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+    virtual void* func_00421650(void* cursor, float x, float y, u32 color, float scale, float angle, float alpha,
                                 float scale_x, float scale_y);
 
     /**
@@ -857,7 +1037,6 @@ public:
      */
     virtual s32 func_00424860();
 
-    u8 unk0c[4];
     float alpha;
     u32 color;
     float inner_radius;
@@ -869,14 +1048,18 @@ public:
 class LibClass172920 : public LibClass1728C0
 {
 public:
+    LibClass172920()
+    {
+    }
+
     virtual ~LibClass172920();
 
     /**
      * @brief Write the object's GIF data at a cursor.
      * @param cursor Where to write.
-     * @param color Packed RGB color the object's own color is modulated by.
      * @param x Centre x, in screen pixels.
      * @param y Centre y, in screen pixels.
+     * @param color Packed RGB color the object's own color is modulated by.
      * @param scale Size scale.
      * @param angle Rotation in radians.
      * @param alpha Opacity scale.
@@ -884,7 +1067,7 @@ public:
      * @param scale_y Vertical stretch.
      * @return The cursor after the data.
      */
-    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+    virtual void* func_00421650(void* cursor, float x, float y, u32 color, float scale, float angle, float alpha,
                                 float scale_x, float scale_y);
 
     /**
@@ -893,24 +1076,60 @@ public:
      */
     virtual s32 func_00424860();
 
-    u8 unk0c[4];
+    /**
+     * @brief Set the five colors, centre outwards.
+     * @param first Centre color.
+     * @param second Color at the inner radius.
+     * @param third Color at the first band's edge.
+     * @param fourth Color at the second band's edge.
+     * @param fifth Color at the third band's edge.
+     */
+    void set_colors(u32 first, u32 second, u32 third, u32 fourth, u32 fifth)
+    {
+        colors[0] = first;
+        colors[1] = second;
+        colors[2] = third;
+        colors[3] = fourth;
+        colors[4] = fifth;
+    }
+
+    /**
+     * @brief Set the four band widths.
+     * @param first First band.
+     * @param second Second band.
+     * @param third Third band.
+     * @param fourth Fourth band.
+     */
+    void set_widths(float first, float second, float third, float fourth)
+    {
+        widths[0] = first;
+        widths[1] = second;
+        widths[2] = third;
+        widths[3] = fourth;
+    }
+
     float alpha;
     u32 colors[5];
-    float widths[5];
+    float inner_radius;
+    float widths[4];
 };
 
 /** Partial packet builder with vtable D_172940 in main data. */
 class LibClass172940 : public LibClass1728C0
 {
 public:
+    LibClass172940()
+    {
+    }
+
     virtual ~LibClass172940();
 
     /**
      * @brief Write the object's GIF data at a cursor.
      * @param cursor Where to write.
-     * @param color Packed RGB color the object's own color is modulated by.
      * @param x Centre x, in screen pixels.
      * @param y Centre y, in screen pixels.
+     * @param color Packed RGB color the object's own color is modulated by.
      * @param scale Size scale.
      * @param angle Rotation in radians.
      * @param alpha Opacity scale.
@@ -918,7 +1137,7 @@ public:
      * @param scale_y Vertical stretch.
      * @return The cursor after the data.
      */
-    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+    virtual void* func_00421650(void* cursor, float x, float y, u32 color, float scale, float angle, float alpha,
                                 float scale_x, float scale_y);
 
     /**
@@ -926,6 +1145,37 @@ public:
      * @return Size, in quadwords.
      */
     virtual s32 func_00424860();
+
+    /**
+     * @brief Set the four colors, centre outwards.
+     * @param first Centre color.
+     * @param second Inner edge color.
+     * @param third Middle color.
+     * @param fourth Outer color.
+     */
+    void set_colors(u32 first, u32 second, u32 third, u32 fourth)
+    {
+        colors[0] = first;
+        colors[1] = second;
+        colors[2] = third;
+        colors[3] = fourth;
+    }
+
+    /**
+     * @brief Set the two band widths.
+     * @param inner Width of the solid band.
+     * @param outer Width of the fading band.
+     */
+    void set_widths(float inner, float outer)
+    {
+        widths[0] = inner;
+        widths[1] = outer;
+    }
+
+    float alpha;
+    u32 colors[4];
+    float inner_radius;
+    float widths[2];
 };
 
 /**
@@ -987,7 +1237,7 @@ public:
     u8 unk23d;
     u8 unk23e;
     u8 unk23f;
-    LibListObject* unk240;
+    LibClass1728A0* unk240;
 };
 
 /** Update list that is also a list object, with vtables D_173080 (primary) and D_1730B8 (list object) in main data. */
@@ -999,6 +1249,15 @@ public:
     /** @brief Update every node in the list, in order. */
     virtual void update();
 };
+
+extern LibClass173080 D_507C40;
+
+/**
+ * @brief Lay out the builder's rays: random angles kept apart (the spacing halves after ten failed tries) and two
+ *        random lengths per segment, tracking the longest.
+ * @param builder Builder whose rays to allocate and fill.
+ */
+extern "C" void func_00421D80(LibClass1728E0* builder);
 
 class LibClass173070;
 
@@ -1017,6 +1276,8 @@ struct LibClass173070Link
     float unk34;
     LibClass173070* target;
     u8 unk3c[4];
+
+    LibClass173070Link() {}
 };
 
 #define LIB_LINK_NODE_GRAVITY 0x01
@@ -1032,12 +1293,12 @@ public:
     u8 group;
     u8 unk03;
     LibTransform* transform;
-    LibClass172AB0* unk08;
+    LibClass172A20* unk08;
     LibClass173070Link* links;
     float unk10;
     s32 link_count;
     float unk18;
-    u32 unk1c;
+    float unk1c;
     float unk20;
     float weight;
     float damping;
@@ -1061,6 +1322,25 @@ public:
 class LibClass173050 : public LibListObject
 {
 public:
+    /** @brief Start empty with the default flag byte and word, and mark the object. */
+    LibClass173050()
+    {
+        node_count = 0;
+        unk16 = 0;
+        unk1a = 0;
+        unk24 = 0;
+        unk28 = 0;
+        unk2c = 0;
+        unk30 = 0;
+        unk40 = 0;
+        unk44 = 0;
+        unk48 = 0;
+        unk4c = 0;
+        unk1c = D_001B6504;
+        unk1b = D_001B6510;
+        object_kind |= 4;
+    }
+
     /** @brief Destroy the array and release both buffers. */
     virtual ~LibClass173050();
 
@@ -1076,12 +1356,18 @@ public:
     s16 unk16;
     s16 group_count;
     u8 unk1a;
-    u8 unk1b[5];
+    u8 unk1b;
+    u32 unk1c;
     float unk20;
     LibClass173070* unk24;
     LibClass172AB0** unk28;
     u8* unk2c;
     void* unk30;
+    u8 unk34[0xC];
+    u32 unk40;
+    u32 unk44;
+    u32 unk48;
+    u32 unk4c;
 };
 
 /**
@@ -1181,8 +1467,21 @@ void func_004297F0(void* object, u8 mode);
 #endif
 
 #ifdef __cplusplus
-/** Set the output values when the input float is positive. */
-extern "C" s32 func_004284A0(void* object, const void* value, float* zero_output, float* small_output);
+/** Contact test with vtable D_1730D8 in main data; its one global (D_001B6500) is made by the static initialiser. */
+class LibClass1730D8
+{
+public:
+    /**
+     * @brief Set the output values when the input float is positive.
+     * @param value Input record; its float at 0x4 is tested.
+     * @param zero_output Receives zero.
+     * @param small_output Receives 0.05.
+     * @return 1 when the outputs were set, otherwise 0.
+     */
+    virtual s32 func_004284A0(const void* value, float* zero_output, float* small_output);
+};
+
+extern LibClass1730D8 D_001B6500;
 #endif
 
 #ifdef __cplusplus

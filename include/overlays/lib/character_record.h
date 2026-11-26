@@ -365,7 +365,12 @@ static inline s32 store_symbology_mastery(LibCharacterEquipment* equipment, s32 
         return -1;
     }
 
-    mastery = limit_value(mastery, -9999, 9999);
+    // TODO: Written out rather than through limit_value: func_003F64A0's register colours need the shallower
+    // inlining.
+    mastery += LIMIT_BIAS;
+    mastery = ee_movn(mastery, -9999 + LIMIT_BIAS, mastery < -9999 + LIMIT_BIAS);
+    mastery = ee_movz(mastery, 9999 + LIMIT_BIAS, mastery <= 9999 + LIMIT_BIAS);
+    mastery -= LIMIT_BIAS;
     equipment->encoded_symbology_mastery[index] = mastery ^ 0x7E93;
     equipment->symbology_mastery_checksum = halfwords_checksum(equipment->encoded_symbology_mastery, sizeof(equipment->encoded_symbology_mastery));
     return mastery;
@@ -939,6 +944,67 @@ static inline s32 set_equipment_item_id(LibCharacterEquipment* equipment, s32 sl
 }
 
 /**
+ * @brief Read an equipped item after validating the equipment checksum.
+ * @param equipment Character equipment record.
+ * @param slot Slot index, from zero through the slot limit.
+ * @return Item ID, or zero for an invalid checksum or slot.
+ */
+static inline s16 equipment_item_id(const LibCharacterEquipment* equipment, s32 slot)
+{
+    if (equipment->equipment_checksum
+        != (equipment->checksum_salt ^ ((equipment->encoded_equipment_ids[1] + equipment->encoded_equipment_ids[2]) ^ (equipment->encoded_equipment_ids[3] + equipment->encoded_equipment_ids[0]))))
+    {
+        return 0;
+    }
+
+    if (slot < 0)
+    {
+        return 0;
+    }
+
+    if (slot > (equipment->encoded_slot_limit ^ 0x7E93))
+    {
+        return 0;
+    }
+
+    return equipment->encoded_equipment_ids[slot] ^ 0x7E93;
+}
+
+/**
+ * @brief Read a battle skill slot's encoded index when the index table passes its checksum.
+ * @param equipment Character equipment record.
+ * @param index Slot, from zero through five.
+ * @return Skill index plus one, or zero for an empty slot, a failed checksum or an index outside the table.
+ */
+static inline s32 battle_skill_index(LibCharacterEquipment* equipment, s32 index)
+{
+    u32 checksum = 0x8D3C43F9;
+
+    for (s32 entry = 0; entry < 6; entry++)
+    {
+        checksum ^= equipment->encoded_battle_skill_indices[entry];
+        checksum = checksum * 2 + 0x31;
+    }
+
+    if (equipment->battle_skill_indices_checksum != checksum)
+    {
+        return 0;
+    }
+
+    if (index < 0)
+    {
+        return 0;
+    }
+
+    if ((u32)index >= 6)
+    {
+        return 0;
+    }
+
+    return equipment->encoded_battle_skill_indices[index] ^ 0x77;
+}
+
+/**
  * @brief Store the slot limit, limited to one through four.
  * @param equipment Character equipment record.
  * @param limit Slot limit.
@@ -1114,6 +1180,458 @@ static inline void set_battle_skill_index(LibCharacterEquipment* equipment, s32 
     skill -= LIMIT_BIAS;
     equipment->encoded_battle_skill_indices[index] = (skill + 1) ^ 0x77;
     equipment->battle_skill_indices_checksum = battle_skill_indices_checksum(equipment->encoded_battle_skill_indices);
+}
+
+/**
+ * @brief Set flag bits after validating the flags/experience checksum.
+ * @param record Character record.
+ * @param bits Bits to set.
+ * @return Updated flags, or five for an invalid checksum.
+ */
+extern "C" u32 lib_character_add_flags(LibCharacterRecord* record, u32 bits);
+
+/**
+ * @brief Keep only the given flag bits after validating the flags/experience checksum.
+ * @param record Character record.
+ * @param bits Bits to keep.
+ * @return Updated flags, or five for an invalid checksum.
+ */
+extern "C" u32 lib_character_mask_flags(LibCharacterRecord* record, u32 bits);
+
+/**
+ * @brief Limit HP by type to 99999 or 99999999.
+ * @param record Character record.
+ * @param hp HP to limit.
+ * @return Limited HP.
+ */
+extern "C" s32 lib_character_limit_hp(const LibCharacterRecord* record, s32 hp);
+
+/**
+ * @brief Limit MP by type to 99999 or 99999999.
+ * @param record Character record.
+ * @param mp MP to limit.
+ * @return Limited MP.
+ */
+extern "C" s32 lib_character_limit_mp(const LibCharacterRecord* record, s32 mp);
+
+/**
+ * @brief Decode current HP, flagging the record when its checksum fails.
+ * @param record Character record.
+ * @return Current HP, or zero for an invalid checksum.
+ */
+extern "C" u32 lib_character_get_hp(LibCharacterRecord* record);
+
+/**
+ * @brief Decode current MP, flagging the record when its checksum fails.
+ * @param record Character record.
+ * @return Current MP, or zero for an invalid checksum.
+ */
+extern "C" u32 lib_character_get_mp(LibCharacterRecord* record);
+
+/**
+ * @brief Store HP, limited by type and to the maximum HP, and update the down flag.
+ *
+ * Flag bit 0 is set when HP or MP is zero and cleared once both are above it.
+ * @param record Character record.
+ * @param hp HP to store.
+ * @return Stored HP, or zero for an invalid checksum.
+ */
+extern "C" s32 lib_character_set_hp(LibCharacterRecord* record, s32 hp);
+
+/**
+ * @brief Store MP, limited by type and to the maximum MP, and update the down flag.
+ *
+ * Flag bit 0 is set when MP or HP is zero and cleared once both are above it.
+ * @param record Character record.
+ * @param mp MP to store.
+ * @return Stored MP, or zero for an invalid checksum.
+ */
+extern "C" s32 lib_character_set_mp(LibCharacterRecord* record, s32 mp);
+
+/**
+ * @brief Copy a character name.
+ * @param name Name buffer.
+ * @param text Name.
+ */
+static inline void copy_character_name(char* name, const char* text)
+{
+    const char* source = text;
+    char* destination = name;
+
+    while ((*destination++ = *source++))
+    {
+    }
+}
+
+/**
+ * @brief Decode HP after validating its checksum.
+ * @param record Character record.
+ * @return HP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_hp(LibCharacterRecord* record)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_hp ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Decode MP after validating its checksum.
+ * @param record Character record.
+ * @return MP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_mp(LibCharacterRecord* record)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_mp ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store HP through the out-of-line limit and flag functions.
+ * @param record Character record.
+ * @param hp HP to store.
+ * @return Stored HP, or zero for an invalid checksum.
+ */
+static inline s32 lower_hp(LibCharacterRecord* record, s32 hp)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        lib_character_add_flags(record, 1);
+        return 0;
+    }
+
+    hp = lib_character_limit_hp(record, hp);
+
+    if (hp > decoded_max_hp(record))
+    {
+        hp = decoded_max_hp(record);
+    }
+
+    if (hp == 0)
+    {
+        lib_character_add_flags(record, 1);
+    }
+
+    if (hp != 0 && (record->encoded_mp ^ 0x7DE3F7E3) != 0)
+    {
+        lib_character_mask_flags(record, ~1);
+    }
+
+    record->encoded_hp = hp ^ 0x7DE3F7E3;
+    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
+    return hp;
+}
+
+/**
+ * @brief Store MP through the out-of-line limit and flag functions.
+ * @param record Character record.
+ * @param mp MP to store.
+ * @return Stored MP, or zero for an invalid checksum.
+ */
+static inline s32 lower_mp(LibCharacterRecord* record, s32 mp)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        lib_character_add_flags(record, 1);
+        return 0;
+    }
+
+    mp = lib_character_limit_mp(record, mp);
+
+    if (mp > decoded_max_mp(record))
+    {
+        mp = decoded_max_mp(record);
+    }
+
+    if (mp == 0)
+    {
+        lib_character_add_flags(record, 1);
+    }
+
+    if (mp != 0 && (record->encoded_hp ^ 0x7DE3F7E3) != 0)
+    {
+        lib_character_mask_flags(record, ~1);
+    }
+
+    record->encoded_mp = mp ^ 0x7DE3F7E3;
+    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
+    return mp;
+}
+
+/**
+ * @brief Decode the base HP after validating the HP checksum.
+ * @param record Character record.
+ * @return Base HP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_base_hp(LibCharacterRecord* record)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_base_hp ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Decode the base MP after validating the MP checksum.
+ * @param record Character record.
+ * @return Base MP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_base_mp(LibCharacterRecord* record)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_base_mp ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the maximum HP through the out-of-line helpers, lowering the HP to it.
+ * @param record Character record.
+ * @param max_hp Maximum HP.
+ */
+static inline void raise_max_hp(LibCharacterRecord* record, s32 max_hp)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        lib_character_add_flags(record, 1);
+        return;
+    }
+
+    max_hp = lib_character_limit_hp(record, max_hp);
+
+    if (max_hp < 0)
+    {
+        max_hp = 0;
+    }
+
+    record->encoded_max_hp = max_hp ^ 0x7DE3F7E3;
+    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
+
+    if (max_hp < (s32)lib_character_get_hp(record))
+    {
+        lib_character_set_hp(record, max_hp);
+    }
+}
+
+/**
+ * @brief Store the base HP through the out-of-line helpers.
+ * @param record Character record.
+ * @param base_hp Base HP.
+ */
+static inline void raise_base_hp(LibCharacterRecord* record, s32 base_hp)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        lib_character_add_flags(record, 1);
+        return;
+    }
+
+    base_hp = lib_character_limit_hp(record, base_hp);
+
+    if (base_hp < 0)
+    {
+        base_hp = 0;
+    }
+
+    record->encoded_base_hp = base_hp ^ 0x7DE3F7E3;
+    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
+}
+
+/**
+ * @brief Store the maximum MP through the out-of-line helpers, lowering the MP to it.
+ * @param record Character record.
+ * @param max_mp Maximum MP.
+ */
+static inline void raise_max_mp(LibCharacterRecord* record, s32 max_mp)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        lib_character_add_flags(record, 1);
+        return;
+    }
+
+    max_mp = lib_character_limit_mp(record, max_mp);
+    record->encoded_max_mp = max_mp ^ 0x7DE3F7E3;
+    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
+
+    if (max_mp < (s32)lib_character_get_mp(record))
+    {
+        lib_character_set_mp(record, max_mp);
+    }
+}
+
+/**
+ * @brief Store the base MP through the out-of-line helpers.
+ * @param record Character record.
+ * @param base_mp Base MP.
+ */
+static inline void raise_base_mp(LibCharacterRecord* record, s32 base_mp)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        lib_character_add_flags(record, 1);
+        return;
+    }
+
+    base_mp = lib_character_limit_mp(record, base_mp);
+    record->encoded_base_mp = base_mp ^ 0x7DE3F7E3;
+    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
+}
+
+/**
+ * @brief Store the base attack, limited by type, after validating its checksum.
+ * @param record Character record.
+ * @param value Base attack.
+ */
+static inline void raise_base_attack(LibCharacterRecord* record, s32 value)
+{
+    if (record->attack_checksum == (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack))))
+    {
+        value = limit_by_type(record, value, 9999, 99999);
+        record->encoded_base_attack = value ^ 0x7DE3F7E3;
+        record->attack_checksum = (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack)));
+    }
+}
+
+/**
+ * @brief Store the base defense, limited by type, after validating its checksum.
+ * @param record Character record.
+ * @param value Base defense.
+ */
+static inline void raise_base_defense(LibCharacterRecord* record, s32 value)
+{
+    if (record->defense_checksum == (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense))))
+    {
+        value = limit_by_type_above(record, value, 9999, 9999, 99999, 99999);
+        record->encoded_base_defense = value ^ 0x7DE3F7E3;
+        record->defense_checksum = (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense)));
+    }
+}
+
+/**
+ * @brief Store the base agility, limited by type, after validating its checksum.
+ * @param record Character record.
+ * @param value Base agility.
+ */
+static inline void raise_base_agility(LibCharacterRecord* record, s32 value)
+{
+    if (record->agility_checksum == (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility))))
+    {
+        value = limit_by_type(record, value, 9999, 9999);
+        record->encoded_base_agility = value ^ 0x7DE3F7E3;
+        record->agility_checksum = (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility)));
+    }
+}
+
+/**
+ * @brief Store the base hit, limited by type, after validating its checksum.
+ * @param record Character record.
+ * @param value Base hit.
+ */
+static inline void raise_base_hit(LibCharacterRecord* record, s32 value)
+{
+    if (record->hit_checksum == (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        value = limit_by_type(record, value, 9999, 9999);
+        record->encoded_base_hit = value ^ 0x7DE3F7E3;
+        record->hit_checksum = (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit)));
+    }
+}
+
+/**
+ * @brief Store the base knockback power, limited to zero through 255, after validating its checksum.
+ * @param record Character record.
+ * @param power Base knockback power.
+ */
+static inline void store_base_knockback_power(LibCharacterRecord* record, s32 power)
+{
+    if (record->knockback_power_checksum == (record->checksum_salt ^ (record->encoded_knockback_power ^ (record->encoded_base_knockback_power + record->encoded_effective_knockback_power))))
+    {
+        power = limit_by_type(record, power, 255, 255);
+        record->encoded_base_knockback_power = power ^ 0x7E93;
+        record->knockback_power_checksum = (record->checksum_salt ^ (record->encoded_knockback_power ^ (record->encoded_base_knockback_power + record->encoded_effective_knockback_power)));
+    }
+}
+
+/**
+ * @brief Store the base knockback resistance, limited to zero through 255, after validating its checksum.
+ * @param record Character record.
+ * @param resistance Base knockback resistance.
+ */
+static inline void store_base_knockback_resistance(LibCharacterRecord* record, s32 resistance)
+{
+    if (record->knockback_resistance_checksum == (record->checksum_salt ^ (record->encoded_knockback_resistance ^ (record->encoded_base_knockback_resistance + record->encoded_effective_knockback_resistance))))
+    {
+        resistance = limit_by_type(record, resistance, 255, 255);
+        record->encoded_base_knockback_resistance = resistance ^ 0x7E93;
+        record->knockback_resistance_checksum = (record->checksum_salt ^ (record->encoded_knockback_resistance ^ (record->encoded_base_knockback_resistance + record->encoded_effective_knockback_resistance)));
+    }
+}
+
+/**
+ * @brief Store the anti-attack aura mask; it has no checksum.
+ * @param equipment Character equipment record.
+ * @param mask Aura mask.
+ */
+static inline void store_aura_mask(LibCharacterEquipment* equipment, s32 mask)
+{
+    equipment->encoded_anti_attack_aura_mask = (u8)mask ^ 0x77;
+}
+
+/**
+ * @brief Store the character flags after validating the flags and experience checksum.
+ * @param record Character record.
+ * @param flags Flags.
+ */
+static inline void store_character_flags(LibCharacterRecord* record, s32 flags)
+{
+    if (record->flags_experience_checksum == (record->checksum_salt ^ (record->encoded_experience ^ (record->encoded_flags + record->checksum_salt))))
+    {
+        record->encoded_flags = flags ^ 0x7DE3F7E3;
+        record->flags_experience_checksum = flags_experience_checksum(record);
+    }
+}
+
+/**
+ * @brief Store the fury value at 0x28, limited like fury and scaled by 16.
+ * @param record Character record.
+ * @param value Value.
+ */
+static inline void store_character_unk28(LibCharacterRecord* record, float value)
+{
+    value = clamp_fury(value);
+    record->unk28 = 16.0f * value;
+}
+
+/**
+ * @brief Store the maximum fury, limited and scaled by 16, lowering the current fury to it.
+ * @param record Character record.
+ * @param max_fury Maximum fury.
+ */
+static inline void store_character_max_fury(LibCharacterRecord* record, float max_fury)
+{
+    max_fury = clamp_fury(max_fury);
+    record->scaled_max_fury = 16.0f * max_fury;
+
+    if (!(character_fury(record) <= max_fury))
+    {
+        set_character_fury(record, max_fury);
+    }
 }
 
 #endif

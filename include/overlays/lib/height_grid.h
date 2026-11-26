@@ -24,6 +24,14 @@ struct LibHeightGrid
 class LibClass175530 : public LibTransform
 {
 public:
+    /** @brief Start as a type-5 transform without a grid. */
+    LibClass175530()
+    {
+        type_id = 5;
+        grid = 0;
+        grid_is_borrowed = 0;
+    }
+
     /** @brief Free the grid unless it is borrowed, then destroy the transform. */
     virtual ~LibClass175530();
 

@@ -114,7 +114,7 @@ void func_004351D0(LibClass173990* emitter, u32 flag, float first, float second)
  * @param value Stored in unk491.
  * @param factor Stored in unk40c.
  */
-void func_00435270(LibClass173990* emitter, u32 first_flag, u32 second_flag, u8 value, float factor);
+void func_00435270(LibClass173990* emitter, bool first_flag, bool second_flag, u8 value, float factor);
 
 /**
  * @brief Store unk49b bit 6 and the floats unk404 and unk408.

@@ -1,13 +1,17 @@
 #include "include_asm.h"
 #include "vu0.h"
+#include "overlays/lib/matrix_vu0.h"
+#include "overlays/lib/vector_inlines.h"
 #include "clamp.h"
 #include "overlays/lib/blend_transform.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/scene_objects.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/tracks.h"
 #include "overlays/lib/emission.h"
+#include "overlays/lib/particle_grid.h"
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/image_model.h"
 #include "overlays/lib/text_0046AE20.h"
@@ -16,6 +20,9 @@
 #include "overlays/lib/memory_card.h"
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/transform_owner_inlines.h"
+#include "overlays/lib/transform_inlines.h"
+#include "overlays/lib/occluder_vu0.h"
+#include "overlays/lib/ripple_vu0.h"
 #include "overlays/lib/light_random.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "ee.h"
@@ -35,10 +42,23 @@
 #include "main/utility.h"
 #include "main/resource_queue.h"
 
+/** @brief Leave the element uninitialized. */
+inline LibClass173490Entry::LibClass173490Entry()
+{
+}
+
 /** LibClass173380 that LibClass173380::build_packet creates, with vtable D_173270 in main data. */
 class LibClass173270 : public LibClass173380
 {
 public:
+    /** @brief Start with no light and no lifetime. */
+    LibClass173270()
+    {
+        lifetime = 0;
+        light_index = -1;
+        set_type_id(0x121);
+    }
+
     /** @brief Destroy the model. */
     virtual ~LibClass173270();
 
@@ -53,269 +73,39 @@ public:
      * @param channel DMA channel number.
      */
     virtual void complete_dma(u32 channel);
-};
-
-/** LibClass1734B0 entry of type 34 with two element arrays, with vtable D_173490 in main data. */
-class LibClass173490 : public LibClass1734B0
-{
-public:
-    /** @brief Start with no entry arrays. */
-    LibClass173490();
-
-    /** @brief Free both entry arrays, then destroy the entry. */
-    virtual ~LibClass173490();
-
-    virtual void set_borrowed_data(void* value);
 
     /**
-     * @brief Copy each vertex's cell element into the output, or, when unk4c is clear, the output's values back
-     *        into the cells and set unk4d.
-     * @param output Output to fill or read.
-     * @param index Bit index, which picks the record of cell indices.
+     * @brief Choose the caster light the shadow is drawn for.
+     * @param index Light number in the caster's shadow light list.
      */
-    virtual void func_slot10(LibEntryOutput* output, s32 index);
-
-    /**
-     * @brief Return the entry's type code.
-     * @return 34.
-     */
-    virtual s32 func_slot14();
-
-    /**
-     * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
-     * @param index Bit index; unused.
-     * @param size Size in halfwords; receives the size in bytes.
-     * @return Record.
-     */
-    virtual u8* read_record(u32 index, u32* size);
-
-    /** @brief Slot 0x1C, first after LibClass1779F0's; its purpose is unknown. */
-    virtual s32 func_slot1C(LibTransform* root);
-
-    /** @brief Clear both element arrays and the two flags. */
-    void clear_entries();
-
-    u32* unk30;
-    u32* unk34;
-    u32 unk38;
-    u32 unk3c;
-    LibClass173490Entry* unk40;
-    LibClass173490Entry* unk44;
-    u32* unk48;
-    u8 unk4c;
-    u8 unk4d;
-};
-
-/**
- * Light: a LibTransform with a kind byte that the scene's models are lit by, with vtable D_1736C0 in main data.
- * Lib's object factory builds the five kinds below with inline constructors.
- */
-class LibClass1736C0 : public LibTransform
-{
-public:
-    virtual ~LibClass1736C0()
+    void set_light_index(s8 index)
     {
+        light_index = index;
     }
 
     /**
-     * @brief Slot 0x84: bring the light into a view's space.
-     * @param matrix View matrix.
-     * @param rotation View matrix with its rows normalised, for directions.
+     * @brief Count the lifetime down.
+     * @return Whether it ran out.
      */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation) = 0;
-
-    /**
-     * @brief Slot 0x88: work out the light reaching a point.
-     * @param point Point being lit.
-     * @param normal Normal at the point.
-     * @return Light vector; stored in the light.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal) = 0;
-
-    u8 kind;
-};
-
-/** Point light of type 0x703, with vtable D_173750 in main data. */
-class LibClass173750 : public LibClass1736C0
-{
-public:
-    /**
-     * @brief Transform the light's position into the view's space.
-     * @param matrix View matrix.
-     * @param rotation Unused.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
-
-    /**
-     * @brief Work out the vector from a point to the light, falling off with distance.
-     * @param point Point being lit.
-     * @param normal Unused.
-     * @return Light vector at unk220.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
-
-    LibVector4 unk220;
-    LibVector4 unk230;
-    LibVector4 view_position;
-};
-
-/** Light of type 0x702 that scales normals, with vtable D_1737E0 in main data. */
-class LibClass1737E0 : public LibClass1736C0
-{
-public:
-    /**
-     * @brief Do nothing; this light doesn't depend on the view.
-     * @param matrix Unused.
-     * @param rotation Unused.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation)
+    bool expire()
     {
+        if (--lifetime == 0)
+        {
+            return true;
+        }
+
+        return false;
     }
 
-    /**
-     * @brief Scale a normal by the light's factors.
-     * @param point Unused.
-     * @param normal Normal at the point.
-     * @return Light vector at unk220.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
-
-    LibVector4 unk220;
-    LibVector4 unk230;
+    s8 light_index;
+    s32 lifetime;
 };
-
-/** Light of type 0x704 with a position, a radius and two directions, with vtable D_173630 in main data. */
-class LibClass173630 : public LibClass1736C0
-{
-public:
-    /** @brief Destroy the light. */
-    virtual ~LibClass173630();
-
-    /**
-     * @brief Bring the position and both directions into the view's space.
-     * @param matrix View matrix.
-     * @param rotation View matrix with its rows normalised.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
-
-    /**
-     * @brief Give a random vector from the view-space directions for points close enough to the light's axis.
-     * @param point Point being lit.
-     * @param normal Unused.
-     * @return Light vector at unk290; zero for points out of reach.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
-
-    LibVector4 view_position;
-    LibVector4 unk230;
-    LibVector4 unk240;
-    LibVector4 axis;
-    LibVector4 unk260;
-    LibVector4 unk270;
-    LibVector4 unk280;
-    LibVector4 unk290;
-    float radius;
-};
-
-/** Light of type 0x701 that gives a random vector between two directions, with vtable D_173870 in main data. */
-class LibClass173870 : public LibClass1736C0
-{
-public:
-    /**
-     * @brief Turn both directions into the view's space and halve the second.
-     * @param matrix Unused.
-     * @param rotation View matrix with its rows normalised.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
-
-    /**
-     * @brief Pick a random vector from the view-space directions.
-     * @param point Unused.
-     * @param normal Unused.
-     * @return Light vector at unk270.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
-
-    LibVector4 unk220;
-    LibVector4 unk230;
-    LibVector4 unk240;
-    LibVector4 unk250;
-    LibVector4 unk260;
-    LibVector4 unk270;
-};
-
-/** Directional light of type 0x700, with vtable D_173900 in main data. */
-class LibClass173900 : public LibClass1736C0
-{
-public:
-    /**
-     * @brief Turn the direction into the view's space.
-     * @param matrix Unused.
-     * @param rotation View matrix with its rows normalised.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
-
-    /**
-     * @brief Give the view-space direction, the same for every point.
-     * @param point Unused.
-     * @param normal Unused.
-     * @return Direction at unk230.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal)
-    {
-        return &unk230;
-    }
-
-    LibVector4 unk220;
-    LibVector4 unk230;
-};
-
-/** LibTransform of type 0x1100 with no state of its own, with vtable D_1734D0 in main data. */
-class LibClass1734D0 : public LibTransform
-{
-public:
-    /** @brief Construct the transform. */
-    LibClass1734D0();
-};
-
-/**
- * @brief Report whether the transform's transposed matrix is up to date.
- * @param transform Transform to check.
- * @return Nonzero when transposed_transform is current.
- */
-static inline s32 transpose_is_current(const LibTransform* transform)
-{
-    return transform->unk20e_0;
-}
-
-/**
- * @brief Mark the transpose current and rebuild it from the transform.
- * @param transform Transform to update.
- */
-static inline void transpose_transform(LibTransform* transform)
-{
-    transform->unk20e_0 = 1;
-    transform->unk20e_1 = 0;
-    ee_transpose_matrix(&transform->transposed_transform, &transform->transform);
-}
-
-/**
- * @brief Bring the transform's transposed matrix up to date if needed.
- * @param transform Transform to read.
- * @return The transposed matrix.
- */
-static inline const LibMatrix44Value* get_transposed_transform(LibTransform* transform)
-{
-    if (!transpose_is_current(transform))
-    {
-        transpose_transform(transform);
-    }
-
-    return &transform->transposed_transform;
-}
 
 /** Sound bank set Lib plays its sounds through. */
 extern ResidentSoundBankSet* D_001B6524;
+
+/** Per sound bank slot: the last voice line asked to hold back the next sound of some events. */
+extern "C" u8 D_001B6528[RESIDENT_SOUND_BANK_SLOT_COUNT];
 
 /** Sound number tables for func_0042EB50, four numbers each; entries 1 to 10 are used. */
 extern s16* D_004ED0EC[];
@@ -390,11 +180,145 @@ s32 LibPooledQuaternionTrack::read_key(s32 index, float* key, void* value, void*
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", insert_rotation__24LibPooledQuaternionTrackFifPC10FieldVec4A);
+/**
+ * @brief Shift the later keyframes up and pack a rotation at an index.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @return One when the index is a stored key and there was room, otherwise zero.
+ */
+s32 LibPooledQuaternionTrack::insert_rotation(s32 index, float key, const FieldVec4A* value)
+{
+    s32 i;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", replace_rotation__24LibPooledQuaternionTrackFifPC10FieldVec4A);
+    if (index >= state.key_count)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", append_rotation__24LibPooledQuaternionTrackFPC10FieldVec4Af);
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (i = state.key_count; i > index; i--)
+    {
+        key_array[i] = key_array[i - 1];
+    }
+
+    s32 x = 32768.0f * value->x;
+    s32 y = 32768.0f * value->y;
+    s32 z = 32768.0f * value->z;
+
+    if (value->w < 0.0f)
+    {
+        x = -x;
+        y = -y;
+        z = -z;
+    }
+
+    x = clamp_high(x, 32767);
+    y = clamp_high(y, 32767);
+    z = clamp_high(z, 32767);
+    x = clamp_low(x, -32768);
+    y = clamp_low(y, -32768);
+    z = clamp_low(z, -32768);
+    key_array[index].packed_rotation[0] = x;
+    key_array[index].packed_rotation[1] = y;
+    key_array[index].packed_rotation[2] = z;
+    key_array[index].set_key(key);
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].get_key();
+    }
+
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Pack a rotation into an existing keyframe.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @return True when the index is within the capacity.
+ */
+bool LibPooledQuaternionTrack::replace_rotation(s32 index, float key, const FieldVec4A* value)
+{
+    if (index >= state.key_capacity)
+    {
+        return false;
+    }
+
+    s32 x = 32768.0f * value->x;
+    s32 y = 32768.0f * value->y;
+    s32 z = 32768.0f * value->z;
+
+    if (value->w < 0.0f)
+    {
+        x = -x;
+        y = -y;
+        z = -z;
+    }
+
+    x = clamp_high(x, 32767);
+    y = clamp_high(y, 32767);
+    z = clamp_high(z, 32767);
+    x = clamp_low(x, -32768);
+    y = clamp_low(y, -32768);
+    z = clamp_low(z, -32768);
+    key_array[index].packed_rotation[0] = x;
+    key_array[index].packed_rotation[1] = y;
+    key_array[index].packed_rotation[2] = z;
+    key_array[index].set_key(key);
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].get_key();
+    }
+
+    return true;
+}
+
+/**
+ * @brief Pack a rotation and append it after the last keyframe.
+ * @param value Keyframe rotation.
+ * @param key Sort key.
+ * @return True when there was room.
+ */
+bool LibPooledQuaternionTrack::append_rotation(const FieldVec4A* value, float key)
+{
+    if (state.key_count >= state.key_capacity)
+    {
+        return false;
+    }
+
+    s32 x = 32768.0f * value->x;
+    s32 y = 32768.0f * value->y;
+    s32 z = 32768.0f * value->z;
+
+    if (value->w < 0.0f)
+    {
+        x = -x;
+        y = -y;
+        z = -z;
+    }
+
+    x = clamp_high(x, 32767);
+    y = clamp_high(y, 32767);
+    z = clamp_high(z, 32767);
+    x = clamp_low(x, -32768);
+    y = clamp_low(y, -32768);
+    z = clamp_low(z, -32768);
+    key_array[state.key_count].packed_rotation[0] = x;
+    key_array[state.key_count].packed_rotation[1] = y;
+    key_array[state.key_count].packed_rotation[2] = z;
+    key_array[state.key_count].set_key(key);
+    state.span = key - key_array[0].get_key();
+    state.key_count++;
+    return true;
+}
 
 /** @brief Reset the cached sampling state. */
 void LibPooledQuaternionTrack::reset_state()
@@ -1213,11 +1137,615 @@ s32 LibClass173380::get_extra_packet_size()
 
 extern "C" {
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042C5C0);
+/** Ground the shadows fall on, or null for none. */
+extern "C" LibShadowGround* D_001B651C;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042CC80);
+/**
+ * @brief Build the shadow model's packet for one of the caster's lights: the light's shadow matrix times the model's
+ *        transform, the screen scale, and the caster's texture.
+ * @param model Shadow model.
+ * @param index Light number in the caster's shadow light list.
+ * @param matrix Camera.
+ * @param context Packet building context; unused.
+ */
+void func_0042CC80(LibClass173380* model, s32 index, const void* matrix, void* context);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042D0B0);
+
+/**
+ * @brief Set the shadow model up for one of the caster's lights: the shadow plane (a plane under the caster when the
+ *        light is steep, otherwise the ground), the shadow's fade, then the packet.
+ * @param model Shadow model.
+ * @param index Light number in the caster's shadow light list.
+ * @param matrix Camera.
+ * @param context Packet building context.
+ * @param weight Light weight.
+ */
+void func_0042C5C0(LibClass173380* model, s32 index, const void* matrix, void* context, float weight)
+{
+    LibModel* caster = model->unk830;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    if (index >= caster->shadow_lights.count)
+    {
+        return;
+    }
+
+    if (model->unk834 > 0 && D_001B651C)
+    {
+        FieldVec4B origin;
+        FieldVec4B projected;
+        FieldVec4B direction;
+        FieldVec4B eye;
+        FieldVec4B right;
+        FieldVec4B forward;
+        LibMatrix44Value view;
+        FieldVec4B zero;
+        LibMatrix44Value shadow;
+        float height = 0.0f;
+        origin.x = caster->transform.m[0][3];
+        origin.y = caster->transform.m[1][3];
+        origin.z = caster->transform.m[2][3];
+        origin.w = 1.0f;
+        LibLight* light = lights->lights[index];
+        const FieldVec4B* position = reinterpret_cast<const FieldVec4B*>(&light->position);
+
+        if (model->resource)
+        {
+            height = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource))->sphere_radius;
+        }
+
+        if (light->kind & 3)
+        {
+            direction = origin - *position;
+            lib_normalize_vector3(&direction.x);
+        }
+        else
+        {
+            direction.set(*reinterpret_cast<const FieldVec4B*>(&light->direction));
+        }
+
+        if (direction.y < model->unk84c)
+        {
+            // TODO: Only the parent update is wanted here; keeping the unused matrix keeps the game's branch shape.
+            const LibMatrix44Value* parent = lib_get_parent_matrix(model);
+            float distance = (model->unk850 * model->unk70.z) / static_cast<const LibCamera*>(matrix)->projection_distance;
+            *reinterpret_cast<unsigned __int128*>(&zero) = 0;
+            eye.x = origin.x + direction.x * distance;
+            eye.y = origin.y + direction.y * distance;
+            eye.z = origin.z + direction.z * distance;
+            lib_matrix_look_at(&view, &zero, &direction, 0.0f);
+            right.x = 1.0f;
+            right.y = 0.0f;
+            right.z = 0.0f;
+            right.w = 1.0f;
+            forward.x = 0.0f;
+            forward.y = 1.0f;
+            forward.z = 0.0f;
+            forward.w = 1.0f;
+            vu0_dot_matrix_rows(&view, &right, &right);
+            vu0_dot_matrix_rows(&view, &forward, &forward);
+            right.x += eye.x;
+            right.y += eye.y;
+            right.z += eye.z;
+            forward.x += eye.x;
+            forward.y += eye.y;
+            forward.z += eye.z;
+            func_004CC7A0(&model->unk820.x, &eye.x, &right.x, &forward.x);
+        }
+        else
+        {
+            origin.y -= height;
+            model->unk820.x = 0.0f;
+            model->unk820.y = -1.0f;
+            model->unk820.z = 0.0f;
+            model->unk820.w = D_001B651C->get_height(&origin, model);
+
+            if (light->kind & 3)
+            {
+                lib_build_projective_shadow_matrix(&shadow, (const FieldVec4A*)position, (const FieldVec4A*)&model->unk820);
+            }
+            else
+            {
+                lib_build_directional_shadow_matrix(&shadow, (const FieldVec4A*)&direction, (const FieldVec4A*)&model->unk820);
+            }
+
+            vu0_dot_matrix_rows(&shadow, &origin, &projected);
+            // TODO: The game divides by w here and never uses the result.
+            float inverse = 1.0f / projected.w;
+            vu0_divide_by_w(&projected, &projected);
+            float ground = D_001B651C->get_height(&projected, model);
+
+            if (ground < model->unk820.w)
+            {
+                ground = model->unk820.w;
+            }
+
+            model->unk820.w = ground + model->unk844;
+        }
+    }
+
+    if (model->unk836 || model->unk837)
+    {
+        LibVector4 color;
+        *reinterpret_cast<unsigned __int128*>(&color) = *reinterpret_cast<const unsigned __int128*>(&model->base_color_factor);
+        float alpha = 1.0f;
+
+        if (model->unk836)
+        {
+            alpha = 0.01f * (model->unk854 * (lights->weights[index] * weight));
+
+            if (alpha <= 0.0f)
+            {
+                return;
+            }
+        }
+
+        if (model->unk837)
+        {
+            FieldVec4B position;
+            position.x = matrix_row(&model->transform, 0)->w;
+            position.y = matrix_row(&model->transform, 1)->w;
+            position.z = matrix_row(&model->transform, 2)->w;
+            position.w = 1.0f;
+            // TODO: The game multiplies by the squared length here, not one over the length; harmless for a unit normal.
+            float fade = model->unk820.w + (model->unk820.x * position.x + model->unk820.y * position.y + model->unk820.z * position.z);
+            fade = 0.001f * (model->unk858 * (-fade * ee_rsqrt_in_place(model->unk820.x * model->unk820.x + model->unk820.y * model->unk820.y + model->unk820.z * model->unk820.z, 1.0f)));
+
+            if (!(fade <= 1.0f))
+            {
+                alpha /= fade;
+            }
+        }
+
+        if (alpha <= 0.001f)
+        {
+            return;
+        }
+
+        color.w = ee_min(alpha, 1.0f);
+        *reinterpret_cast<unsigned __int128*>(&model->base_color_factor) = *reinterpret_cast<const unsigned __int128*>(&color);
+        model->update_combined_color_factor();
+    }
+
+    func_0042CC80(model, index, matrix, context);
+    model->unk83d = 0;
+    model->unk66 = 1;
+}
+
+/** Partial view of the shadow model's draw packet. */
+typedef struct LibShadowPacketHeader
+{
+    u8 unk00[0x60];
+    unsigned __int128 shadow[4];
+    unsigned __int128 transform[4];
+    u8 unke0[0x1C];
+    s32 projective;
+    u8 unk100[0x50];
+    unsigned __int128 light_position;
+    u8 unk160[0x100];
+    unsigned __int128 light_direction;
+    unsigned __int128 scale;
+    unsigned __int128 offset;
+    u64 tex0_1;
+    s32 tex0_1_register;
+    u8 unk29c[4];
+    u64 tex0_2;
+    s32 tex0_2_register;
+} LibShadowPacketHeader;
+
+/**
+ * @brief Build the rest of the shadow model's packet.
+ * @param model Shadow model.
+ * @param matrix Camera.
+ */
+void func_0042B110(LibClass173380* model, const void* matrix);
+
+/**
+ * @brief Build the shadow model's packet for one of the caster's lights: the light's shadow matrix times the model's
+ *        transform, the screen scale, and the caster's texture.
+ * @param model Shadow model.
+ * @param index Light number in the caster's shadow light list.
+ * @param matrix Camera.
+ * @param context Packet building context; unused.
+ */
+void func_0042CC80(LibClass173380* model, s32 index, const void* matrix, void* context)
+{
+    LibShadowPacketHeader* header = (LibShadowPacketHeader*)((u32)&model->draw_packet | EE_UNCACHED_ACCELERATED);
+    LibModel* caster = model->unk830;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    if (index >= caster->shadow_lights.count)
+    {
+        return;
+    }
+
+    if (model->source != 0)
+    {
+        void* payload_override = model->resource->payload_override;
+        model->select_payload(payload_override, model->source->get_packet_set());
+    }
+
+    LibVector4 scale;
+    scale.x = 0.0009765625f;
+    scale.y = 0.0009765625f;
+    float half = 0.5f;
+    LibDisplayArea& area = D_001B6520->display_area;
+    header->scale = *(unsigned __int128*)&scale;
+    LibCameraContext* display = D_001B6520;
+    scale.x *= 2047.5f - half * area.width;
+    half = display->unk3E4C ? half : 0.0f;
+    scale.y *= 2047.5f - 0.5f * area.height + half;
+    header->offset = *(unsigned __int128*)&scale;
+    LibLight* light = lights->lights[index];
+    LibMatrix44Value shadow;
+
+    if (!(light->kind & 3))
+    {
+        LibVector4 direction;
+        header->projective = 0;
+        direction.x = light->transform.m[0][1];
+        direction.y = light->transform.m[1][1];
+        direction.z = light->transform.m[2][1];
+        direction.w = 1.0f;
+        header->light_direction = *(unsigned __int128*)&direction;
+        const FieldVec4A* light_direction = (const FieldVec4A*)&light->direction;
+        lib_build_directional_shadow_matrix(&shadow, light_direction, (const FieldVec4A*)&model->unk820);
+    }
+    else
+    {
+        LibVector4 position;
+        header->projective = 1;
+        position.x = light->transform.m[0][3];
+        position.y = light->transform.m[1][3];
+        position.z = light->transform.m[2][3];
+        position.w = 1.0f;
+        header->light_position = *(unsigned __int128*)&position;
+        const FieldVec4A* light_position = (const FieldVec4A*)&light->position;
+        lib_build_projective_shadow_matrix(&shadow, light_position, (const FieldVec4A*)&model->unk820);
+    }
+
+    vu0_multiply_matrix(&shadow, &shadow, &model->transform);
+    header->shadow[0] = *(unsigned __int128*)&shadow.m[0];
+    header->shadow[1] = *(unsigned __int128*)&shadow.m[1];
+    header->shadow[2] = *(unsigned __int128*)&shadow.m[2];
+    header->shadow[3] = *(unsigned __int128*)&shadow.m[3];
+    const unsigned __int128* from = reinterpret_cast<const unsigned __int128*>(&model->transform);
+
+    if (model->unk5a1)
+    {
+        model->unk5a1 = 0;
+    }
+    else
+    {
+        unsigned __int128* to = header->transform;
+
+        *to++ = *from++;
+        *to++ = *from++;
+        *to++ = *from++;
+        *to++ = *from++;
+    }
+
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource));
+
+    // TODO: Like LibModel::build_packet, the game keeps a jump at the end of this arm for a flag that's never read;
+    // the flag is a guess.
+    bool rebuilt = false;
+
+    if (model->packet == 0)
+    {
+        model->build_packets();
+        model->unk791 = 1;
+
+        if (model->packet == 0)
+        {
+            model->unk63 = 0;
+            return;
+        }
+
+        rebuilt = true;
+    }
+    else
+    {
+        s32 parts = mesh->part_count;
+
+        if (model->unk77c != parts)
+        {
+            model->build_packets();
+
+            if (model->packet == 0)
+            {
+                model->unk63 = 0;
+                return;
+            }
+        }
+    }
+
+    model->payload = reinterpret_cast<u8*>(mesh);
+
+    if (model->unk59d_0)
+    {
+        func_004A7AC0(model, static_cast<const LibCamera*>(matrix));
+    }
+
+    u64 tex0 = ((u64)((g_vram_allocator->allocations[30] >> 5) & 0x3FFF) << 37) | 0x2C00000;
+    header->tex0_1 = tex0;
+    header->tex0_1_register = GS_REGISTER_TEX2_1;
+    header->tex0_2 = tex0 | ((u64)1 << 56);
+    header->tex0_2_register = GS_REGISTER_TEX2_1;
+    func_0042B110(model, matrix);
+    ee_sync();
+    model->unk63 = 1;
+}
+
+/** Most lights a shadow model draws shadows for. */
+extern "C" u8 D_001B61BC;
+
+/** Frames a shadow model's extra child lives without being chosen again. */
+extern "C" s32 D_001B61B8;
+
+
+/**
+ * @brief Pick the caster's strongest lights (up to unk835), keep one child shadow model per extra light, and build
+ *        the shadows of this model, its children and the models in its own list.
+ * @param matrix Camera.
+ * @param context Packet building context.
+ */
+void LibClass173380::build_packet(const void* matrix, void* context)
+{
+    if (resource == 0)
+    {
+        return;
+    }
+
+    if (unk830 == 0)
+    {
+        return;
+    }
+
+    if (!unk830->unk63)
+    {
+        func_004A59D0(unk830, context);
+    }
+
+    LibModel* caster = unk830;
+    s32 count = caster->shadow_lights.count;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    if (count == 0)
+    {
+        return;
+    }
+
+    s32 limit = unk835;
+
+    if (D_001B61BC < limit)
+    {
+        limit = D_001B61BC;
+    }
+
+    s32 visible = 0;
+    float total = unk840;
+    s8 order[4];
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (!lights->unk04[i])
+        {
+            continue;
+        }
+
+        if (lights->lights[i]->unk291)
+        {
+            FieldVec4B position;
+            position.x = transform.m[0][3];
+            position.y = transform.m[1][3];
+            position.z = transform.m[2][3];
+            position.w = 1.0f;
+
+            if (!(lights->lights[i]->position.y <= position.y))
+            {
+                continue;
+            }
+        }
+
+        float weight = lights->weights[i];
+
+        if (!(weight <= 0.0f))
+        {
+            order[visible++] = i;
+        }
+
+        if (weight < 0.0f)
+        {
+            total += weight;
+            total = ee_max(0.0f, total);
+        }
+    }
+
+    if (visible == 0)
+    {
+        return;
+    }
+
+    if (total == 0.0f)
+    {
+        return;
+    }
+
+    for (s32 i = 0; i < 3; i++)
+    {
+        if (children[i])
+        {
+            static_cast<LibClass173270*>(children[i])->light_index = -1;
+
+            if (static_cast<LibClass173270*>(children[i])->expire())
+            {
+                LibClass173380* child = static_cast<LibClass173380*>(children[i]);
+
+                if (child->unk830)
+                {
+                    if (child->unk830->unk790)
+                    {
+                        child->unk830->unk790--;
+                    }
+
+                    child->unk830 = 0;
+                }
+
+                children[i]->destroy();
+                children[i] = 0;
+            }
+        }
+    }
+
+    if (1 < visible)
+    {
+        for (s32 i = 0; i < visible; i++)
+        {
+            for (s32 j = i + 1; j < visible; j++)
+            {
+                if (lights->weights[order[i]] < lights->weights[order[j]])
+                {
+                    s8 swap = order[i];
+                    order[i] = order[j];
+                    order[j] = swap;
+                }
+            }
+        }
+
+        if (limit < visible)
+        {
+            visible = limit;
+        }
+
+        for (s32 i = 1; i < visible; i++)
+        {
+            if (children[i - 1] == 0)
+            {
+                LibClass173270* child = new (0) LibClass173270;
+
+                if (child)
+                {
+                    if (child->build_from(0, this))
+                    {
+                        children[i - 1] = child;
+                        child->owner = owner;
+                    }
+                    else
+                    {
+                        child->destroy();
+                    }
+                }
+            }
+
+            if (children[i - 1])
+            {
+                static_cast<LibClass173270*>(children[i - 1])->lifetime = D_001B61B8;
+                static_cast<LibClass173270*>(children[i - 1])->set_light_index(order[i]);
+            }
+        }
+    }
+
+    unk83b = order[0];
+
+    if (unk838)
+    {
+        return;
+    }
+
+    bool drawn = false;
+
+    for (LibListSentinel* node = objects.sentinel.next; !at_list_end(&objects.sentinel, node); node = node->next)
+    {
+        LibClass173380* object = static_cast<LibClass173380*>(node);
+        object->unk63 = 0;
+        object->build_packet(matrix, context);
+    }
+
+    for (s32 i = 2; i >= 0; i--)
+    {
+        if (children[i] == 0)
+        {
+            continue;
+        }
+
+        s32 index = static_cast<LibClass173270*>(children[i])->light_index;
+        children[i]->unk63 = 0;
+
+        if (index >= 0)
+        {
+            for (LibListSentinel* node = objects.sentinel.next; !at_list_end(&objects.sentinel, node); node = node->next)
+            {
+                LibClass173380* object = static_cast<LibClass173380*>(node);
+
+                if (object->children[i])
+                {
+                    object->children[i]->unk63 = 0;
+
+                    if (static_cast<LibClass173380*>(object->children[i])->unk830->shadow_lights.count)
+                    {
+                        s32 object_index = static_cast<LibClass173270*>(object->children[i])->light_index;
+
+                        if (object_index >= 0)
+                        {
+                            object->children[i]->unk62 = 0;
+                            object->children[i]->update_transform_matrix();
+                            func_0042C5C0(static_cast<LibClass173380*>(object->children[i]), object_index, matrix, context, total);
+
+                            if (object->children[i]->unk63)
+                            {
+                                drawn = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            children[i]->unk62 = 0;
+            children[i]->update_transform_matrix();
+            func_0042C5C0(static_cast<LibClass173380*>(children[i]), index, matrix, context, total);
+
+            if (children[i]->unk63)
+            {
+                drawn = true;
+            }
+        }
+        else
+        {
+            for (LibListSentinel* node = objects.sentinel.next; !at_list_end(&objects.sentinel, node); node = node->next)
+            {
+                LibClass173380* object = static_cast<LibClass173380*>(node);
+
+                if (object->children[i])
+                {
+                    object->children[i]->unk63 = 0;
+                }
+            }
+        }
+    }
+
+    for (LibListSentinel* node = objects.sentinel.next; !at_list_end(&objects.sentinel, node); node = node->next)
+    {
+        LibClass173380* object = static_cast<LibClass173380*>(node);
+        object->unk63 = 0;
+        object->unk62 = 0;
+        object->update_transform_matrix();
+        func_0042C5C0(object, object->unk83b, matrix, context, total);
+
+        if (!drawn && object->unk63)
+        {
+            drawn = true;
+        }
+    }
+
+    func_0042C5C0(this, order[0], matrix, context, total);
+
+    if (drawn && !unk63)
+    {
+        unk63 = 1;
+        unk83d = 1;
+    }
+}
 
 }
 
@@ -1245,10 +1773,10 @@ LibClass173380::LibClass173380()
     children[2] = 0;
     unk860[0] = 0;
     unk860[1] = 0;
-    unk860[2] = 0;
-    unk860[3] = 0;
-    unk860[4] = 0;
-    unk860[5] = 0;
+    unk868[0] = 0;
+    unk868[1] = 0;
+    unk870[0] = 0;
+    unk870[1] = 0;
     unk85c = 0;
     unk838 = 0;
     unk83a = 1;
@@ -1329,7 +1857,62 @@ void func_0042D9B0(LibClass173490* entry, const LibVector4* position, const LibV
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042DCE0);
+/**
+ * @brief Find the grid cell a position falls in, in the space of the entry's transform, and where in the cell.
+ * @param entry Grid entry.
+ * @param position Position to look up.
+ * @param cell Receives the cell index (one cell of border on every side).
+ * @param x Receives the position across the cell, from 0 to 1.
+ * @param y Receives the position down the cell, from 0 to 1.
+ * @return One when the position is over the grid, otherwise zero.
+ */
+s32 func_0042DCE0(LibClass173490* entry, const LibVector4* position, s32* cell, float* x, float* y)
+{
+    LibVector4 local;
+
+    if (entry->unk3c == 0)
+    {
+        return 0;
+    }
+
+    if (!entry->unk3c->matrix_ready)
+    {
+        entry->unk3c->update_transform_matrix();
+        mark_transpose_current(entry->unk3c);
+        func_004D9E70(entry->unk3c);
+    }
+    else if (!entry->unk3c->unk20e_0)
+    {
+        transpose_transform(entry->unk3c);
+        func_004D9E70(entry->unk3c);
+    }
+    else if (!entry->unk3c->unk20e_2)
+    {
+        func_004D9E70(entry->unk3c);
+    }
+
+    entry->unk3c->to_local(position, &local);
+    s32 width = entry->unk30[0];
+    s32 height = entry->unk30[1];
+    float size = *(float*)&entry->unk30[4];
+    float left = *(float*)&entry->unk30[2];
+    float top = *(float*)&entry->unk30[3];
+    float right = left + size * (width - 1);
+    float bottom = top + size * (height - 1);
+
+    if (local.x < left || !(local.x <= right) || local.z < top || !(local.z <= bottom))
+    {
+        return 0;
+    }
+
+    s32 column = (local.x - left) / size;
+    s32 row = (local.z - top) / size;
+    width += 2;
+    *x = (local.x - column * size - left) / size;
+    *y = (local.z - row * size - top) / size;
+    *cell = (column + 1) + (row + 1) * width;
+    return 1;
+}
 
 /**
  * @brief Copy each vertex's cell element into the output, or, when unk4c is clear, the output's values back into
@@ -1366,7 +1949,183 @@ void LibClass173490::func_slot10(LibEntryOutput* output, s32 index)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E240);
+/**
+ * @brief Run one step of the ripple grid on VU0: drop a random ripple when enabled, spread the heights into the
+ *        velocities (only on masked cells unless the grid is unmasked), then move the masked heights. Rewind the
+ *        records; while the grid is idle only rewind them.
+ * @param root Model transform the grid belongs to.
+ * @return One.
+ */
+s32 LibClass173490::func_slot1C(LibTransform* root)
+{
+    if (unk4d)
+    {
+        unk4c = 1;
+    }
+
+    if (!unk4c)
+    {
+        unk38 = reinterpret_cast<u32>(unk34);
+        return 1;
+    }
+
+    unk3c = root;
+    LibClass174C20Header* header = reinterpret_cast<LibClass174C20Header*>(unk30);
+    s32 depth = header->rows + 2;
+    s32 width = header->columns + 2;
+    LibClass173490Entry* heights = unk40;
+    LibClass173490Entry* velocities = unk44;
+
+    if (header->random_drops)
+    {
+        s32 x = resident_random_below(width - 2) + 1;
+        s32 y = resident_random_below(depth - 2) + 1;
+        float* v = reinterpret_cast<float*>(velocities);
+        v[(x + y * width) * 4 + 0] += reinterpret_cast<LibClass174C20Header*>(unk30)->drop_strength * (0.02f * (resident_random_fraction() - 0.5f));
+        v[(x + y * width) * 4 + 1] += reinterpret_cast<LibClass174C20Header*>(unk30)->drop_strength * (0.02f * (resident_random_fraction() - 0.5f));
+        v[(x + y * width) * 4 + 2] += reinterpret_cast<LibClass174C20Header*>(unk30)->drop_strength * (0.02f * (resident_random_fraction() - 0.5f));
+    }
+
+    float step = reinterpret_cast<LibClass174C20Header*>(unk30)->speed * g_frame_seconds;
+    u32* mask = unk48;
+
+    if (reinterpret_cast<LibClass174C20Header*>(unk30)->unmasked)
+    {
+        vu0_ripple_set_steps(step, 4.0f * step);
+
+        if (2 < width)
+        {
+            for (s32 y = 1; y < depth - 1; y++)
+            {
+                s32 cell = y * width + 1;
+                LibClass173490Entry* left = &heights[cell - 1];
+                LibClass173490Entry* velocity = &velocities[cell];
+                u32* weights = &mask[cell];
+                vu0_ripple_load_row(left);
+                s32 count = width - 2;
+                left++;
+
+                do
+                {
+                    vu0_ripple_rotate(left);
+                    LibClass173490Entry* out = velocity;
+                    vu0_ripple_spread(out, left - width, left + width);
+                    count--;
+                    left++;
+                    velocity++;
+                    s32 done = ee_movz(0, 1, count);
+                    vu0_ripple_store_velocity(out);
+
+                    if (done)
+                    {
+                        break;
+                    }
+                } while (true);
+            }
+        }
+    }
+    else
+    {
+        vu0_ripple_set_steps(step, 4.0f * step);
+
+        if (2 < width)
+        {
+            for (s32 y = 1; y < depth - 1; y++)
+            {
+                s32 cell = y * width + 1;
+                LibClass173490Entry* left = &heights[cell - 1];
+                LibClass173490Entry* velocity = &velocities[cell];
+                u32* weights = &mask[cell];
+                vu0_ripple_load_row(left);
+                s32 count = width - 2;
+                left++;
+
+                for (;;)
+                {
+                    vu0_ripple_rotate(left);
+                    u32 weight = *weights++;
+
+                    if (weight == 0)
+                    {
+                        count--;
+                        left++;
+                        velocity++;
+
+                        if (count == 0)
+                        {
+                            break;
+                        }
+
+                        continue;
+                    }
+
+                    LibClass173490Entry* out = velocity;
+                    vu0_ripple_spread_masked(out, left - width, left + width, weight);
+                    left++;
+                    velocity++;
+                    vu0_ripple_weight_spread();
+                    count--;
+                    s32 done = ee_movz(0, 1, count);
+                    vu0_ripple_store_velocity(out);
+
+                    if (done)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    vu0_ripple_set_frame(g_frame_seconds);
+
+    if (width != 0)
+    {
+        for (s32 y = 0; y < depth; y++)
+        {
+            s32 count = width;
+            s32 row = y * width;
+            u32* weights = &mask[row];
+            LibClass173490Entry* height = &heights[row];
+            LibClass173490Entry* velocity = &velocities[row];
+
+            for (;;)
+            {
+                u32 weight = *weights++;
+
+                if (weight == 0)
+                {
+                    count--;
+                    height++;
+                    velocity++;
+
+                    if (count == 0)
+                    {
+                        break;
+                    }
+
+                    continue;
+                }
+
+                vu0_ripple_load_cell(height, velocity);
+                count--;
+                velocity++;
+                vu0_ripple_integrate();
+                s32 done = ee_movz(0, 1, count);
+                vu0_ripple_store_height(height);
+                height++;
+
+                if (done)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    unk38 = reinterpret_cast<u32>(unk34);
+    return 1;
+}
 
 /**
  * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
@@ -1393,10 +2152,10 @@ void LibClass173490::clear_entries()
     s32 rows = unk30[1] + 2;
     s32 columns = unk30[0] + 2;
     LibClass173490Entry zero;
-    zero.unk00[0] = 0;
-    zero.unk00[1] = 0;
-    zero.unk00[2] = 0;
-    zero.unk00[3] = 0;
+    zero.x = 0.0f;
+    zero.y = 0.0f;
+    zero.z = 0.0f;
+    zero.w = 0.0f;
     LibClass173490Entry* first = unk40;
     LibClass173490Entry* second = unk44;
 
@@ -1888,7 +2647,426 @@ extern "C" s32 func_0042F420(s32 table, s32 first, s32 second, s32 random, s32 s
     return lib_pick_sound_number(groups[1], random);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F550);
+/**
+ * @brief Play a sound bank slot's sound for an event, or now and then one of the slot character's voice lines for it.
+ *
+ * Each slot remembers whether its last voice line asked to hold back the next sound of some events.
+ * @param emitter Object the sound follows.
+ * @param slot Sound bank slot.
+ * @param event Event the sound is for.
+ * @param voice Nonzero to allow a voice line instead of the slot's sound.
+ * @return Slot identifier of the sound, or 0 when nothing plays.
+ */
+extern "C" s32 func_0042F550(ResidentSoundEmitter* emitter, s32 slot, s32 event, s32 voice)
+{
+    if (D_001B6524 == 0)
+    {
+        return 0;
+    }
+
+    if (D_001B6524->loading != 0)
+    {
+        return 0;
+    }
+
+    if (voice == 0 || !resident_poll_resource_queue(g_resource_queue) || resident_rand() < 30000)
+    {
+        u8* held = &D_001B6528[slot];
+
+        if (*held)
+        {
+            *held = 0;
+
+            switch (D_001B6524->banks[slot])
+            {
+            case 1:
+                switch (event)
+                {
+                case 0xB:
+                case 0xD:
+                case 0x10:
+                case 0x12:
+                case 0x15:
+                case 0x17:
+                case 0x19:
+                case 0x1B:
+                case 0x1D:
+                    return 0;
+                }
+
+                break;
+            case 5:
+                switch (event)
+                {
+                case 0x13:
+                case 0x15:
+                    return 0;
+                }
+
+                break;
+            }
+        }
+
+        *held = 0;
+        return resident_sound_bank_set_play(D_001B6524, slot, event, emitter, 0, 0x7F, 0);
+    }
+
+    switch (D_001B6524->banks[slot])
+    {
+    case 1:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1357, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1358, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1359, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135A, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135B, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x135C, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135D, emitter, 0, 0x7F, 0);
+        case 0x16:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135E, emitter, 0, 0x7F, 0);
+        case 0x18:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135F, emitter, 0, 0x7F, 0);
+        case 0x1A:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1360, emitter, 0, 0x7F, 0);
+        case 0x1C:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1361, emitter, 0, 0x7F, 0);
+        case 0xB:
+        case 0xD:
+        case 0x10:
+        case 0x12:
+        case 0x15:
+        case 0x17:
+        case 0x19:
+        case 0x1B:
+        case 0x1D:
+            D_001B6528[slot] = 0;
+            return 0;
+        }
+
+        break;
+    case 3:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1362, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1363, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1364, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1365, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1366, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1367, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1368, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1369, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136A, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136B, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136C, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 4:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136D, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136E, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136F, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1370, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1371, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1372, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1373, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1374, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1375, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1376, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1377, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 5:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1378, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1379, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137A, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137B, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137C, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137D, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137E, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137F, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1380, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1381, emitter, 0, 0x7F, 0);
+        case 0x16:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1382, emitter, 0, 0x7F, 0);
+        case 0x13:
+        case 0x15:
+            D_001B6528[slot] = 0;
+            return 0;
+        }
+
+        break;
+    case 6:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1383, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1384, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1385, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1386, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1387, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1388, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1389, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138A, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138B, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138C, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138D, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 7:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138E, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138F, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1390, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1391, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1392, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1393, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1394, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1395, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1396, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1397, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1398, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 8:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1399, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139A, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139B, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139C, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139D, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139E, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139F, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A0, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A1, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A2, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A3, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 9:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A4, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x13A5, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A6, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A7, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A8, emitter, 0, 0x7F, 0);
+        default:
+            break;
+        }
+
+        break;
+    case 10:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A9, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AA, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AB, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AC, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AD, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AE, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AF, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13B0, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13B1, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13B2, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13B3, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Play sound 9 of a sound bank slot following an emitter, unless banks are still loading.
@@ -2123,7 +3301,119 @@ extern "C" void func_00431020(LibOccluder* object)
     object->corners[3].z = object->half_depth;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431090);
+/**
+ * @brief Add a projected corner's outcode bits: 1/2 right/left of the half width, 4/8 below/above the half height,
+ *        0x10/0x20 nearer/farther than the depth range.
+ * @param point Projected corner.
+ * @param code Outcode to add to.
+ */
+static inline void occluder_outcode(const LibVector4* point, s32& code)
+{
+    if (!(point->x <= D_001B652C))
+    {
+        code |= 1;
+    }
+    else if (point->x < -D_001B652C)
+    {
+        code |= 2;
+    }
+
+    if (!(point->y <= D_001B6530))
+    {
+        code |= 4;
+    }
+    else if (point->y < -D_001B6530)
+    {
+        code |= 8;
+    }
+
+    if (point->z < D_001B6534)
+    {
+        code |= 0x10;
+    }
+    else if (!(point->z <= D_001B6538))
+    {
+        code |= 0x20;
+    }
+}
+
+/**
+ * @brief Upload an occluder's corners and edge normals to VU0 and tell whether it can hide anything.
+ * @param occluder Occluder.
+ * @param position Viewer position.
+ * @param slot VU0 data slot (quadword) the corners and normals go to.
+ * @return Zero when the occluder faces away (one-sided) or all four corners are off the same side of the view, else one.
+ */
+extern "C" s32 func_00431090(LibOccluder* occluder, const LibVector4* position, s32 slot)
+{
+    LibVector4 points[5];
+    vu0_occluder_load_matrix(reinterpret_cast<u8*>(occluder) + 0x90, slot);
+    vu0_occluder_build_faces(occluder->corners, position);
+    vu0_occluder_store_first_corners(points);
+    vu0_occluder_store_last_corners(points);
+    float depth = 1e30f;
+    depth = ee_min(points[0].z, depth);
+    depth = ee_min(points[1].z, depth);
+    depth = ee_min(points[2].z, depth);
+    vu0_occluder_normalize_fourth();
+    depth = ee_min(points[3].z, depth);
+    occluder->depth = depth;
+    vu0_occluder_normalize_fifth();
+
+    if (!(points[4].z <= 0.0f))
+    {
+        vu0_occluder_flip_normals();
+
+        if (occluder->unk21c)
+        {
+            return 0;
+        }
+    }
+
+    vu0_occluder_store_normals();
+    s32 first = 0;
+    s32 second = 0;
+    s32 third = 0;
+    s32 fourth = 0;
+    vu0_occluder_project_first(points);
+    occluder_outcode(points, first);
+
+    if (first == 0)
+    {
+        return 1;
+    }
+
+    vu0_occluder_project_second(points);
+    occluder_outcode(points, second);
+
+    if (second == 0)
+    {
+        return 1;
+    }
+
+    vu0_occluder_project_third(points);
+    occluder_outcode(points, third);
+
+    if (third == 0)
+    {
+        return 1;
+    }
+
+    vu0_occluder_project_fourth(points);
+    occluder_outcode(points, fourth);
+
+    if (fourth == 0)
+    {
+        return 1;
+    }
+
+    if (first & second & third & fourth)
+    {
+        return 0;
+    }
+
+    return 1;
+}
 
 /** @brief Construct the transform. */
 LibClass1734D0::LibClass1734D0()
@@ -2891,7 +4181,285 @@ void LibImageCapture::on_store_complete()
     lib_finish_packet(this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", run__14LibClass173580Fv);
+extern "C" const char D_00505960[];
+extern "C" const char D_00505990[];
+extern "C" unsigned __int128 D_004ED120;
+
+/**
+ * @brief Turn a pointer into a DMA source or destination: the physical address, with the scratchpad flag for
+ *        scratchpad memory.
+ * @param address Pointer.
+ * @return DMA address.
+ */
+static inline void lib_dma_set_address(volatile u32* madr, const void* address)
+{
+    if (((u32)address & EE_SCRATCHPAD) == EE_SCRATCHPAD)
+    {
+        *madr = ((u32)address & 0x0FFFFFFF) | DMA_ADDRESS_SCRATCHPAD;
+    }
+    else
+    {
+        *madr = (u32)address & 0x0FFFFFFF;
+    }
+}
+
+/**
+ * @brief Thread body: store each packet a capture hands over, then finish the capture.
+ *
+ * The store is Sony's sceGsExecStoreImage with the DMA waits on the thread's semaphore: the packet goes to the GS
+ * over VIF1, the rectangle comes back through the VIF1 FIFO, whole blocks of eight quadwords by DMA and the rest
+ * read by hand.
+ */
+void LibClass173580::run()
+{
+    for (;;)
+    {
+        if (wake_failed)
+        {
+            wake_failed = 0;
+        }
+        else
+        {
+            resident_thread_sleep();
+        }
+
+        u32 timeout = 0;
+        s32 blocks = 0;
+        s32 drain = 0;
+        s32 rest = 0;
+        s32 rest_bytes = 0;
+        GsStoreImage* image = packet;
+        s32 format = image->bitbltbuf.source_format;
+        s32 width = image->trxreg.width;
+        s32 height = image->trxreg.height;
+        s32 rounded_height = 0;
+        s32 bytes;
+        s32 quadwords;
+        s32 i;
+        unsigned __int128 last;
+
+        switch (format)
+        {
+            case GS_PSMCT32:
+            case GS_PSMZ32:
+                bytes = width * height * 4;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                blocks = quadwords & ~7;
+                rest = quadwords & 7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 3) & ~3;
+                    drain = (width * rounded_height >> 2) - blocks - rest - 1;
+                }
+
+                break;
+            case GS_PSMCT24:
+            case GS_PSMZ24:
+                bytes = width * height * 3;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                blocks = quadwords & ~7;
+                rest = quadwords & 7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 15) & ~15;
+                    drain = (width * rounded_height * 3 >> 4) - blocks - rest - 1;
+                }
+
+                break;
+            case GS_PSMCT16:
+            case GS_PSMCT16S:
+            case GS_PSMZ16:
+            case GS_PSMZ16S:
+                bytes = width * height * 2;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                rest = quadwords & 7;
+                blocks = quadwords & ~7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 7) & ~7;
+                    drain = (width * rounded_height >> 3) - blocks - rest - 1;
+                }
+
+                break;
+            case GS_PSMT8:
+            case GS_PSMT8H:
+                bytes = width * height;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                rest = quadwords & 7;
+                blocks = quadwords & ~7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 7) & ~7;
+                    drain = (width * rounded_height >> 4) - blocks - rest - 1;
+                }
+
+                break;
+            case GS_PSMT4:
+            case GS_PSMT4HL:
+            case GS_PSMT4HH:
+                bytes = width * height >> 1;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                rest = quadwords & 7;
+                blocks = quadwords & ~7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 7) & ~7;
+                    drain = (width * rounded_height >> 5) - blocks - rest - 1;
+                }
+
+                break;
+        }
+
+        if (rest_bytes != 0)
+        {
+            *reinterpret_cast<u64*>(reinterpret_cast<u32>(&packet->trxreg) | UNCACHED_SEGMENT) =
+                (u64)(u16)width | ((u64)rounded_height << 32);
+        }
+
+        u64 mask = GsPutIMR(GsGetIMR() | 0x200);
+        GS_CSR = GS_CSR_FINISH;
+        *D1_QWC = 7;
+        lib_dma_set_address(D1_MADR, packet);
+        *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+        semaphore.wait();
+
+        while ((GS_CSR & GS_CSR_FINISH) == 0)
+        {
+            if (timeout++ > 0x1000000)
+            {
+                scePrintf(D_00505960);
+                VIF1_FIFO = D_004ED120;
+                goto done;
+            }
+        }
+
+        VIF1_STAT = VIF1_STAT_FDR;
+        GS_BUSDIR = GS_BUSDIR_LOCAL_TO_HOST;
+
+        if (blocks != 0)
+        {
+            DmaSubmission* submission = capture;
+            ResidentDmaQueue* queue = g_vif1_dma_queue;
+            queue->current = submission;
+            queue->busy = 1;
+            *D1_QWC = blocks;
+            lib_dma_set_address(D1_MADR, destination);
+            *D1_CHCR = DMA_CHCR_START;
+            semaphore.wait();
+        }
+
+        for (i = 0; i < rest; i++)
+        {
+            while ((VIF1_STAT & VIF1_STAT_FQC) == 0)
+            {
+                if (timeout++ > 0x1000000)
+                {
+                    scePrintf(D_00505990);
+                    GS_CSR = GS_CSR_RESET;
+                    GS_BUSDIR = 0;
+                    GIF_CTRL = GIF_CTRL_RESET;
+                    VIF1_FBRST = VIF1_FBRST_RESET;
+                    goto done;
+                }
+            }
+
+            static_cast<unsigned __int128*>(destination)[blocks + i] = VIF1_FIFO;
+        }
+
+        if (rest_bytes != 0)
+        {
+            while ((VIF1_STAT & VIF1_STAT_FQC) == 0)
+            {
+                if (timeout++ > 0x1000000)
+                {
+                    scePrintf(D_00505990);
+                    GS_CSR = GS_CSR_RESET;
+                    GS_BUSDIR = 0;
+                    GIF_CTRL = GIF_CTRL_RESET;
+                    VIF1_FBRST = VIF1_FBRST_RESET;
+                    goto done;
+                }
+            }
+
+            last = VIF1_FIFO;
+
+            for (i = 0; i < rest_bytes; i++)
+            {
+                reinterpret_cast<u8*>(static_cast<unsigned __int128*>(destination) + (blocks + rest))[i] =
+                    reinterpret_cast<u8*>(&last)[i];
+            }
+
+            for (i = 0; i < drain; i++)
+            {
+                while ((VIF1_STAT & VIF1_STAT_FQC) == 0)
+                {
+                    if (timeout++ > 0x1000000)
+                    {
+                        scePrintf(D_00505990);
+                        GS_CSR = GS_CSR_RESET;
+                        GS_BUSDIR = 0;
+                        GIF_CTRL = GIF_CTRL_RESET;
+                        VIF1_FBRST = VIF1_FBRST_RESET;
+                        goto done;
+                    }
+                }
+
+                last = VIF1_FIFO;
+            }
+        }
+
+        VIF1_STAT = 0;
+        GS_BUSDIR = 0;
+        GsPutIMR(mask);
+        GS_CSR = GS_CSR_FINISH;
+        VIF1_FIFO = D_004ED120;
+
+    done:
+        resident_sync_gs_path(g_input_system, 0, 0);
+        capture->on_store_complete();
+        resident_dma_queue_resume(g_vif1_dma_queue);
+
+        if (capture->unk65 == 1)
+        {
+            func_004DC420(g_packet_queue, 1);
+        }
+    }
+}
 
 /**
  * @brief Let the store thread know the store packet's transfer is over.
@@ -2900,7 +4468,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", run__14LibClass
 void LibImageCapture::complete_dma(u32 channel)
 {
     resident_dma_queue_pause(g_vif1_dma_queue);
-    iSignalSema(D_005081D0.semaphore);
+    iSignalSema(D_005081D0.semaphore.id);
 }
 
 /**
@@ -3743,7 +5311,7 @@ void func_004351D0(LibClass173990* emitter, u32 flag, float first, float second)
  * @param value Stored in unk491.
  * @param factor Stored in unk40c.
  */
-void func_00435270(LibClass173990* emitter, u32 first_flag, u32 second_flag, u8 value, float factor)
+void func_00435270(LibClass173990* emitter, bool first_flag, bool second_flag, u8 value, float factor)
 {
     emitter->unk49b_7 = first_flag;
     emitter->unk49c_0 = second_flag;
@@ -3885,7 +5453,1548 @@ void LibClass173990::copy_state(const LibClass173990* other)
     LibTransform::copy_offset_transform_state(other);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00435840);
+/**
+ * @brief Draw a value in [0, 1) from the light random generator's mantissa bits.
+ * @return Random fraction.
+ */
+static inline float emit_random_unit()
+{
+    u32 bits = (lib_light_random() & 0x7FFFFF) | 0x3F800000;
+    return *(float*)&bits - 1.0f;
+}
+
+/**
+ * @brief Draw a value in [0, 1) weighted towards zero: one minus exp(-strength * r * r).
+ * @param strength Falloff strength, read after the draw.
+ * @return Random fraction.
+ */
+static inline float emit_random_falloff(const float* strength)
+{
+    u32 bits = (lib_light_random() & 0x7FFFFF) | 0x3F800000;
+    float r = *(float*)&bits - 1.0f;
+    return 1.0f - func_004CCD90(*strength * (-r * r));
+}
+
+/**
+ * @brief Draw a value spread evenly around zero.
+ * @param range Width of the spread, read after the draw.
+ * @return Value in [-range / 2, range / 2).
+ */
+static inline float emit_random_spread(const float* range)
+{
+    u32 bits = (lib_light_random() & 0x7FFFFF) | 0x3F800000;
+    float r = *(float*)&bits - 1.0f;
+    return *range * r - 0.5f * *range;
+}
+
+/**
+ * @brief Draw a value spread evenly around a base.
+ * @param base Centre, read after the draw.
+ * @param range Width of the spread, read after the draw.
+ * @return Value in [base - range / 2, base + range / 2).
+ */
+static inline float emit_random_jitter(const float* base, const float* range)
+{
+    u32 bits = (lib_light_random() & 0x7FFFFF) | 0x3F800000;
+    float r = *(float*)&bits - 1.0f;
+    return *base + *range * r - 0.5f * *range;
+}
+
+/**
+ * @brief Clear a quadword with one 128-bit store.
+ * @param vector Aligned quadword.
+ */
+static inline void emit_zero_quad(void* vector)
+{
+    *reinterpret_cast<unsigned __int128*>(vector) = 0;
+}
+
+/**
+ * @brief Return a vector's xyz length from VU0.
+ * @param vector Aligned vector.
+ * @return Length.
+ */
+static inline float emit_vector_length(const FieldVec4A* vector)
+{
+    FieldVec4A length;
+    vu0_length_xyz(&length, vector);
+    return length.x;
+}
+
+/**
+ * @brief Return a vector's squared xyz length from VU0.
+ * @param vector Aligned vector.
+ * @return Squared length.
+ */
+static inline float emit_vector_length_squared(const FieldVec4A* vector)
+{
+    FieldVec4A length;
+    vu0_length_squared_xyz(vector, &length);
+    return length.x;
+}
+
+/**
+ * @brief Return a vector's xyz length.
+ * @param vector Aligned vector.
+ * @return Length.
+ */
+static inline float emit_length_of(const FieldVec4A* vector)
+{
+    // TODO: The extra inline levels only put the length temporaries where the original's stack layout has them.
+    return emit_vector_length(vector);
+}
+
+/**
+ * @brief Return a vector's squared xyz length.
+ * @param vector Aligned vector.
+ * @return Squared length.
+ */
+static inline float emit_length_squared_of(const FieldVec4A* vector)
+{
+    // TODO: The extra inline levels only put the length temporaries where the original's stack layout has them.
+    return emit_vector_length_squared(vector);
+}
+
+/**
+ * @brief Return a vector's xyz length.
+ * @param vector Aligned vector.
+ * @return Length.
+ */
+static inline float emit_length(const FieldVec4A* vector)
+{
+    return emit_length_of(vector);
+}
+
+/**
+ * @brief Return a vector's squared xyz length.
+ * @param vector Aligned vector.
+ * @return Squared length.
+ */
+static inline float emit_length_squared(const FieldVec4A* vector)
+{
+    return emit_length_squared_of(vector);
+}
+
+/**
+ * @brief Recompute a cell's orbit offset from its two angles and its scale.
+ * @param cell Cell to update.
+ */
+static inline void emit_update_offset_from_angles(LibEmitterCell* cell)
+{
+    LibVector4 second;
+    LibVector4 first;
+    lib_compute_sine_cosine_pair(cell->angles.x, &first);
+    lib_compute_sine_cosine_pair(cell->angles.y, &second);
+    cell->offset.x = first.z * (cell->scale.x * second.z);
+    cell->offset.y = cell->scale.y * first.w;
+    cell->offset.z = first.z * (cell->scale.z * second.w);
+}
+
+/**
+ * @brief Recompute a cell's orbit offset from its two angles and its scale.
+ * @param cell Cell to update.
+ */
+static inline void emit_update_offset(LibEmitterCell* cell)
+{
+    // TODO: The extra inline level only puts the angle pairs where the original's stack layout has them.
+    emit_update_offset_from_angles(cell);
+}
+
+/**
+ * @brief Build a look-at matrix with no roll.
+ * @param look Receives the matrix.
+ * @param origin Eye position.
+ * @param target Point looked at.
+ */
+static inline void emit_look_at(LibMatrix44Value* look, const FieldVec4B* origin, const FieldVec4B* target)
+{
+    lib_matrix_look_at(look, origin, target, 0.0f);
+}
+
+/**
+ * @brief Build a look-at matrix from the origin with no roll.
+ * @param look Receives the matrix.
+ * @param target Point looked at.
+ */
+static inline void emit_look_from_origin(LibMatrix44Value* look, const FieldVec4B* target)
+{
+    const FieldVec4B& origin = FieldVec4B(0.0f, 0.0f, 0.0f, 0.0f);
+    emit_look_at(look, &origin, target);
+}
+
+/**
+ * @brief Clear a vector by copying a zero vector into it.
+ * @param vector Aligned vector to clear.
+ */
+static inline void emit_clear_vector(FieldVec4A* vector)
+{
+    FieldVec4A zero(0.0f, 0.0f, 0.0f, 0.0f);
+    const FieldVec4A* source = &zero;
+    ee_block_break();
+    *vector = *source;
+}
+
+extern "C" s8 D_001B653C;
+extern "C" FieldVec4A D_00508200;
+
+/**
+ * @brief Multiply a value by a scale.
+ * @param value Value.
+ * @param scale Scale.
+ * @return value * scale.
+ */
+static inline float emit_scaled(const float& value, float scale)
+{
+    return value * scale;
+}
+
+/**
+ * @brief Pick a new cell's velocity and acceleration for the emitter's velocity mode and store them in emitter space.
+ * @param self Emitter.
+ * @param cell Claimed cell.
+ * @param motion Receives the velocity before the rotation.
+ * @param spin_velocity Receives the rotated velocity.
+ * @param spin Receives the rotated acceleration.
+ * @param position Emission position, before the transform.
+ * @param normal Normal of the mesh vertex picked by the mesh shape.
+ * @param matrix Rotation used for the velocity.
+ * @param inverse The grid source's inverse transform.
+ * @param first_offset Velocity added before the rotation, or null.
+ * @param second_offset Acceleration added before the rotation, or null.
+ */
+static inline void emit_cell_velocity(LibClass173990* self, LibEmitterCell* cell, FieldVec4A* motion, FieldVec4A* spin_velocity, FieldVec4A* spin, const FieldVec4A* position, const FieldVec4A* normal, const LibMatrix44Value* matrix, const LibMatrix44Value* inverse, const LibVector4* first_offset, const LibVector4* second_offset)
+{
+    switch (self->unk480[1])
+    {
+    case 0:
+        *motion = self->unk230;
+        break;
+    case 1:
+        motion->x = emit_random_jitter(&self->unk230.x, &self->unk240.x);
+        motion->y = emit_random_jitter(&self->unk230.y, &self->unk240.y);
+        motion->z = emit_random_jitter(&self->unk230.z, &self->unk240.z);
+        break;
+    case 2:
+    {
+        LibVector4 first;
+        LibVector4 second;
+        float angle = emit_random_spread(&self->unk230.x);
+        float elevation = emit_random_spread(&self->unk230.z);
+        lib_compute_sine_cosine_pair_degree9(&first, angle);
+        lib_compute_sine_cosine_pair_degree9(&second, elevation);
+        float speed = emit_random_jitter(&self->unk230.y, &self->unk230.w);
+        motion->x = first.w * speed;
+        motion->y = speed * (first.z * second.z);
+        motion->z = second.w * speed;
+        break;
+    }
+    case 3:
+    {
+        LibVector4 first;
+        LibVector4 second;
+        float angle = 3.1415927f * (2.0f * emit_random_unit());
+        float elevation = 3.1415927f * emit_random_unit() - 1.5707964f;
+        lib_compute_sine_cosine_pair_degree9(&first, angle);
+        lib_compute_sine_cosine_pair_degree9(&second, elevation);
+        float speed = emit_random_jitter(&self->unk230.x, &self->unk240.x);
+        motion->x = speed * (first.z * second.z);
+        motion->y = second.w * speed;
+        motion->z = speed * (first.w * second.z);
+        break;
+    }
+    case 4:
+    {
+        float length = ee_sqrt(position->z * position->z + (position->x * position->x + position->y * position->y));
+        float r = emit_random_unit();
+        float speed = (1.0f / length + 0.01f * (length * self->unk230.z)) * (self->unk230.x + self->unk240.x * r - 0.5f * self->unk240.x);
+        motion->x = position->x * speed;
+        motion->y = position->y * speed;
+        motion->z = position->z * speed;
+        break;
+    }
+    case 5:
+    {
+        FieldVec4A direction = *position;
+        lib_normalize_vector3(&direction.x);
+        float speed = emit_random_jitter(&self->unk230.x, &self->unk240.x);
+        motion->x = -direction.z * speed;
+        motion->y = direction.y;
+        motion->z = direction.x * speed;
+        break;
+    }
+    case 6:
+    {
+        LibVector4 first;
+        LibVector4 second;
+        LibMatrix44Value look;
+        float angle = emit_random_spread(&self->unk230.x);
+        float elevation = emit_random_spread(&self->unk230.z);
+        lib_compute_sine_cosine_pair_degree9(&first, angle);
+        lib_compute_sine_cosine_pair_degree9(&second, elevation);
+        float speed = emit_random_jitter(&self->unk230.y, &self->unk230.w);
+        motion->x = first.w * speed;
+        motion->z = speed * (-first.z * second.z);
+        motion->y = second.w * speed;
+        emit_look_from_origin(&look, reinterpret_cast<const FieldVec4B*>(normal));
+        ee_transpose_matrix(&look, &look);
+        vu0_transform_emission_direction_input_first(&look, motion, motion);
+        break;
+    }
+    case 7:
+    {
+        float length = ee_sqrt(position->z * position->z + (position->x * position->x + position->y * position->y));
+        float r = emit_random_unit();
+        float speed = (1.0f / length + 0.01f * (length * self->unk230.z)) * (self->unk230.x + self->unk240.x * r - 0.5f * self->unk240.x);
+        motion->x = position->x * speed;
+        motion->y = self->unk230.y + self->unk240.y * emit_random_unit() - 0.5f * self->unk240.y;
+        motion->z = position->z * speed;
+        break;
+    }
+    }
+
+    if (first_offset != 0)
+    {
+        motion->x += first_offset->x;
+        motion->y += first_offset->y;
+        motion->z += first_offset->z;
+    }
+
+    if (!self->unk49b_1)
+    {
+        vu0_transform_emission_direction(matrix, motion, spin_velocity);
+
+        if (self->unk49b_4)
+        {
+            spin_velocity->x += self->velocity.x * self->unk3fc;
+            spin_velocity->y += self->velocity.y * self->unk3fc;
+            spin_velocity->z += self->velocity.z * self->unk3fc;
+        }
+
+        vu0_transform_emission_direction_output_first(inverse, &cell->velocity, spin_velocity);
+    }
+    else
+    {
+        if (self->unk49b_4)
+        {
+            motion->x += self->velocity.x * self->unk3fc;
+            motion->y += self->velocity.y * self->unk3fc;
+            motion->z += self->velocity.z * self->unk3fc;
+        }
+
+        *spin_velocity = *motion;
+        vu0_transform_emission_direction_output_first(inverse, &cell->velocity, motion);
+    }
+
+    FieldVec4A acceleration;
+
+    switch (self->unk480[2])
+    {
+    case 0:
+        acceleration = self->unk250;
+        break;
+    case 1:
+        acceleration.x = emit_random_jitter(&self->unk250.x, &self->unk260.x);
+        acceleration.y = emit_random_jitter(&self->unk250.y, &self->unk260.y);
+        acceleration.z = emit_random_jitter(&self->unk250.z, &self->unk260.z);
+        break;
+    case 2:
+        acceleration.x = motion->x * self->unk250.x;
+        acceleration.y = motion->y * self->unk250.y;
+        acceleration.z = motion->z * self->unk250.z;
+        break;
+    }
+
+    if (second_offset != 0)
+    {
+        acceleration.x += second_offset->x;
+        acceleration.y += second_offset->y;
+        acceleration.z += second_offset->z;
+    }
+
+    if (!self->unk49b_2)
+    {
+        vu0_transform_emission_direction(matrix, &acceleration, spin);
+        vu0_transform_emission_direction_output_first(inverse, &cell->acceleration, spin);
+    }
+    else
+    {
+        vu0_transform_emission_direction_output_first(inverse, &cell->acceleration, &acceleration);
+        *spin = acceleration;
+    }
+
+    emit_clear_vector(&cell->unk50);
+}
+
+/**
+ * @brief Pick a new cell's angles and scale with their rates and store them in the cell.
+ * @param self Emitter.
+ * @param cell Claimed cell.
+ * @param angles Receives the angles.
+ * @param scale Receives the scale.
+ * @param angle_velocity Receives the angle velocity.
+ * @param scale_velocity Receives the scale velocity.
+ * @param angle_accel Receives the angle acceleration.
+ * @param scale_accel Receives the scale acceleration.
+ * @param extra6 Angles added to the picked ones, or null.
+ * @param extra7 Angle velocity added to the picked one, or null.
+ * @param extra8 Angle acceleration added to the picked one, or null.
+ * @param extra9 Scale added to the picked one, or null.
+ * @param extra10 Scale velocity added to the picked one, or null.
+ * @param extra11 Scale acceleration added to the picked one, or null.
+ */
+static inline void emit_cell_rotation(LibClass173990* self, LibEmitterCell* cell, FieldVec4A* angles, FieldVec4A* scale, FieldVec4A* angle_velocity, FieldVec4A* scale_velocity, FieldVec4A* angle_accel, FieldVec4A* scale_accel, const LibVector4* extra6, const LibVector4* extra7, const LibVector4* extra8, const LibVector4* extra9, const LibVector4* extra10, const LibVector4* extra11)
+{
+    FieldVec4A* field = &cell->angles;
+
+    if (self->unk480[6] != 1)
+    {
+        *angles = self->unk2c0;
+    }
+    else
+    {
+        angles->x = emit_random_jitter(&self->unk2c0.x, &self->unk2d0.x);
+        angles->y = emit_random_jitter(&self->unk2c0.y, &self->unk2d0.y);
+    }
+
+    if (extra6 != 0)
+    {
+        angles->x += extra6->x;
+        angles->y += extra6->y;
+    }
+
+    *field = *angles;
+
+    field = &cell->scale;
+
+    if (self->unk480[7] != 1)
+    {
+        *scale = self->unk2e0;
+    }
+    else
+    {
+        scale->x = emit_random_jitter(&self->unk2e0.x, &self->unk2f0.x);
+        scale->y = emit_random_jitter(&self->unk2e0.y, &self->unk2f0.y);
+        scale->z = emit_random_jitter(&self->unk2e0.z, &self->unk2f0.z);
+    }
+
+    if (extra9 != 0)
+    {
+        scale->x += extra9->x;
+        scale->y += extra9->y;
+        scale->z += extra9->z;
+    }
+
+    *field = *scale;
+
+    field = &cell->angle_velocity;
+
+    if (self->unk488[0] != 1)
+    {
+        *angle_velocity = self->unk300;
+    }
+    else
+    {
+        angle_velocity->x = emit_random_jitter(&self->unk300.x, &self->unk310.x);
+        angle_velocity->y = emit_random_jitter(&self->unk300.y, &self->unk310.y);
+    }
+
+    if (extra7 != 0)
+    {
+        angle_velocity->x += extra7->x;
+        angle_velocity->y += extra7->y;
+    }
+
+    *field = *angle_velocity;
+
+    field = &cell->scale_velocity;
+
+    if (self->unk488[1] != 1)
+    {
+        *scale_velocity = self->unk320;
+    }
+    else
+    {
+        scale_velocity->x = emit_random_jitter(&self->unk320.x, &self->unk330.x);
+        scale_velocity->y = emit_random_jitter(&self->unk320.y, &self->unk330.y);
+        scale_velocity->z = emit_random_jitter(&self->unk320.z, &self->unk330.z);
+    }
+
+    if (extra10 != 0)
+    {
+        scale_velocity->x += extra10->x;
+        scale_velocity->y += extra10->y;
+        scale_velocity->z += extra10->z;
+    }
+
+    *field = *scale_velocity;
+
+    field = &cell->angle_acceleration;
+
+    if (self->unk488[2] != 1)
+    {
+        *angle_accel = self->unk340;
+    }
+    else
+    {
+        angle_accel->x = emit_random_jitter(&self->unk340.x, &self->unk350.x);
+        angle_accel->y = emit_random_jitter(&self->unk340.y, &self->unk350.y);
+    }
+
+    if (extra8 != 0)
+    {
+        angle_accel->x += extra8->x;
+        angle_accel->y += extra8->y;
+    }
+
+    *field = *angle_accel;
+
+    field = &cell->scale_acceleration;
+
+    if (self->unk488[3] != 1)
+    {
+        *scale_accel = self->unk360;
+    }
+    else
+    {
+        scale_accel->x = emit_random_jitter(&self->unk360.x, &self->unk370.x);
+        scale_accel->y = emit_random_jitter(&self->unk360.y, &self->unk370.y);
+        scale_accel->z = emit_random_jitter(&self->unk360.z, &self->unk370.z);
+    }
+
+    if (extra11 != 0)
+    {
+        scale_accel->x += extra11->x;
+        scale_accel->y += extra11->y;
+        scale_accel->z += extra11->z;
+    }
+
+    *field = *scale_accel;
+    emit_update_offset(cell);
+
+    u8 shape = self->unk480[0];
+
+    if (shape == 5 || shape == 6 || shape == 9 || shape == 10)
+    {
+        float x = cell->position.x;
+        cell->position.x = x + cell->offset.x;
+        cell->position.y += cell->offset.y;
+        cell->position.z += cell->offset.z;
+    }
+}
+
+/**
+ * @brief Pick a new cell's tint and tint scale.
+ * @param self Emitter.
+ * @param cell Claimed cell.
+ * @param position Emission position, for the distance-based tint.
+ */
+static inline void emit_cell_tint(LibClass173990* self, LibEmitterCell* cell, const FieldVec4A* position)
+{
+    FieldVec4A* tint = &cell->tint;
+
+    switch (self->unk480[4])
+    {
+    case 0:
+        *tint = self->unk290;
+        break;
+    case 1:
+        tint->x = emit_random_jitter(&self->unk290.x, &self->unk2a0.x);
+        tint->y = emit_random_jitter(&self->unk290.y, &self->unk2a0.y);
+        tint->z = emit_random_jitter(&self->unk290.z, &self->unk2a0.z);
+        tint->w = emit_random_jitter(&self->unk290.w, &self->unk2a0.w);
+        break;
+    case 2:
+    {
+        float t = ee_sqrt_in_place(position->z * position->z + (position->x * position->x + position->y * position->y));
+    t *= 0.01f;
+        tint->x = self->unk290.x + self->unk2a0.x * t;
+        tint->y = self->unk290.y + self->unk2a0.y * t;
+        tint->z = self->unk290.z + self->unk2a0.z * t;
+        tint->w = self->unk290.w + self->unk2a0.w * t;
+        break;
+    }
+    }
+
+    FieldVec4A* tint_scale = &cell->tint_scale;
+
+    switch (self->unk480[5])
+    {
+    case 0:
+        *tint_scale = self->unk2b0;
+        break;
+    case 1:
+        tint_scale->x = tint->x * self->unk2b0.x;
+        tint_scale->y = tint->y * self->unk2b0.y;
+        tint_scale->z = tint->z * self->unk2b0.z;
+        tint_scale->w = tint->w * self->unk2b0.w;
+        break;
+    }
+}
+
+/**
+ * @brief Draw a whole number from zero to count.
+ * @param count Highest value.
+ * @return Random number.
+ */
+static inline s32 emit_random_index(u8 count)
+{
+    return resident_random_below(count + 1);
+}
+
+/**
+ * @brief Fill a new cell's record: the image frame, then the two value groups.
+ * @param self Emitter.
+ * @param slot Where claim_cell stored the record.
+ */
+static inline void emit_fill_record(LibClass173990* self, void** slot)
+{
+    float rate = 0.016666668f;
+    LibEmitterQuad* record = static_cast<LibEmitterQuad*>(*slot);
+    emit_zero_quad(record + 2);
+    LibEmitterQuad* channel = record + 2;
+    LibGridFrameRecord* frames = self->source->image != 0 ? reinterpret_cast<LibGridFrameRecord*>(reinterpret_cast<u8*>(self->source->image) + 0xC0) : 0;
+
+    if (self->unk495 != 0)
+    {
+        s32 pick = emit_random_index(self->unk495);
+        s32 step = self->unk496;
+        channel->words[1] = self->unk494 + step * pick;
+    }
+    else
+    {
+        channel->words[1] = self->unk494;
+    }
+
+    if (frames != 0)
+    {
+        channel->floats[2] = rate * frames[channel->words[1]].duration_frames;
+    }
+
+    channel = static_cast<LibEmitterQuad*>(*slot);
+    channel->words[3] = 0;
+
+    switch (self->unk488[4])
+    {
+    case 0:
+        channel->floats[0] = self->unk3c0[0];
+        break;
+    case 1:
+        channel->floats[0] = emit_random_jitter(&self->unk3c0[0], &self->unk3c0[1]);
+        break;
+    }
+
+    if (self->source->kind == 6)
+    {
+        switch (self->unk488[6])
+        {
+        case 0:
+            channel->floats[2] = self->unk380.x;
+            break;
+        case 1:
+        case 2:
+        {
+            float r = emit_random_unit();
+            channel->floats[2] = self->unk380.x + r * self->unk390.x - 0.5f * self->unk390.x;
+            break;
+        }
+        }
+
+        switch (self->unk497)
+        {
+        case 0:
+            channel->floats[1] = self->unk3c0[4];
+            break;
+        case 1:
+            channel->floats[1] = emit_random_jitter(&self->unk3c0[4], &self->unk3c0[5]);
+            break;
+        }
+    }
+    else
+    {
+        switch (self->unk488[6])
+        {
+        case 0:
+            channel->floats[1] = self->unk380.x;
+            channel->floats[2] = self->unk380.y;
+            break;
+        case 1:
+            channel->floats[1] = emit_random_jitter(&self->unk380.x, &self->unk390.x);
+            channel->floats[2] = emit_random_jitter(&self->unk380.y, &self->unk390.y);
+            break;
+        case 2:
+        {
+            float r = emit_random_unit();
+            channel->floats[1] = self->unk380.x + r * self->unk390.x - 0.5f * self->unk390.x;
+            channel->floats[2] = self->unk380.y + r * self->unk390.y - 0.5f * self->unk390.y;
+            break;
+        }
+        }
+    }
+
+    switch (self->unk490)
+    {
+    case 1:
+        channel->floats[3] = self->unk43c;
+        break;
+    case 2:
+        channel->floats[3] = emit_random_jitter(&self->unk43c, &self->unk440);
+        break;
+    }
+
+    channel = static_cast<LibEmitterQuad*>(*slot) + 1;
+    channel->words[3] = 0;
+
+    switch (self->unk488[5])
+    {
+    case 0:
+        channel->floats[0] = self->unk3c0[2];
+        break;
+    case 1:
+        channel->floats[0] = emit_random_jitter(&self->unk3c0[2], &self->unk3c0[3]);
+        break;
+    }
+
+    if (self->source->kind == 6)
+    {
+        switch (self->unk488[7])
+        {
+        case 0:
+            channel->floats[2] = self->unk3a0.x;
+            break;
+        case 1:
+        case 2:
+        {
+            float r = emit_random_unit();
+            channel->floats[2] = self->unk3a0.x + r * self->unk3b0.x - 0.5f * self->unk3b0.x;
+            break;
+        }
+        }
+
+        switch (self->unk498)
+        {
+        case 0:
+            channel->floats[1] = self->unk3c0[6];
+            break;
+        case 1:
+            channel->floats[1] = emit_random_jitter(&self->unk3c0[6], &self->unk3c0[7]);
+            break;
+        }
+    }
+    else
+    {
+        switch (self->unk488[7])
+        {
+        case 0:
+            channel->floats[1] = self->unk3a0.x;
+            channel->floats[2] = self->unk3a0.y;
+            break;
+        case 1:
+            channel->floats[1] = emit_random_jitter(&self->unk3a0.x, &self->unk3b0.x);
+            channel->floats[2] = emit_random_jitter(&self->unk3a0.y, &self->unk3b0.y);
+            break;
+        case 2:
+        {
+            float r = emit_random_unit();
+            channel->floats[1] = self->unk3a0.x + r * self->unk3b0.x - 0.5f * self->unk3b0.x;
+            channel->floats[2] = self->unk3a0.y + r * self->unk3b0.y - 0.5f * self->unk3b0.y;
+            break;
+        }
+        }
+    }
+}
+
+
+/**
+ * @brief Store a cell's starting angles and scale, then recompute its orbit offset.
+ * @param cell Cell to update.
+ * @param angles Starting angles.
+ * @param scale Starting scale.
+ */
+static inline void emit_set_rotation(LibEmitterCell* cell, const FieldVec4A* angles, const FieldVec4A* scale)
+{
+    cell->angles = *angles;
+    cell->scale = *scale;
+    emit_update_offset(cell);
+}
+
+/**
+ * @brief Move a new cell by its first frame of motion and hand it to the grid.
+ * @param self Emitter.
+ * @param grid Grid that owns the cell.
+ * @param index Cell index.
+ * @param cell Where claim_cell stored the cell.
+ * @param motion Velocity, scaled to one frame here.
+ * @param angles Angles.
+ * @param scale Scale.
+ * @param angle_velocity Angle velocity, scaled to one frame here.
+ * @param scale_velocity Scale velocity, scaled to one frame here.
+ * @param world Emission position in world space.
+ * @param inverse The grid source's inverse transform.
+ * @param extra6 Starting angles, or null.
+ * @param extra9 Starting scale.
+ */
+static inline void emit_cell_motion(LibClass173990* self, LibGridBase* grid, s32 index, LibEmitterCell** cell, FieldVec4A* motion, FieldVec4A* angles, FieldVec4A* scale, FieldVec4A* angle_velocity, FieldVec4A* scale_velocity, const FieldVec4A* world, const LibMatrix44Value* inverse, const LibVector4* extra6, const LibVector4* extra9)
+{
+    FieldVec4A cell_position;
+    FieldVec4A offset;
+    FieldVec4A start_scale;
+    FieldVec4A start_angles;
+    offset.x = 0.0f;
+    offset.y = 0.0f;
+    offset.z = 0.0f;
+    offset.w = 0.0f;
+    motion->x *= 0.016666668f;
+    motion->y *= 0.016666668f;
+    motion->z *= 0.016666668f;
+    angle_velocity->x *= 0.016666668f;
+    angle_velocity->y *= 0.016666668f;
+    angle_velocity->z *= 0.016666668f;
+    scale_velocity->x *= 0.016666668f;
+    scale_velocity->y *= 0.016666668f;
+    scale_velocity->z *= 0.016666668f;
+
+    if (extra6 != 0)
+    {
+        LibVector4 second;
+        LibVector4 first;
+        start_angles = *reinterpret_cast<const FieldVec4A*>(extra6);
+        start_scale = *reinterpret_cast<const FieldVec4A*>(extra9);
+        start_angles.x += angle_velocity->x * self->unk434;
+        start_angles.y += angle_velocity->y * self->unk434;
+        start_scale.x += scale_velocity->x * self->unk434;
+        start_scale.y += scale_velocity->y * self->unk434;
+        start_scale.z += scale_velocity->z * self->unk434;
+        lib_compute_sine_cosine_pair(start_angles.x, &first);
+        lib_compute_sine_cosine_pair(start_angles.y, &second);
+        offset.x = first.z * (start_scale.x * second.z);
+        offset.y = start_scale.y * first.w;
+        offset.z = first.z * (start_scale.z * second.w);
+    }
+
+    cell_position = (*cell)->position;
+    cell_position.x = cell_position.x + offset.x + motion->x * self->unk434;
+    cell_position.y = cell_position.y + offset.y + motion->y * self->unk434;
+    cell_position.z = cell_position.z + offset.z + motion->z * self->unk434;
+    (*cell)->position = cell_position;
+
+    if (extra6 != 0 && (grid->func_slot3c() & 8))
+    {
+        emit_set_rotation(*cell, &start_angles, &start_scale);
+    }
+
+    u8 kind = self->source->kind;
+    bool shaded = false;
+
+    if (kind != 0 && kind != 3)
+    {
+        shaded = true;
+    }
+
+    u8 flag = shaded ? true : false;
+
+    if (self->unk49a == 1)
+    {
+        grid->func_slot40((*cell), grid->func_slot24(index, 0), flag, reinterpret_cast<const LibVector4*>(motion),
+                          reinterpret_cast<const LibVector4*>(angles), reinterpret_cast<const LibVector4*>(scale),
+                          reinterpret_cast<const LibVector4*>(angle_velocity),
+                          reinterpret_cast<const LibVector4*>(scale_velocity));
+    }
+    else
+    {
+        FieldVec4A direction = *world;
+
+        if (!self->unk20e_2)
+        {
+            func_004D9E70(self);
+        }
+
+        vu0_transform_emission_direction(&self->inverse_transform, &direction, &direction);
+        lib_normalize_vector3(&direction.x);
+        direction.x *= self->unk434;
+        direction.y *= self->unk434;
+        direction.z *= self->unk434;
+        vu0_apply_matrix(inverse, &direction, &direction);
+        grid->func_slot44((*cell), grid->func_slot24(index, 0), flag, reinterpret_cast<const LibVector4*>(&direction));
+    }
+}
+
+/**
+ * @brief Copy the emitter's entries into the new cell's grid rows, with the colour alpha when the grid wants it.
+ * @param self Emitter.
+ * @param grid Grid that owns the cell.
+ * @param index Cell index.
+ * @param entry_total Number of entries.
+ * @param color Colour picked for the cell.
+ */
+static inline void emit_copy_entries(LibClass173990* self, LibGridBase* grid, s32 index, s32 entry_total, const FieldVec4A* color)
+{
+    LibGridRow40* rows = reinterpret_cast<LibGridRow40*>(grid->func_slot24(index, 0));
+
+    if (grid->func_slot60() == 3)
+    {
+        for (s32 j = 0; j < entry_total; j++)
+        {
+            FieldVec4A entry = *reinterpret_cast<FieldVec4A*>(&self->entries[j]);
+            entry.w = color->w;
+            *reinterpret_cast<FieldVec4A*>(&rows[j].unk20) = entry;
+        }
+    }
+    else
+    {
+        for (s32 j = 0; j < entry_total; j++)
+        {
+            *reinterpret_cast<FieldVec4A*>(&rows[j].unk20) = *reinterpret_cast<FieldVec4A*>(&self->entries[j]);
+        }
+    }
+}
+
+/**
+ * @brief Claim grid cells for new particles and fill them from the emitter's shape, colour, motion and rotation modes.
+ * @param count Number of particles to emit.
+ * @param position_offset World-space position added after the emitter's rotation, or null.
+ * @param first_offset Velocity added before the rotation, or null.
+ * @param second_offset Acceleration added before the rotation, or null.
+ * @param color_scale Colour multiplier (0-255 per channel), or null.
+ * @param extra6 Angles added to the picked ones (and the starting angles), or null.
+ * @param extra7 Angle velocity added to the picked one, or null.
+ * @param extra8 Angle acceleration added to the picked one, or null.
+ * @param extra9 Scale added to the picked one (and the starting scale), or null.
+ * @param extra10 Scale velocity added to the picked one, or null.
+ * @param extra11 Scale acceleration added to the picked one, or null.
+ */
+void LibClass173990::emit_entries(s32 count, const LibVector4* position_offset, const LibVector4* first_offset,
+                                  const LibVector4* second_offset, const LibVector4* color_scale, const LibVector4* extra6,
+                                  const LibVector4* extra7, const LibVector4* extra8, const LibVector4* extra9,
+                                  const LibVector4* extra10, const LibVector4* extra11)
+{
+    if (source != 0)
+    {
+        if (source->reference != 0 && source->reference->func_slotc0())
+        {
+            if (!matrix_ready)
+            {
+                update_transform_matrix();
+            }
+
+            if (!transpose_is_current(this))
+            {
+                transpose_transform(this);
+            }
+
+            if (!source->matrix_ready)
+            {
+                source->update_transform_matrix();
+                mark_transpose_current(source);
+                func_004D9E70(source);
+            }
+            else if (!source->unk20e_0)
+            {
+                transpose_transform(source);
+                func_004D9E70(source);
+            }
+            else if (!source->unk20e_2)
+            {
+                func_004D9E70(source);
+            }
+
+            s32 i;
+            
+            const LibMatrix44Value* matrix = &transposed_transform;
+            LibMatrix44Value rotation = transposed_transform;
+            rotation.m[3][0] = 0.0f;
+            rotation.m[3][1] = 0.0f;
+            rotation.m[3][2] = 0.0f;
+            const LibMatrix44Value* inverse = &source->inverse_transform;
+            LibGridBase* grid = source->reference;
+
+            for (i = 0; i < count; i++)
+            {
+                void* record;
+                LibEmitterCell* cell;
+                FieldVec4A world;
+                FieldVec4A spin_velocity;
+                FieldVec4A spin;
+                FieldVec4A angles;
+                FieldVec4A angle_velocity;
+                FieldVec4A angle_accel;
+                FieldVec4A scale;
+                FieldVec4A scale_velocity;
+                FieldVec4A scale_accel;
+                FieldVec4A color;
+                FieldVec4A normal;
+                FieldVec4A position;
+                float x;
+                float y;
+                float z;
+
+                angles.x = 0.0f;
+                angles.y = 0.0f;
+                angles.z = 0.0f;
+                angles.w = 0.0f;
+                angle_velocity.x = 0.0f;
+                angle_velocity.y = 0.0f;
+                angle_velocity.z = 0.0f;
+                angle_velocity.w = 0.0f;
+                scale.x = 0.0f;
+                scale.y = 0.0f;
+                scale.z = 0.0f;
+                scale.w = 0.0f;
+                scale_velocity.x = 0.0f;
+                scale_velocity.y = 0.0f;
+                scale_velocity.z = 0.0f;
+                scale_velocity.w = 0.0f;
+
+                switch (unk480[0])
+                {
+                case 0:
+                    emit_zero_quad(&position);
+                    break;
+                case 1:
+                    if (unk3f8 == 0.0f)
+                    {
+                        x = emit_random_unit();
+                        y = emit_random_unit();
+                        z = emit_random_unit();
+                    }
+                    else
+                    {
+                        x = emit_random_falloff(&unk3f8);
+                        y = emit_random_falloff(&unk3f8);
+                        z = emit_random_falloff(&unk3f8);
+                    }
+
+                    if (resident_next_random_word() & 1)
+                    {
+                        x = -x;
+                    }
+
+                    if (resident_next_random_word() & 1)
+                    {
+                        y = -y;
+                    }
+
+                    if (resident_next_random_word() & 1)
+                    {
+                        z = -z;
+                    }
+
+                    position.x = x * unk220.x;
+                    position.y = y * unk220.y;
+                    position.z = z * unk220.z;
+                    break;
+                case 2:
+                case 5:
+                {
+                    float radius;
+                    LibVector4 first;
+                    LibVector4 second;
+
+                    if (unk3f8 == 0.0f)
+                    {
+                        radius = emit_random_unit();
+                    }
+                    else
+                    {
+                        radius = emit_random_falloff(&unk3f8);
+                    }
+
+                    float angle = 3.1415927f * (2.0f * emit_random_unit());
+                    float elevation = 3.1415927f * emit_random_unit();
+                    lib_compute_sine_cosine_pair_degree9(&first, angle);
+                    lib_compute_sine_cosine_pair_degree9(&second, elevation);
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = second.w * (first.z * (radius * unk220.x));
+                        position.y = second.z * (radius * unk220.y);
+                        position.z = second.w * (first.w * (radius * unk220.z));
+                    }
+                    else
+                    {
+                        position.x = first.z * (radius * unk220.x);
+                        position.y = 0.0f;
+                        position.z = first.w * (radius * unk220.z);
+                    }
+
+                    break;
+                }
+                case 3:
+                case 6:
+                {
+                    float radius;
+                    LibVector4 first;
+                    LibVector4 second;
+
+                    radius = 1.0f + unk3f8 * emit_random_unit() - 0.5f * unk3f8;
+                    float angle = 3.1415927f * (2.0f * emit_random_unit());
+                    float elevation = 3.1415927f * emit_random_unit();
+                    lib_compute_sine_cosine_pair_degree9(&first, angle);
+                    lib_compute_sine_cosine_pair_degree9(&second, elevation);
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = second.w * (first.z * (radius * unk220.x));
+                        position.y = second.z * (radius * unk220.y);
+                        position.z = second.w * (first.w * (radius * unk220.z));
+                    }
+                    else
+                    {
+                        position.x = first.z * (radius * unk220.x);
+                        position.y = 0.0f;
+                        position.z = first.w * (radius * unk220.z);
+                    }
+
+                    break;
+                }
+                case 4:
+                {
+                    float height = unk220.y * emit_random_unit();
+                    float angle = 3.1415927f * (2.0f * emit_random_unit());
+                    float spread;
+                    LibVector4 pair;
+
+                    if (unk3f8 == 0.0f)
+                    {
+                        spread = height * func_004CC070(0.5f * (unk220.x * emit_random_unit()));
+                    }
+                    else
+                    {
+                        spread = height * func_004CC070(0.5f * (unk220.x * emit_random_falloff(&unk3f8)));
+                    }
+
+                    lib_compute_sine_cosine_pair_degree9(&pair, angle);
+                    position.y = height;
+                    position.x = spread * pair.z;
+                    position.z = spread * pair.w;
+                    break;
+                }
+                case 7:
+                case 9:
+                {
+                    float radius;
+                    LibVector4 pair;
+
+                    if (unk3f8 == 0.0f)
+                    {
+                        radius = emit_random_unit();
+                    }
+                    else
+                    {
+                        radius = emit_random_falloff(&unk3f8);
+                    }
+
+                    lib_compute_sine_cosine_pair_degree9(&pair, 3.1415927f * (2.0f * emit_random_unit()));
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = pair.z * (radius * unk220.x);
+                        position.y = 2.0f * (unk220.y * emit_random_unit()) - unk220.y;
+                        position.z = pair.w * (radius * unk220.z);
+                    }
+                    else
+                    {
+                        position.x = pair.z * (radius * unk220.x);
+                        position.y = 0.0f;
+                        position.z = pair.w * (radius * unk220.z);
+                    }
+
+                    break;
+                }
+                case 8:
+                case 10:
+                {
+                    float radius;
+                    LibVector4 pair;
+
+                    radius = 1.0f + unk3f8 * emit_random_unit() - 0.5f * unk3f8;
+                    lib_compute_sine_cosine_pair_degree9(&pair, 3.1415927f * (2.0f * emit_random_unit()));
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = pair.z * (radius * unk220.x);
+                        position.y = 2.0f * (unk220.y * emit_random_unit()) - unk220.y;
+                        position.z = pair.w * (radius * unk220.z);
+                    }
+                    else
+                    {
+                        position.x = pair.z * (radius * unk220.x);
+                        position.y = 0.0f;
+                        position.z = pair.w * (radius * unk220.z);
+                    }
+
+                    break;
+                }
+                case 11:
+                {
+                    LibModel* model = reinterpret_cast<LibModel*>(unk42c);
+
+                    if ((u32)(u16)model->type_id >> 8 != 1)
+                    {
+                        break;
+                    }
+
+                    LibResourceBuffer* mesh = model->resource;
+
+                    if (mesh == 0)
+                    {
+                        break;
+                    }
+
+                    LibMeshHeader* data = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(mesh));
+                    LibEmitterMeshPart* part;
+
+                    if (unk49c_3)
+                    {
+                        func_004D5C10(mesh);
+
+                        if (!unk49c_4)
+                        {
+                            s32 k = 0;
+                            unk49c_4 = 1;
+                            s32 total = data->part_count;
+                            unk430 = 0;
+
+                            for (; k < total; k++)
+                            {
+                                part = static_cast<LibEmitterMeshPart*>(func_004D5AC0(mesh));
+
+                                if (part->flags & 4)
+                                {
+                                    unk430++;
+                                }
+                            }
+                        }
+
+                        if (unk430 == 0)
+                        {
+                            part = 0;
+                        }
+                        else
+                        {
+                            s32 pick;
+
+                            if (unk430 == 1)
+                            {
+                                pick = 1;
+                            }
+                            else
+                            {
+                                pick = resident_random_below(unk430 - 1) + 1;
+                            }
+
+                            for (s32 k = 0; k < pick; k++)
+                            {
+                                do
+                                {
+                                    part = static_cast<LibEmitterMeshPart*>(func_004D5AC0(mesh));
+                                } while (part != 0 && !(part->flags & 4));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        func_004D5C10(mesh);
+                        s32 pick = resident_random_below(data->part_count - 1) + 1;
+
+                        for (s32 k = 0; k < pick; k++)
+                        {
+                            part = static_cast<LibEmitterMeshPart*>(func_004D5AC0(mesh));
+                        }
+                    }
+
+                    if (part == 0)
+                    {
+                        continue;
+                    }
+
+                    s32 vertex_index = resident_random_below(part->vertex_count);
+                    const FieldVec4A* points = reinterpret_cast<const FieldVec4A*>((u32)((u8*)part + part->positions) | 0x20000000);
+                    normal = reinterpret_cast<const FieldVec4A*>((u32)((u8*)part + part->normals) | 0x20000000)[vertex_index];
+
+                    if (!model->matrix_ready)
+                    {
+                        model->update_transform_matrix();
+                        mark_transpose_current(model);
+                    }
+                    else if (!model->unk20e_0)
+                    {
+                        transpose_transform(model);
+                    }
+
+                    float radius;
+                    LibVector4 first;
+                    LibVector4 second;
+                    matrix = &model->transposed_transform;
+
+                    if (unk3f8 == 0.0f)
+                    {
+                        radius = emit_random_unit();
+                    }
+                    else
+                    {
+                        radius = emit_random_falloff(&unk3f8);
+                    }
+
+                    float angle = 3.1415927f * (2.0f * emit_random_unit());
+                    float elevation = 3.1415927f * emit_random_unit();
+                    lib_compute_sine_cosine_pair_degree9(&first, angle);
+                    lib_compute_sine_cosine_pair_degree9(&second, elevation);
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = second.w * (first.z * (radius * unk220.x)) + points[vertex_index].x + normal.x * unk420;
+                        position.y = second.z * (radius * unk220.y) + points[vertex_index].y + normal.y * unk420;
+                        position.z = second.w * (first.w * (radius * unk220.z)) + points[vertex_index].z + normal.z * unk420;
+                    }
+                    else
+                    {
+                        position.x = first.z * (radius * unk220.x) + points[vertex_index].x + normal.x * unk420;
+                        position.y = points[vertex_index].y + normal.y * unk420;
+                        position.z = first.w * (radius * unk220.z) + points[vertex_index].z + normal.z * unk420;
+                    }
+
+                    break;
+                }
+                }
+
+                position.w = 1.0f;
+
+                if (position_offset != 0)
+                {
+                    vu0_apply_matrix_vector_first(&rotation, &position, &world);
+                    world.x += position_offset->x;
+                    world.y += position_offset->y;
+                    world.z += position_offset->z;
+                }
+                else
+                {
+                    vu0_apply_matrix(matrix, &position, &world);
+                }
+
+                if (unk49c_5)
+                {
+                    world.x += unk438 * emit_scaled(this->velocity.x, 0.016666668f);
+                    world.y += unk438 * emit_scaled(this->velocity.y, 0.016666668f);
+                    world.z += unk438 * emit_scaled(this->velocity.z, 0.016666668f);
+                }
+
+                if (unk49c_6)
+                {
+                    world.x += (position_delta.x * (float)i) / (float)count;
+                    world.y += (position_delta.y * (float)i) / (float)count;
+                    world.z += (position_delta.z * (float)i) / (float)count;
+                }
+
+                FieldVec4A local;
+                vu0_apply_matrix(inverse, &world, &local);
+                s32 index = source->claim_cell(reinterpret_cast<const LibVector4*>(&local), reinterpret_cast<LibClass174228**>(&cell),
+                                                reinterpret_cast<s32*>(&record));
+
+                if (index == -1)
+                {
+                    return;
+                }
+
+                switch (unk480[3])
+                {
+                case 0:
+                    color = unk270;
+                    break;
+                case 1:
+                    color.x = emit_random_jitter(&unk270.x, &unk280.x);
+                    color.y = emit_random_jitter(&unk270.y, &unk280.y);
+                    color.z = emit_random_jitter(&unk270.z, &unk280.z);
+                    color.w = emit_random_jitter(&unk270.w, &unk280.w);
+                    break;
+                case 2:
+                {
+                    float t = ee_sqrt_in_place(position.z * position.z + (position.x * position.x + position.y * position.y));
+                    FieldVec4A* output = &cell->color;
+                    t *= 0.01f;
+                    color.x = unk270.x + unk280.x * t;
+                    color.y = unk270.y + unk280.y * t;
+                    color.z = unk270.z + unk280.z * t;
+                    color.w = unk270.w + unk280.w * t;
+
+                    if (!D_001B653C)
+                    {
+                        D_00508200.x = 255.0f;
+                        D_001B653C = 1;
+                        D_00508200.y = 255.0f;
+                        D_00508200.z = 255.0f;
+                        D_00508200.w = 255.0f;
+                    }
+
+                    vu0_clamp_emission_color(output, &D_00508200);
+                    break;
+                }
+                }
+
+                if (unk49b_7 || unk49c_0)
+                {
+                    float falloff;
+                    float distance;
+
+                    switch (unk491)
+                    {
+                    case 0:
+                        distance = emit_length(&position);
+                        falloff = unk40c / (distance + unk40c);
+                        break;
+                    case 1:
+                        distance = emit_length_squared(&position);
+                        falloff = (unk40c * unk40c) / (distance + unk40c * unk40c);
+                        break;
+                    }
+
+                    if (unk49c_1)
+                    {
+                        FieldVec4A direction = position;
+                        lib_normalize_vector3(&direction.x);
+                        float up = ee_max_tied(direction.y, 0.0f);
+                        up *= up;
+                        falloff *= ee_min_tied(ee_max_tied(unk41c * (up - unk418), 0.0f), 1.0f);
+                    }
+
+                    if (unk49b_7)
+                    {
+                        color.x *= falloff;
+                        color.y *= falloff;
+                        color.z *= falloff;
+                    }
+
+                    if (unk49c_0)
+                    {
+                        color.w *= falloff;
+                    }
+                }
+
+                if (color_scale != 0)
+                {
+                    color.x = 0.003921569f * (color.x * color_scale->x);
+                    color.y = 0.003921569f * (color.y * color_scale->y);
+                    color.z = 0.003921569f * (color.z * color_scale->z);
+                    color.w = 0.0078125f * (color.w * color_scale->w);
+                }
+
+                cell->color = color;
+
+                FieldVec4A motion;
+
+                if (grid->func_slot3c() & 2)
+                {
+                    emit_cell_velocity(this, cell, &motion, &spin_velocity, &spin, &position, &normal, matrix, inverse, first_offset, second_offset);
+                }
+                else
+                {
+                    emit_zero_quad(&motion);
+                    emit_zero_quad(&spin_velocity);
+                }
+
+                if (grid->func_slot3c() & 8)
+                {
+                    emit_cell_rotation(this, cell, &angles, &scale, &angle_velocity, &scale_velocity, &angle_accel, &scale_accel, extra6, extra7, extra8, extra9, extra10, extra11);
+                }
+
+                if (grid->func_slot3c() & 4)
+                {
+                    emit_cell_tint(this, cell, &position);
+                }
+
+                if (record != 0 && (grid->func_slot3c() & 0x20))
+                {
+                    emit_fill_record(this, &record);
+                }
+
+                s32 entry_total = entry_count;
+
+                if (entry_total != 0 && entries != 0)
+                {
+                    emit_copy_entries(this, grid, index, entry_total, &color);
+                }
+
+                if (unk49b_3 && (grid->func_slot3c() & 2))
+                {
+                    emit_zero_quad(&cell->velocity);
+                }
+
+                if (unk49c_2 && unk428 != 0)
+                {
+                    const LibVector4* child_position = 0;
+                    const LibVector4* child_velocity = 0;
+                    const LibVector4* child_acceleration = 0;
+                    const LibVector4* child_color = 0;
+                    const LibVector4* child_angles = 0;
+                    const LibVector4* child_angle_velocity = 0;
+                    const LibVector4* child_angle_accel = 0;
+                    const LibVector4* child_scale = 0;
+                    const LibVector4* child_scale_velocity = 0;
+                    const LibVector4* child_scale_accel = 0;
+
+                    if (unk493 & 1)
+                    {
+                        child_position = reinterpret_cast<const LibVector4*>(&world);
+                    }
+
+                    if (unk493 & 2)
+                    {
+                        child_velocity = reinterpret_cast<const LibVector4*>(&spin_velocity);
+                    }
+
+                    if (unk493 & 4)
+                    {
+                        child_acceleration = reinterpret_cast<const LibVector4*>(&spin);
+                    }
+
+                    if (unk493 & 8)
+                    {
+                        child_color = reinterpret_cast<const LibVector4*>(&color);
+                    }
+
+                    if (unk493 & 0x10)
+                    {
+                        child_angles = reinterpret_cast<const LibVector4*>(&angles);
+                        child_scale = reinterpret_cast<const LibVector4*>(&scale);
+                    }
+
+                    if (unk493 & 0x20)
+                    {
+                        child_angle_velocity = reinterpret_cast<const LibVector4*>(&angle_velocity);
+                        child_scale_velocity = reinterpret_cast<const LibVector4*>(&scale_velocity);
+                    }
+
+                    if (unk493 & 0x40)
+                    {
+                        child_angle_accel = reinterpret_cast<const LibVector4*>(&angle_accel);
+                        child_scale_accel = reinterpret_cast<const LibVector4*>(&scale_accel);
+                    }
+
+                    reinterpret_cast<LibClass173990*>(unk428)->emit_entries(unk492, child_position, child_velocity, child_acceleration, child_color, child_angles,
+                                         child_angle_velocity, child_angle_accel, child_scale, child_scale_velocity,
+                                         child_scale_accel);
+                }
+
+                if (unk49a != 0)
+                {
+                    emit_cell_motion(this, grid, index, &cell, &motion, &angles, &scale, &angle_velocity, &scale_velocity, &world, inverse, extra6, extra9);
+                }
+                else
+                {
+                    u8 kind = source->kind;
+                    bool shaded = false;
+
+                    if (kind != 0 && kind != 3)
+                    {
+                        shaded = true;
+                    }
+
+                    u8 flag = shaded ? true : false;
+                    grid->func_slot44(cell, grid->func_slot24(index, 0), flag, 0);
+                }
+            }
+        }
+    }
+}
 
 }
 

@@ -80,8 +80,19 @@ public:
     float m[4][4];
 } __attribute__((aligned(16)));
 
+class LibModel;
+
 extern "C"
 {
+    /**
+     * @brief Find the model's render-data record for an index and report its image's two keys.
+     * @param model Model whose mesh holds the records.
+     * @param index Record index.
+     * @param first_key Receives the image's first key.
+     * @param second_key Receives the image's second key.
+     */
+    void func_004D5E10(LibModel* model, s32 index, u32* first_key, u32* second_key);
+
     /**
      * @brief Normalize the first three floating-point components in place.
      * @param value At least three components with nonzero squared length.
@@ -151,7 +162,7 @@ extern "C"
      * @param matrix Source matrix.
      * @return Transformed vector.
      */
-    FieldVec4A func_004CF830(const FieldVec4A& value, const LibMatrix44Value& matrix);
+    FieldVec4A func_004CF830(const FieldVec4B& value, const LibMatrix44Value& matrix);
 
     /**
      * @brief Compose a projection that exchanges depth and homogeneous coordinates with an inverse transform.
@@ -391,6 +402,8 @@ struct LibTextureRequest
 class LibTextureCache
 {
 public:
+    LibTextureCache();
+
     /**
      * @brief Allocate the texture and CLUT areas in VRAM and reset the cache.
      * @param size Size of the texture area in bytes.
@@ -461,13 +474,18 @@ public:
     }
 
     /**
-     * @brief Allocate the cache through the resident allocator.
+     * @brief Allocate the cache through the resident allocator, or place it at the scratchpad.
      * @param size Object size in bytes.
-     * @param heap Heap selector.
+     * @param heap Heap selector, or EE_SCRATCHPAD.
      * @return The allocated storage.
      */
     static void* operator new(u32 size, s32 heap)
     {
+        if (heap == EE_SCRATCHPAD)
+        {
+            return (void*)EE_SCRATCHPAD;
+        }
+
         return ::operator new(size, heap);
     }
 
@@ -495,7 +513,7 @@ public:
      * @param user Object whose priority a hit on a user-owned texture lowers.
      * @return VRAM word address of the texture, or 0.
      */
-    u32 find_texture(LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 unk5, s32 want_address,
+    u32 find_texture(LibTextureRequest* request, u32 tag, s32 id, s32 slot, u16 unk5, s32 want_address,
                      LibTextureUser* user);
 
     /**
@@ -560,6 +578,17 @@ public:
 /** The game's texture cache. */
 extern "C" LibTextureCache* g_texture_cache;
 
+/** DMA queues of channels 8 and 9 (scratchpad transfers). */
+extern "C" ResidentDmaQueue* D_001B6604;
+extern "C" ResidentDmaQueue* D_001B6608;
+
+/**
+ * @brief Stop the channel 8 queue and start a 0x291-quadword transfer from the scratchpad.
+ * @param address Main memory address.
+ * @param scratchpad Scratchpad address.
+ */
+extern "C" void func_004D9030(void* address, void* scratchpad);
+
 /**
  * @brief Load a texture the cache missed.
  * @param cache Cache to add the texture to.
@@ -572,7 +601,7 @@ extern "C" LibTextureCache* g_texture_cache;
  * @return VRAM word address of the texture, 0 when no spare block record is left, or 1 when no block is large
  *         enough.
  */
-extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 flags,
+extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, s32 id, s32 slot, u16 flags,
                              LibTextureUser* user);
 
 
@@ -795,6 +824,23 @@ extern "C" void lib_spot_light_get_frame(LibLight* light, LibVector4* frame);
  */
 extern "C" void lib_light_get_direction(LibVector4* out, LibLight* light);
 
+/**
+ * @brief Return how strongly a spotlight lights a point: zero behind it, rising to one inside its inner cone.
+ * @param light Spotlight.
+ * @param point Point to light.
+ * @return Falloff from zero to one.
+ */
+extern "C" float func_004C9D80(LibLight* light, const LibVector4* point);
+
+/**
+ * @brief Return the direction a light shines on a point: from the light's position for point and spot kinds when
+ *        it has one, otherwise its own direction.
+ * @param light Light.
+ * @param out Receives the unit direction.
+ * @param point Point being lit.
+ */
+extern "C" void func_004C9E80(LibLight* light, LibVector4* out, const LibVector4* point);
+
 
 /** Two-callback DMA interface, with vtable D_171FF0 in main data. */
 class LibDmaCallbacks
@@ -1011,6 +1057,20 @@ extern "C" void lib_object_set_list_kind(LibListObject* node, s32 kind);
 extern "C" void lib_list_collect_nodes_by_kind(LibUpdateList* list, void** items);
 
 /**
+ * @brief Give a list and every list chained after it the same active buffer owner.
+ * @param list First list.
+ * @param owner Owner of the active node buffer.
+ */
+extern "C" void func_004D68F0(LibUpdateList* list, LibUpdateList* owner);
+
+/**
+ * @brief Count the nodes of a list and every list chained after it.
+ * @param list First list.
+ * @return Total node count.
+ */
+extern "C" s32 func_004D69A0(LibUpdateList* list);
+
+/**
  * @brief Add each list's per-kind prefix sums to the chain's kind offsets.
  * @param list First list whose counts are added.
  * @param offsets Array of NODE_KIND_COUNT offsets to update.
@@ -1100,25 +1160,64 @@ class LibLightList : public LibUpdateList, public LibListObject
         LibMatrix44Value unkd0;
         LibVector4 directions[4];
         float colors[4][4];
-        u8 unk190[0x180];
+        u8 unk190[0x40];
+        LibMatrix44Value unk1d0;
+        LibVector4 unk210[3];
+        LibMatrix44Value unk240;
+        LibVector4 unk280;
+        unsigned __int128 unk290[2];
+        unsigned __int128 unk2b0[2];
+        unsigned __int128 unk2d0[2];
+        unsigned __int128 unk2f0[2];
         FieldVec4B unk310;
         FieldVec4B unk320;
         FieldVec4B unk330;
         LibVector4 unk340;
-        u8 unk350[0x10];
+        unsigned __int128 unk350;
         LibDisplayManager* manager;
         LibLight* unk364[3];
         u32 mask;
-        u8 unk374[4];
+        float unk374;
         s16 light_count;
         s16 unk364_count;
-        u8 unk37c[2];
+        s8 unk37c;
+        s8 unk37d;
         u8 unk37e;
         u8 has_local_lights;
-        u8 unk380[2];
+        u8 unk380;
+        u8 unk381;
         u8 unk382;
         u8 unk383[0xD];
 };
+
+/**
+ * @brief Set a light list's ambient colour, clamping negative channels to zero.
+ * @param lights Light list.
+ * @param red Red.
+ * @param green Green.
+ * @param blue Blue.
+ */
+static inline void lib_light_list_set_ambient(LibLightList* lights, float red, float green, float blue)
+{
+    if (red < 0.0f)
+    {
+        red = 0.0f;
+    }
+
+    if (green < 0.0f)
+    {
+        green = 0.0f;
+    }
+
+    if (blue < 0.0f)
+    {
+        blue = 0.0f;
+    }
+
+    lights->unk310.x = red;
+    lights->unk310.y = green;
+    lights->unk310.z = blue;
+}
 
 extern LibLightList* g_light_list;
 
@@ -1141,7 +1240,12 @@ struct LibRendererPass : public LibTransformOwner
     u8 unk98[4];
     u8 unk9c;
     u8 unk9d;
-    u8 unk9e[0x10];
+    u8 unk9e[2];
+    float unka0;
+    float unka4;
+    u32 unka8;
+    u8 unkac;
+    u8 unkad;
     u8 unkae;
     u8 unkaf;
 };
@@ -1157,6 +1261,16 @@ struct LibRendererExtra : public LibTransformOwner
 
 /** Resident hit-test flags; bit 0 is set when a hit-test node is removed. */
 extern "C" u8 g_hit_test_restart;
+
+/**
+ * @brief Set up one of the renderer's extra layers as a square render target, with its MLPS image header and info
+ *        block built in place.
+ * @param renderer Renderer.
+ * @param layer Layer number, from 1.
+ * @param size Width and height in pixels, a power of two.
+ * @param manager Display manager the layer draws with.
+ */
+extern "C" void func_004D08D0(class LibRenderer* renderer, s32 layer, s32 size, LibDisplayManager* manager);
 
 /**
  * @brief Run the renderer's per-frame packet passes.
@@ -1191,16 +1305,10 @@ extern "C" s32 func_004D1550(class LibRenderer* renderer, class LibTransformOwne
 
 extern "C" void func_004D3780(class LibRenderer* renderer);
 
-/** Rectangle in its local xz plane, given by its half extents; I think these are occluders. */
-struct LibOccluder
-{
-    u8 unk000[0x210];
-    float half_width;
-    float half_depth;
-    float depth;
-    u8 unk21c[4];
-    LibVector4 corners[4];
-};
+class LibClass1734D0;
+
+/** The renderer's occluders are LibClass1734D0 rectangles. */
+typedef LibClass1734D0 LibOccluder;
 
 /** LibUpdateList subclass with vtable D_00178B30 in main data, holding the renderer's occluders. */
 class LibClass178B30 : public LibUpdateList
@@ -1237,7 +1345,7 @@ class LibClass178F30 : public LibUpdateList, public LibListObject
 {
 public:
     /** @brief Start with nothing displayed and object kind bit 2 set. */
-    LibClass178F30();
+    inline LibClass178F30();
 
     virtual ~LibClass178F30();
 
@@ -1503,7 +1611,7 @@ public:
     LibLightList* light_list;
     LibCameraContext* display;
     u32 unk408c;
-    u8 unk4090[4];
+    s32 unk4090;
     s32 current_count;
     s32 list_counts[2];
     u32 unk40a0;
@@ -1527,7 +1635,8 @@ public:
     u8 box_cull_enabled;
     u8 buffer_index;
     u8 unk40d2;
-    u8 unk40d3[5];
+    u8 unk40d3;
+    LibTextureCache* unk40d4;
     LibClass178B30 unk40d8;
     LibMatrix44Value unk4360;
     u8* sphere_buffer;
@@ -1584,6 +1693,13 @@ extern "C" s32 func_004D9A80(LibBusyObject* object, u8 channel);
 
 extern "C" void func_004C8390(LibDisplayManager* manager);
 
+/**
+ * @brief Return the frame buffer page of the draw buffer the display is on.
+ * @param display Display to read.
+ * @return FRAME base pointer of the second drawing context of draw buffer 0 or 1.
+ */
+extern "C" s32 func_004DBC70(LibCameraContext* display);
+
 extern "C" u64 func_004DBCA0(LibCameraContext* display, s32 index);
 
 /** Transform with local vectors, a cached matrix, and a parent link. */
@@ -1631,6 +1747,13 @@ public:
      * @return Pointer to the stored matrix; this call does not update it.
      */
     virtual const LibMatrix44Value* get_transform_matrix();
+
+    /**
+     * @brief Move a world-space position into the transform's local space.
+     * @param world Position in world space.
+     * @param local Receives the position in local space.
+     */
+    void to_local(const LibVector4* world, LibVector4* local);
 
     LibMatrix44Value transform;
     LibMatrix44Value base_transform;
@@ -1719,10 +1842,114 @@ public:
     float roll_angle;
 };
 
+/**
+ * 16-byte vector that Lib keeps its constructors and identity setter out of line for: LibClass173490's grid arrays
+ * and a light's colour, position and direction.
+ */
+struct LibClass173490Entry
+{
+    inline LibClass173490Entry();
+
+    /**
+     * @brief Set all four components to one value.
+     * @param value Value for every component.
+     */
+    inline LibClass173490Entry(float value);
+
+    /**
+     * @brief Set the four components.
+     * @param px First component.
+     * @param py Second component.
+     * @param pz Third component.
+     * @param pw Fourth component.
+     */
+    LibClass173490Entry(float px, float py, float pz, float pw)
+    {
+        x = px;
+        y = py;
+        z = pz;
+        w = pw;
+    }
+
+    /**
+     * @brief Copy all 16 bytes.
+     * @param other Element to copy.
+     * @return This element.
+     */
+    LibClass173490Entry& operator=(const LibClass173490Entry& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    /** @brief Set the vector to (0, 0, 0, 1). */
+    inline void set_identity();
+
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+/**
+ * @brief Copy a light vector as one 128-bit value, like copy_vector does for LibVector4.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(LibClass173490Entry* destination, const LibClass173490Entry* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
+/**
+ * @brief Copy a vector into a light vector as one 128-bit value.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(LibClass173490Entry* destination, const LibVector4* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
+/**
+ * @brief Copy a light vector into a vector as one 128-bit value.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(LibVector4* destination, const LibClass173490Entry* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
 /** Partial light, kept in g_light_list, with vtable 0x1789E0 in main data. */
 class LibLight : public LibLookAtTransform
 {
 public:
+    /** @brief Start as a white type-3 light with the default cone and ranges, every mask bit and no direction. */
+    LibLight() : color(1.0f)
+    {
+        cone_angle = 40.0f;
+        packed_intensity = 0.0f;
+        unk268 = 480.0f;
+        unk274 = 0.0f;
+        unk278 = 44.0f;
+        unk27c = 1.0f;
+        unk288 = 0;
+        unk289 = 0;
+        unk28a = 0;
+        unk28b = 0;
+        unk28c = 0;
+        unk28d = 0;
+        unk28e = 0;
+        enabled = 0;
+        unk290 = 0;
+        unk291 = 0;
+        kind = 0;
+        mask = 7;
+        set_light_type(3);
+        direction.set_identity();
+    }
+
     virtual ~LibLight();
 
     /** @brief Face the look-at target, if any, by turning the light's orientation towards it, then update the matrix. */
@@ -1737,10 +1964,12 @@ public:
     /** @brief Update the transform matrix if it isn't ready, then cache the position and direction from it. */
     void update_frame();
 
-    LibVector4 color;
-    LibVector4 tinted_color;
-    LibVector4 position;
-    LibVector4 direction;
+    inline void set_light_type(u32 type);
+
+    LibClass173490Entry color;
+    LibClass173490Entry tinted_color;
+    LibClass173490Entry position;
+    LibClass173490Entry direction;
     float cone_angle;
     float packed_intensity;
     float unk268;
@@ -1764,6 +1993,12 @@ public:
     s32 kind;
     u32 mask;
 };
+
+/**
+ * @brief Cache the spotlight's cone falloff terms from the cosines of its two half-angles.
+ * @param light Spotlight to update.
+ */
+extern "C" void func_004C9BA0(LibLight* light);
 
 /**
  * @brief Invert the transform's transposed matrix into its inverse transform.
@@ -2135,12 +2370,6 @@ s32 func_004D6DB0(const LibListNode* node);
  */
 void* func_004D6DE0(void* object);
 
-/**
- * @brief Return the supplied object pointer.
- * @param object Object or subobject pointer.
- * @return The same pointer.
- */
-void* func_004D99A0(void* object);
 
 /**
  * @brief Wait until the object's busy flag clears.
@@ -2160,8 +2389,9 @@ void func_004D9AB0(LibBusyObject* object, u8 channel);
  * @param receiver Object containing the pointer.
  * @param arg1 First value passed to the helper.
  * @param arg2 Second value passed to the helper.
+ * @return What the helper returns.
  */
-void func_004D6230(void* receiver, u32 arg1, u32 arg2);
+void* func_004D6230(void* receiver, u32 arg1, u32 arg2);
 
 /**
  * @brief Perform no work.
@@ -2334,10 +2564,131 @@ public:
 #endif
 
 #ifdef __cplusplus
-/** List object with vtable D_178C90 in main data; only its destructor is known. */
+/**
+ * DMA submission that sends a VIF0 tag chain, picked by its channel byte from the global table or, from 0x80 up, from
+ * its own; the queue helpers above use it through LibBusyObject. Vtable D_178E70 in main data.
+ */
+class LibVif0Channel : public DmaSubmission
+{
+public:
+    /** @brief Start idle with no channel and seed VU0's random register. */
+    LibVif0Channel();
+
+    /**
+     * @brief Mark the transfer done.
+     * @param dma_channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 dma_channel);
+
+    /**
+     * @brief Start the channel's VIF0 tag chain.
+     * @param dma_channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 dma_channel);
+
+    u8 unk04[0x4C];
+    volatile u8 busy;
+    u8 channel;
+    u8 unk52[2];
+    u32 unk54;
+    u32 tags[18];
+};
+
+/** DMA callbacks object g_display_callbacks that records the display (vtable D_0014FDE0 in main data). */
+class LibDebugListener : public LibDmaCallbacks
+{
+public:
+    /**
+     * @brief Record the display.
+     * @param display Display.
+     */
+    LibDebugListener(LibCameraContext* display) : display(display)
+    {
+    }
+
+    /**
+     * @brief Main's reserved hook.
+     * @param value Notification value.
+     */
+    virtual void on_packet_notify(u32 value);
+
+    /**
+     * @brief Main's debug notification.
+     * @param value Notification word or packet address.
+     */
+    virtual void on_packet_complete(u32 value);
+
+    LibCameraContext* display;
+};
+
+/**
+ * Update list that is also a list object, with vtables D_0014FCB0 and D_0014FCE8 in main data (main's
+ * ResidentUpdateList), made by lib_initialize.
+ */
+class LibResidentUpdateList : public LibUpdateList, public LibListObject
+{
+public:
+    /** @brief Start with unk8c clear. */
+    LibResidentUpdateList() : unk8c(0)
+    {
+    }
+
+    virtual ~LibResidentUpdateList();
+
+    u32 unk8c;
+};
+
+/** Transform owner with vtable D_00174570 in main data that sends its display manager's effect packet. */
+class LibClass174570 : public LibTransformOwner
+{
+public:
+    /** @brief Start as a type 0x800 object with draw flag 0x400. */
+    LibClass174570()
+    {
+        unk65 = 1;
+        type_id = 0x800;
+        draw_flags = 0x400;
+    }
+
+    virtual ~LibClass174570();
+
+    /** @brief Send the effect display's ready packet and finish this object's packet. */
+    virtual void render();
+
+    /** @brief Draw in bucket 8. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Return a bounding sphere at the origin with a huge radius, so the object is never culled.
+     * @return Bounding sphere; it lives on this function's stack.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Promote the effect display's pending packet to the ready one when the effect is on.
+     * @param matrix Unused.
+     * @param context Unused.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    LibDisplayManager* manager;
+};
+#endif
+
+#ifdef __cplusplus
+/** List object with vtable D_178C90 in main data that runs the renderer's frame passes. */
 class LibClass178C90 : public LibListObject
 {
 public:
+    /**
+     * @brief Run the given renderer's passes, on the scratchpad stack.
+     * @param renderer Renderer.
+     */
+    LibClass178C90(LibRenderer* renderer) : renderer(renderer)
+    {
+        object_kind |= 4;
+    }
+
     virtual ~LibClass178C90();
 
     /**

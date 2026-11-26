@@ -79,7 +79,7 @@ struct LibMovieState
     s32 current_frame;
     float unk80C4;
     float unk80C8;
-    s32 unk80CC;
+    float unk80CC;
     s32 unk80D0;
     s32 unk80D4;
     u8 widescreen;
@@ -210,6 +210,15 @@ public:
      */
     virtual s32 add_timestamp(s64 pts, s64 dts, u8* data, s32 length);
 
+    /**
+     * @brief Read how many pictures the decoder has produced since it was reset.
+     * @return Picture count.
+     */
+    s32 get_picture_count()
+    {
+        return picture_count;
+    }
+
     u8 unkCE4F0[0x10];
     u8 mpeg[0x48];
     u8* mpeg_work;
@@ -223,7 +232,7 @@ public:
     s32 unk15E64C;
     s32 unk15E650;
     u8 unk15E654;
-    s32 unk15E658;
+    s32 picture_count;
     s32 width;
     s32 height;
     LibMovieThread* thread;

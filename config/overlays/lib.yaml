@@ -105,6 +105,14 @@ segments:
           - {function: func_004076D0, offset: 0x0, size: 0x2C}
         linker_section_order: .rodata
       - [0x11B4AC, rodatabin, data_00501D2C]
+      - start: 0x11EE20
+        type: .rodata
+        name: text_004095C0
+        linker_section: .rodata.005056A0
+        rodata_anchors:
+          - {function: func_0040D930, offset: 0x0, size: 0x20}
+        linker_section_order: .rodata
+      - [0x11EE40, rodatabin, rodata_005056C0]
       - start: 0x11EE90
         type: .rodata
         name: text_004095C0
@@ -120,7 +128,22 @@ segments:
         rodata_anchors:
           - {function: func_00414130, offset: 0x0, size: 0x20}
         linker_section_order: .rodata
-      - [0x11EED0, rodatabin, rodata_00505750]
+      - start: 0x11EED0
+        type: .rodata
+        name: text_00429B00
+        linker_section: .rodata.00505750
+        rodata_anchors:
+          - {function: func_0042F550, table: 8, offset: 0x0, size: 0x2C}
+          - {function: func_0042F550, table: 7, offset: 0x30, size: 0x2C}
+          - {function: func_0042F550, table: 6, offset: 0x60, size: 0x2C}
+          - {function: func_0042F550, table: 5, offset: 0x90, size: 0x2C}
+          - {function: func_0042F550, table: 4, offset: 0xC0, size: 0x34}
+          - {function: func_0042F550, table: 3, offset: 0x100, size: 0x2C}
+          - {function: func_0042F550, table: 2, offset: 0x130, size: 0x2C}
+          - {function: func_0042F550, table: 1, offset: 0x160, size: 0x50}
+          - {function: func_0042F550, table: 0, offset: 0x1B0, size: 0x2C}
+        linker_section_order: .rodata
+      - [0x11F0AC, rodatabin, rodata_0050592C]
       - start: 0x11F0C0
         type: .rodata
         name: text_00429B00
@@ -129,6 +152,23 @@ segments:
           - {function: func_00431AB0, offset: 0x0, size: 0x1C}
         linker_section_order: .rodata
       - [0x11F0DC, rodatabin, rodata_0050595C]
+      - start: 0x11F150
+        type: .rodata
+        name: text_00429B00
+        linker_section: .rodata.005059D0
+        rodata_anchors:
+          - {function: emit_entries__14LibClass173990FiPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4, table: 1, offset: 0x0, size: 0x20}
+          - {function: emit_entries__14LibClass173990FiPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4, table: 0, offset: 0x20, size: 0x30}
+        linker_section_order: .rodata
+      - start: 0x11F1A0
+        type: .rodata
+        name: text_00441C40
+        linker_section: .rodata.00505A20
+        rodata_anchors:
+          - {function: func_00445950, table: 1, offset: 0x0, size: 0x28}
+          - {function: func_00445950, table: 0, offset: 0x30, size: 0xA8}
+        linker_section_order: .rodata
+      - [0x11F278, rodatabin, rodata_00505AF8]
       - start: 0x11F280
         type: .rodata
         name: text_0044ABE0
@@ -153,6 +193,13 @@ segments:
           - {function: func_004602B0, offset: 0x0, size: 0x44}
         linker_section_order: .rodata
       - [0x11F324, rodatabin, rodata_00505BA4]
+      - start: 0x11F330
+        type: .rodata
+        name: text_0045AD10
+        linker_section: .rodata.00505BB0
+        rodata_anchors:
+          - {function: func_00460750, offset: 0x0, size: 0x90}
+        linker_section_order: .rodata
       - start: 0x11F3C0
         type: .rodata
         name: text_0045AD10
@@ -183,14 +230,96 @@ segments:
           - {function: set_primitive__15LibObject1751A0FiUcif, offset: 0x0, size: 0x1C}
         linker_section_order: .rodata
       - [0x11F4EC, rodatabin, rodata_00505D6C]
+      - start: 0x11F4F0
+        type: .rodata
+        name: text_0045AD10
+        linker_section: .rodata.00505D70
+        rodata_anchors:
+          - {function: build_dma_chain__15LibObject1751A0Fv, offset: 0x0, size: 0x1C}
+        linker_section_order: .rodata
+      - [0x11F50C, rodatabin, rodata_00505D8C]
+      - start: 0x11F510
+        type: .rodata
+        name: text_0046AE20
+        linker_section: .rodata.00505D90
+        rodata_anchors:
+          - {function: func_0046C180__8LibSceneFPvPvPv, offset: 0x0, size: 0x18}
+        linker_section_order: .rodata
+      - [0x11F528, rodatabin, rodata_00505DA8]
+      - start: 0x11F530
+        type: .rodata
+        name: text_0046AE20
+        linker_section: .rodata.00505DB0
+        rodata_anchors:
+          - {function: func_0046C540__8LibSceneFPv, table: 9, offset: 0x0, size: 0x1C}
+          - {function: func_0046C540__8LibSceneFPv, table: 8, offset: 0x20, size: 0x18}
+          - {function: func_0046C540__8LibSceneFPv, table: 7, offset: 0x40, size: 0x1C}
+          - {function: func_0046C540__8LibSceneFPv, table: 6, offset: 0x60, size: 0x18}
+          - {function: func_0046C540__8LibSceneFPv, table: 5, offset: 0x80, size: 0x1C}
+          - {function: func_0046C540__8LibSceneFPv, table: 4, offset: 0xA0, size: 0x18}
+          - {function: func_0046C540__8LibSceneFPv, table: 3, offset: 0xC0, size: 0x1C}
+          - {function: func_0046C540__8LibSceneFPv, table: 2, offset: 0xE0, size: 0x1C}
+          - {function: func_0046C540__8LibSceneFPv, table: 1, offset: 0x100, size: 0x1C}
+          - {function: func_0046C540__8LibSceneFPv, table: 0, offset: 0x120, size: 0x1C}
+        linker_section_order: .rodata
+      - [0x11F66C, rodatabin, rodata_00505EEC]
+      - start: 0x11F670
+        type: .rodata
+        name: text_0046AE20
+        linker_section: .rodata.00505EF0
+        rodata_anchors:
+          - {function: func_0046DE90__8LibSceneFPvPvPv, table: 1, offset: 0x0, size: 0x20}
+          - {function: func_0046DE90__8LibSceneFPvPvPv, table: 0, offset: 0x20, size: 0x30}
+          - {function: func_0046F910, offset: 0x50, size: 0x2C}
+        linker_section_order: .rodata
+      - [0x11F6EC, rodatabin, rodata_00505F6C]
+      - start: 0x11F6F0
+        type: .rodata
+        name: text_0046AE20
+        linker_section: .rodata.00505F70
+        rodata_anchors:
+          - {function: func_00471480__8LibSceneFUc, offset: 0x0, size: 0xC4}
+        linker_section_order: .rodata
+      - [0x11F7B4, rodatabin, rodata_00506034]
+      - start: 0x11F7C0
+        type: .rodata
+        name: text_0046AE20
+        linker_section: .rodata.00506040
+        rodata_anchors:
+          - {function: lib_scene_build_objects, offset: 0x0, size: 0x30}
+        linker_section_order: .rodata
+      - start: 0x11F7F0
+        type: .rodata
+        name: text_0049B820
+        linker_section: .rodata.00506070
+        rodata_anchors:
+          - {function: func_0049ED80, table: 1, offset: 0x0, size: 0x28}
+          - {function: func_0049ED80, table: 0, offset: 0x30, size: 0xA8}
+        linker_section_order: .rodata
+      - [0x11F8C8, rodatabin, rodata_00506148]
+      - start: 0x11F8D0
+        type: .rodata
+        name: text_004ABA60
+        linker_section: .rodata.00506150
+        rodata_anchors:
+          - {function: func_004B4840, offset: 0x0, size: 0x530}
+        linker_section_order: .rodata
       - start: 0x11FE00
         type: .rodata
         name: text_004BD360
         linker_section: .rodata.00506680
         rodata_anchors:
           - {function: func_004BD4F0, offset: 0x0, size: 0x28}
+          - {function: func_004BDE00, offset: 0x30, size: 0x530}
         linker_section_order: .rodata
-      - [0x11FE28, rodatabin, rodata_005066A8]
+      - start: 0x120360
+        type: .rodata
+        name: text_004BD360
+        linker_section: .rodata.00506BE0
+        rodata_anchors:
+          - {function: lib_animation_bind_channels, offset: 0x0, size: 0x530}
+        linker_section_order: .rodata
+      - [0x120890, rodatabin, rodata_00507110]
       - start: 0x120910
         type: .rodata
         name: text_004BD360
@@ -220,6 +349,13 @@ segments:
     start: 0x120b00
     vram: 0x507380
     subsegments:
-      - [0x120b00, c, init]
-  - [0x1210d0, bin, init_table]
+      # Each unit's static initialiser is its __sinit in .init and one word of the table in .ctor. Units with a
+      # C++ global of their own keep their .bss (and .sbss) at the original address: lcf.py places it there.
+      - {start: 0x120b00, type: cpp, name: init_00507380, linker_section: .init, bss_address: 0x507C28,
+         sbss_address: 0x1B6500}
+      - {start: 0x120c20, type: cpp, name: init_005074A0, linker_section: .init, bss_address: 0x5081C0}
+      - [0x120ce0, c, init]
+      - {start: 0x1210d0, type: .data, name: init_00507380, linker_section: .ctor}
+      - {start: 0x1210d4, type: .data, name: init_005074A0, linker_section: .ctor}
+      - [0x1210d8, databin, init_table]
   - [0x121180]

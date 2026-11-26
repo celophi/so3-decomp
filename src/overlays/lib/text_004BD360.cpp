@@ -2,7 +2,9 @@
 #include "ee.h"
 #include "gs.h"
 #include "include_asm.h"
+#include "overlays/lib/scratchpad_texture_cache.h"
 #include "overlays/lib/segment_vu0.h"
+#include "overlays/lib/box_cull_vu0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/quaternion_vu0.h"
 #include "overlays/lib/quaternion_inlines.h"
@@ -11,10 +13,14 @@
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/trig_vu0.h"
 #include "overlays/lib/vector_vu0.h"
+#include "overlays/lib/matrix_vu0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/scene_objects.h"
 #include "overlays/lib/light_vu0.h"
 #include "overlays/lib/text_00429B00.h"
+#include "overlays/lib/render_channel.h"
+#include "overlays/lib/scene.h"
 #include "main/resident_data.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "sdk/main/libc_guess_00137290.h"
@@ -773,10 +779,6 @@ extern "C" void lib_animation_release_channels(LibAnimation* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDE00);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_animation_bind_channels);
-
 #define LIB_ANIMATION_TAG_SAFH 0x53414648
 
 /** Chunk of an animation resource: a tag and the offset of the next chunk. */
@@ -792,16 +794,20 @@ struct LibAnimationChunk
     u32 node_offsets[1];
 };
 
-/** Track record inside an animation node; size is the offset of the next one. */
+/** Track record inside an animation node, followed by its data; size is the offset of the next one. */
 struct LibAnimationTrack
 {
-    u8 unk00[2];
+    u8 before_mode;
+    u8 after_mode;
     u8 flags;
     u8 kind;
     s16 type;
-    u8 unk06[2];
+    s16 key_count;
     s32 size;
     u8 looped;
+    u8 data_mode;
+    u8 unk0e[2];
+    u8 data[1];
 };
 
 /** Node record of an animation resource: its name, track count and name checksum, then its tracks. */
@@ -815,6 +821,1712 @@ struct LibAnimationNode
     u8 unk1c[4];
     LibAnimationTrack tracks[1];
 };
+
+/**
+ * @brief Find the channel bound to a target with the requested entry type and axis, and cache its entry.
+ * @param object Animation object; its entries must exist.
+ * @param target Bound target to match.
+ * @param type Entry type.
+ * @param axis Axis to match against the entry flags' low nibble.
+ * @return Matching channel, or null.
+ */
+static inline LibClass173180* lib_animation_find_typed_channel(LibAnimation* object, const void* target, s16 type, u8 axis)
+{
+    s32 count = object->entry_count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (object->entries[i].channel && object->entries[i].target == target && type == object->entries[i].type &&
+            axis == (object->entries[i].flags & LIB_ANIMATION_ENTRY_AXIS_MASK))
+        {
+            object->cached_entry = &object->entries[i];
+            return object->cached_entry->channel;
+        }
+    }
+
+    object->cached_entry = 0;
+    return 0;
+}
+
+/**
+ * @brief Prepare a transition between animation objects: give each of the animation's channels a single key at
+ *        -duration holding its target's current value, with the rate and tangent of the previous animation's
+ *        matching channel where there is one.
+ * @param object Destination animation.
+ * @param target Scene the entries' targets are looked up in.
+ * @param previous Previous animation, or null.
+ * @param duration Transition duration.
+ * @return The key the channels start from, -duration.
+ */
+extern "C" float func_004BDE00(LibAnimation* object, void* target, LibAnimation* previous, float duration)
+{
+    if (!object->entries)
+    {
+        return 0.0f;
+    }
+
+    void* last_target = 0;
+    LibBlendTarget* bound = 0;
+    s32 count = object->entry_count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibAnimationEntry14* entry = &object->entries[i];
+        LibClass173180* channel = entry->channel;
+
+        if (!channel)
+        {
+            continue;
+        }
+
+        if (last_target != entry->target)
+        {
+            last_target = entry->target;
+            bound = static_cast<LibBlendTarget*>(lib_find_named_entry_cached(static_cast<LibEntryManager*>(target), entry->state_name,
+                                                                           reinterpret_cast<const LibAnimationNode*>(entry->state_name)->checksum));
+        }
+
+        if (!bound)
+        {
+            continue;
+        }
+
+        switch (entry->type)
+        {
+        case 0:
+        case 1:
+            channel->set_single_key(&bound->translation, 0, 0, -duration);
+            break;
+        case 2:
+        {
+            if (!previous)
+            {
+                channel->set_single_key(&bound->translation, 0, 0, -duration);
+                break;
+            }
+
+            LibClass173180* source = lib_animation_find_channel_inline(previous, bound, 0, 0);
+            FieldVec4B rate(0.0f, 0.0f, 0.0f, 0.0f);
+            bool found = false;
+
+            if (source)
+            {
+                source->get_value_rate(&rate);
+                found = true;
+            }
+            else
+            {
+                for (s32 axis = 0; axis < 3; axis++)
+                {
+                    source = lib_animation_find_channel_inline(previous, bound, 3, axis);
+
+                    if (!source)
+                    {
+                        break;
+                    }
+
+                    float value;
+                    source->get_value_rate(&value);
+                    (&rate.x)[axis] = value;
+                    found = true;
+                }
+            }
+
+            if (found)
+            {
+                rate *= duration / 3.0f;
+                FieldVec4B tangent;
+                float first;
+                float second;
+
+                if (channel->read_key(0, &first, 0, 0, &tangent) && channel->read_key(1, &second, 0, 0, 0))
+                {
+                    // TODO: A copy divided in place; writing duration / 3.0f again shares the rate's division.
+                    float scale = duration;
+                    scale /= 3.0f;
+                    tangent *= scale / (second - first);
+                }
+                else
+                {
+                    tangent = FieldVec4B(0.0f, 0.0f, 0.0f, 0.0f);
+                }
+
+                channel->set_single_key(&bound->translation, &rate, &tangent, -duration);
+            }
+            else
+            {
+                channel->set_single_key(&bound->translation, 0, 0, -duration);
+            }
+
+            break;
+        }
+        case 3:
+        case 4:
+            channel->set_single_key(&bound->orientation, 0, 0, -duration);
+            break;
+        case 5:
+        {
+            if (!previous)
+            {
+                channel->set_single_key(&bound->orientation, 0, 0, -duration);
+                break;
+            }
+
+            LibClass173180* source = lib_animation_find_channel_inline(previous, bound, 1, 0);
+
+            if (source)
+            {
+                float rate;
+                float tangent;
+                float first;
+                float second;
+                source->get_value_rate(&rate);
+                float scale = duration / 3.0f;
+                rate *= scale;
+
+                if (channel->read_key(0, &first, 0, 0, &tangent) && channel->read_key(1, &second, 0, 0, 0))
+                {
+                    tangent *= scale / (second - first);
+                }
+                else
+                {
+                    tangent = 0.0f;
+                }
+
+                channel->set_single_key(&bound->orientation, &rate, &tangent, -duration);
+            }
+            else
+            {
+                channel->set_single_key(&bound->orientation, 0, 0, -duration);
+            }
+
+            break;
+        }
+        case 6:
+        {
+            if (!previous)
+            {
+                channel->set_single_key(&bound->orientation, 0, 0, -duration);
+                break;
+            }
+
+            LibClass173180* source = lib_animation_find_typed_channel(previous, bound, 6, 0);
+
+            if (source)
+            {
+                LibQuaternionCurveTrackKey* before = static_cast<LibPooledQuaternionCurveTrack*>(source)->find_key_before(duration);
+
+                if (before)
+                {
+                    channel->set_single_key(&bound->orientation, &before->control, 0, -duration);
+                }
+                else
+                {
+                    FieldVec4B identity(0.0f, 0.0f, 0.0f, 1.0f);
+                    channel->set_single_key(&bound->orientation, &identity, 0, -duration);
+                }
+            }
+            else
+            {
+                FieldVec4B identity(0.0f, 0.0f, 0.0f, 1.0f);
+                channel->set_single_key(&bound->orientation, &identity, 0, -duration);
+            }
+
+            break;
+        }
+        case 7:
+        case 8:
+            channel->set_single_key(&bound->scale, 0, 0, -duration);
+            break;
+        case 9:
+        {
+            if (!previous)
+            {
+                channel->set_single_key(&bound->scale, 0, 0, -duration);
+                break;
+            }
+
+            LibClass173180* source = lib_animation_find_channel_inline(previous, bound, 2, 0);
+
+            if (source)
+            {
+                FieldVec4B rate;
+                source->get_value_rate(&rate);
+                rate *= duration / 3.0f;
+                FieldVec4B tangent;
+                float first;
+                float second;
+
+                if (channel->read_key(0, &first, 0, 0, &tangent) && channel->read_key(1, &second, 0, 0, 0))
+                {
+                    // TODO: A copy divided in place; writing duration / 3.0f again shares the rate's division.
+                    float scale = duration;
+                    scale /= 3.0f;
+                    tangent *= scale / (second - first);
+                }
+                else
+                {
+                    tangent = FieldVec4B(0.0f, 0.0f, 0.0f, 0.0f);
+                }
+
+                channel->set_single_key(&bound->scale, &rate, &tangent, -duration);
+            }
+            else
+            {
+                channel->set_single_key(&bound->scale, 0, 0, -duration);
+            }
+
+            break;
+        }
+        case 10:
+        {
+            float value = ((float*)&bound->translation)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
+            channel->set_single_key(&value, 0, 0, -duration);
+            break;
+        }
+        case 11:
+        {
+            float value = ((float*)&bound->translation)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
+
+            if (!previous)
+            {
+                channel->set_single_key(&value, 0, 0, -duration);
+                break;
+            }
+
+            LibClass173180* source = lib_animation_find_channel_inline(previous, bound, 0, 0);
+            FieldVec4B rates(0.0f, 0.0f, 0.0f, 0.0f);
+            bool found = false;
+            float rate;
+            float tangent;
+            float first;
+            float second;
+
+            if (source)
+            {
+                source->get_value_rate(&rates);
+                rate = (&rates.x)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
+                found = true;
+            }
+            else
+            {
+                source = lib_animation_find_channel_inline(previous, bound, 3, entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK);
+
+                if (source)
+                {
+                    source->get_value_rate(&rate);
+                    found = true;
+                }
+            }
+
+            if (found)
+            {
+                float scale = duration / 3.0f;
+                rate *= scale;
+
+                if (channel->read_key(0, &first, 0, 0, &tangent) && channel->read_key(1, &second, 0, 0, 0))
+                {
+                    tangent *= scale / (second - first);
+                }
+                else
+                {
+                    tangent = 0.0f;
+                }
+
+                channel->set_single_key(&value, &rate, &tangent, -duration);
+            }
+            else
+            {
+                channel->set_single_key(&value, 0, 0, -duration);
+            }
+
+            break;
+        }
+        case 12:
+        case 13:
+        {
+            LibVector4 angles;
+            func_004CD8C0(&angles, &bound->orientation);
+            float value = (&angles.x)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
+            channel->set_single_key(&value, 0, 0, -duration);
+            // TODO: No break here in the original either, so these types also get the next two keys.
+        }
+
+        case 14:
+        case 15:
+        {
+            float value = ((float*)&bound->scale)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
+            channel->set_single_key(&value, 0, 0, -duration);
+        }
+        case 16:
+        case 17:
+        case 18:
+        case 19:
+        case 20:
+        case 21:
+        {
+            float value = bound->unk214;
+            channel->set_single_key(&value, 0, 0, -duration);
+            break;
+        }
+        case 22:
+        case 23:
+        case 24:
+        {
+            float value = bound->unk200;
+            channel->set_single_key(&value, 0, 0, -duration);
+            break;
+        }
+        case 30:
+        case 31:
+        case 32:
+        {
+            float value = 0.0f;
+            LibBlendSubTarget* sub = static_cast<LibBlendSubTarget*>(entry->sub_target);
+
+            if (sub)
+            {
+                value = (entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK) == 0 ? sub->unk2f0 : sub->unk2f4;
+            }
+
+            channel->set_single_key(&value, 0, 0, -duration);
+            break;
+        }
+        case 33:
+        case 34:
+        case 35:
+        {
+            float value = 0.0f;
+            LibBlendSubTarget* sub = static_cast<LibBlendSubTarget*>(entry->sub_target);
+
+            if (sub)
+            {
+                value = sub->unk48;
+            }
+
+            channel->set_single_key(&value, 0, 0, -duration);
+            break;
+        }
+        case 37:
+        case 38:
+        case 39:
+            if (bound->unk6c != 0x500)
+            {
+                channel->set_single_key(&bound->unk570, 0, 0, -duration);
+            }
+
+            break;
+        case 40:
+        case 41:
+            if (bound->unk6c != 0x500)
+            {
+                float value = ((float*)&bound->unk570)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
+                channel->set_single_key(&value, 0, 0, -duration);
+            }
+
+            break;
+        case 42:
+        case 43:
+        case 44:
+            if (bound->unk6c != 0x500)
+            {
+                channel->set_single_key(&bound->unk570.w, 0, 0, -duration);
+            }
+
+            break;
+        case 45:
+        case 46:
+        case 47:
+        {
+            float value = bound->unk250.w;
+            channel->set_single_key(&value, 0, 0, -duration);
+            break;
+        }
+        case 62:
+        case 63:
+        case 64:
+        {
+            float value = 0.0f;
+            LibBlendSubTarget* sub = static_cast<LibBlendSubTarget*>(entry->sub_target);
+
+            if (sub)
+            {
+                value = sub->unk50;
+            }
+
+            channel->set_single_key(&value, 0, 0, -duration);
+            break;
+        }
+        case 65:
+        case 66:
+        case 67:
+        {
+            float value = 0.0f;
+            LibBlendSubTarget* sub = static_cast<LibBlendSubTarget*>(entry->sub_target);
+
+            if (sub)
+            {
+                value = ((float*)sub->unk40)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
+            }
+
+            channel->set_single_key(&value, 0, 0, -duration);
+            break;
+        }
+        case 68:
+        case 69:
+        case 70:
+        {
+            LibBlendSubTarget* sub = static_cast<LibBlendSubTarget*>(entry->sub_target);
+
+            if (sub)
+            {
+                channel->set_single_key(sub->unk40, 0, 0, -duration);
+            }
+
+            break;
+        }
+        case 71:
+        case 72:
+        {
+            LibBlendSubTarget* sub = static_cast<LibBlendSubTarget*>(entry->sub_target);
+
+            if (sub)
+            {
+                float value = ((float*)sub->unk40)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
+                channel->set_single_key(&value, 0, 0, -duration);
+            }
+
+            break;
+        }
+        case 76:
+        case 77:
+        case 78:
+        {
+            float value = 0.0f;
+            LibBlendSubTarget* sub = static_cast<LibBlendSubTarget*>(entry->sub_target);
+
+            if (sub)
+            {
+                value = sub->unk5c;
+            }
+
+            channel->set_single_key(&value, 0, 0, -duration);
+            break;
+        }
+    case 189:
+    case 190:
+    case 191:
+    case 192:
+    case 193:
+    case 194:
+    case 195:
+    case 196:
+    case 197:
+    case 198:
+    case 199:
+    case 200:
+    case 201:
+    case 202:
+    case 203:
+    case 204:
+    case 205:
+    case 206:
+    case 207:
+    case 208:
+    case 209:
+    case 210:
+    case 211:
+    case 212:
+    case 213:
+    case 214:
+    case 215:
+    case 216:
+    case 217:
+    case 218:
+    case 219:
+    case 220:
+    case 221:
+    case 222:
+    case 223:
+    case 224:
+    case 225:
+    case 226:
+    case 227:
+    case 228:
+    case 229:
+    case 230:
+    case 231:
+    case 232:
+    case 233:
+    case 234:
+    case 235:
+    case 236:
+    case 237:
+    case 238:
+    case 239:
+    case 240:
+    case 241:
+    case 242:
+    case 243:
+    case 244:
+    case 245:
+    case 246:
+    case 247:
+    case 248:
+    case 249:
+    case 250:
+    case 251:
+    case 252:
+    case 253:
+    case 254:
+    case 255:
+    case 256:
+    case 257:
+    case 258:
+    case 259:
+    case 260:
+    case 261:
+    case 262:
+    case 263:
+    case 264:
+    case 265:
+    case 266:
+    case 267:
+    case 268:
+    case 269:
+    case 270:
+    case 271:
+    case 272:
+    case 273:
+    case 274:
+    case 275:
+    case 276:
+    case 277:
+    case 278:
+    case 279:
+    case 280:
+    case 281:
+    case 282:
+    case 283:
+    case 284:
+    case 285:
+    case 286:
+    case 287:
+    case 288:
+    case 289:
+    case 290:
+    case 291:
+    case 292:
+    case 293:
+    case 294:
+    case 295:
+    case 296:
+    case 297:
+    case 298:
+    case 299:
+    case 300:
+    case 301:
+    case 302:
+    case 303:
+    case 304:
+    case 305:
+    case 306:
+    case 307:
+    case 308:
+    case 310:
+    case 311:
+    case 312:
+    case 313:
+    case 314:
+    case 315:
+    case 316:
+    case 317:
+    case 318:
+    case 319:
+    case 320:
+    case 321:
+    case 322:
+    case 323:
+        {
+            channel->reset_keys();
+            FieldVec4B value;
+            FieldVec4B zero(0.0f, 0.0f, 0.0f, 0.0f);
+            float first;
+            channel->read_key(0, &first, &value, 0, 0);
+            channel->set_single_key(&value, &zero, &zero, -duration);
+            break;
+        }
+        case 309:
+            channel->set_single_key(&bound->orientation, 0, 0, -duration);
+            break;
+        case 25:
+        case 26:
+        case 27:
+        case 28:
+        case 29:
+        case 36:
+        case 48:
+        case 49:
+        case 50:
+        case 51:
+        case 52:
+        case 53:
+        case 54:
+        case 55:
+        case 56:
+        case 57:
+        case 58:
+        case 59:
+        case 60:
+        case 61:
+        case 73:
+        case 74:
+        case 75:
+        case 79:
+        case 80:
+        case 81:
+        case 82:
+        case 83:
+        case 84:
+        case 85:
+        case 86:
+        case 87:
+        case 88:
+        case 89:
+        case 90:
+        case 91:
+        case 92:
+        case 93:
+        case 94:
+        case 95:
+        case 96:
+        case 97:
+        case 98:
+        case 99:
+        case 100:
+        case 101:
+        case 102:
+        case 103:
+        case 104:
+        case 105:
+        case 106:
+        case 107:
+        case 108:
+        case 109:
+        case 110:
+        case 111:
+        case 112:
+        case 113:
+        case 114:
+        case 115:
+        case 116:
+        case 117:
+        case 118:
+        case 119:
+        case 120:
+        case 121:
+        case 122:
+        case 123:
+        case 124:
+        case 125:
+        case 126:
+        case 127:
+        case 128:
+        case 129:
+        case 130:
+        case 131:
+        case 132:
+        case 133:
+        case 134:
+        case 135:
+        case 136:
+        case 137:
+        case 138:
+        case 139:
+        case 140:
+        case 141:
+        case 142:
+        case 143:
+        case 144:
+        case 145:
+        case 146:
+        case 147:
+        case 148:
+        case 149:
+        case 150:
+        case 151:
+        case 152:
+        case 153:
+        case 154:
+        case 155:
+        case 156:
+        case 157:
+        case 158:
+        case 159:
+        case 160:
+        case 161:
+        case 162:
+        case 163:
+        case 164:
+        case 165:
+        case 166:
+        case 167:
+        case 168:
+        case 169:
+        case 170:
+        case 171:
+        case 172:
+        case 173:
+        case 174:
+        case 175:
+        case 176:
+        case 177:
+        case 178:
+        case 179:
+        case 180:
+        case 181:
+        case 182:
+        case 183:
+        case 184:
+        case 185:
+        case 186:
+        case 187:
+        case 188:
+        case 324:
+        case 325:
+        case 326:
+        case 327:
+        case 328:
+        case 329:
+        case 330:
+        case 331:
+            break;
+        }
+    }
+
+    object->started = 0;
+    return -duration;
+}
+
+/** Identifiers that pick a render channel or child for a track. */
+struct LibChannelBinding
+{
+    s32 first;
+    s32 second;
+    u8 unk08[8];
+};
+
+/** Key of a track of bound objects. */
+struct LibChannelNamedKey
+{
+    float key;
+    char name[0x10];
+};
+
+/** Bound object name and the two values of a two-key track. */
+struct LibChannelRange
+{
+    char name[0x10];
+    u32 start;
+    u32 end;
+};
+
+extern LibTrackPool<LibPooledFloatTrack>* g_float_track_pool;
+extern LibTrackPool<LibPooledVectorTrack>* g_vector_track_pool;
+extern LibTrackPool<LibPooledSlerpQuaternionTrack>* g_slerp_quaternion_track_pool;
+extern LibTrackPool<LibPooledFloatCurveTrack>* g_float_curve_track_pool;
+extern LibTrackPool<LibPooledVectorCurveTrack>* g_vector_curve_track_pool;
+extern LibTrackPool<LibPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
+extern LibTrackPool<LibPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
+extern LibTrackPool<LibPooledQuaternionTrack>* g_quaternion_track_pool;
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledFloatTrack* float_track_pool_allocate(LibTrackPool<LibPooledFloatTrack>* pool);
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledVectorTrack* vector_track_pool_allocate(LibTrackPool<LibPooledVectorTrack>* pool);
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledSlerpQuaternionTrack* slerp_quaternion_track_pool_allocate(LibTrackPool<LibPooledSlerpQuaternionTrack>* pool);
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledFloatCurveTrack* float_curve_track_pool_allocate(LibTrackPool<LibPooledFloatCurveTrack>* pool);
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledVectorCurveTrack* vector_curve_track_pool_allocate(LibTrackPool<LibPooledVectorCurveTrack>* pool);
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledFloatQuaternionTrack* float_quaternion_track_pool_allocate(LibTrackPool<LibPooledFloatQuaternionTrack>* pool);
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledQuaternionCurveTrack* quaternion_curve_track_pool_allocate(LibTrackPool<LibPooledQuaternionCurveTrack>* pool);
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledQuaternionTrack* quaternion_track_pool_allocate(LibTrackPool<LibPooledQuaternionTrack>* pool);
+
+// TODO: The game inlines LibWordTrack's constructor into the binder but this unit's bottom-up inlining calls it, so
+// I think the binder was built without it.
+#pragma push
+#pragma inline_bottom_up off
+
+/**
+ * @brief Test whether a list walk has come back to the list.
+ * @param list List sentinel.
+ * @param node Current node.
+ * @return Whether node is the sentinel.
+ */
+static inline bool at_end(const LibListSentinel* list, const LibListSentinel* node)
+{
+    if (list == node)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * @brief Take a new channel of an animation channel type.
+ * @param type Channel type.
+ * @return Channel, or null for an unknown type or an empty pool.
+ */
+static inline LibClass173180* create_channel(s16 type)
+{
+    LibClass173180* channel = 0;
+
+    switch (type)
+    {
+    case 0x1:
+    case 0x8:
+    case 0x25:
+    case 0x26:
+    case 0x33:
+    case 0x34:
+    case 0x44:
+    case 0x45:
+    case 0x5F:
+    case 0x6B:
+    case 0x6D:
+    case 0x6F:
+    case 0x71:
+    case 0x81:
+    case 0x83:
+    case 0x87:
+    case 0x89:
+    case 0x95:
+    case 0x97:
+    case 0x99:
+    case 0x9D:
+    case 0xB1:
+    case 0xB5:
+    case 0xB9:
+    case 0xCD:
+    case 0xCF:
+    case 0xD1:
+    case 0xD3:
+    case 0xD5:
+    case 0xD9:
+    case 0xDB:
+    case 0xE1:
+    case 0xE5:
+    case 0xE9:
+    case 0xEB:
+    case 0xF1:
+    case 0x131:
+    case 0x133:
+        channel = vector_track_pool_allocate(g_vector_track_pool);
+        break;
+    case 0x0:
+    case 0x2:
+    case 0x7:
+    case 0x9:
+    case 0x27:
+    case 0x35:
+    case 0x46:
+    case 0x4F:
+    case 0x52:
+    case 0x60:
+    case 0x6C:
+    case 0x6E:
+    case 0x70:
+    case 0x72:
+    case 0x82:
+    case 0x84:
+    case 0x88:
+    case 0x8A:
+    case 0x96:
+    case 0x98:
+    case 0x9A:
+    case 0x9E:
+    case 0xB2:
+    case 0xB6:
+    case 0xBA:
+    case 0xCE:
+    case 0xD0:
+    case 0xD2:
+    case 0xD4:
+    case 0xD6:
+    case 0xDA:
+    case 0xDC:
+    case 0xE2:
+    case 0xE6:
+    case 0xEA:
+    case 0xEC:
+    case 0xF2:
+    case 0x132:
+    case 0x134:
+        channel = vector_curve_track_pool_allocate(g_vector_curve_track_pool);
+        break;
+    case 0x3:
+    case 0x5:
+        channel = float_quaternion_track_pool_allocate(g_float_quaternion_track_pool);
+        break;
+    case 0x6:
+        channel = quaternion_curve_track_pool_allocate(g_quaternion_curve_track_pool);
+        break;
+    case 0x4:
+        channel = slerp_quaternion_track_pool_allocate(g_slerp_quaternion_track_pool);
+        break;
+    case 0xA:
+    case 0xC:
+    case 0xE:
+    case 0x11:
+    case 0x14:
+    case 0x17:
+    case 0x1C:
+    case 0x1F:
+    case 0x22:
+    case 0x24:
+    case 0x28:
+    case 0x2A:
+    case 0x2B:
+    case 0x2D:
+    case 0x2E:
+    case 0x30:
+    case 0x31:
+    case 0x36:
+    case 0x38:
+    case 0x39:
+    case 0x3B:
+    case 0x3C:
+    case 0x3E:
+    case 0x3F:
+    case 0x41:
+    case 0x42:
+    case 0x47:
+    case 0x49:
+    case 0x4A:
+    case 0x4C:
+    case 0x4D:
+    case 0x50:
+    case 0x53:
+    case 0x55:
+    case 0x57:
+    case 0x59:
+    case 0x5B:
+    case 0x5D:
+    case 0x61:
+    case 0x63:
+    case 0x65:
+    case 0x67:
+    case 0x69:
+    case 0x73:
+    case 0x75:
+    case 0x77:
+    case 0x79:
+    case 0x7B:
+    case 0x7D:
+    case 0x7F:
+    case 0x85:
+    case 0x8B:
+    case 0x8D:
+    case 0x8F:
+    case 0x91:
+    case 0x93:
+    case 0x9B:
+    case 0x9F:
+    case 0xA1:
+    case 0xA3:
+    case 0xA5:
+    case 0xA7:
+    case 0xA9:
+    case 0xAB:
+    case 0xAD:
+    case 0xAF:
+    case 0xB3:
+    case 0xB7:
+    case 0xBB:
+    case 0xBD:
+    case 0xBF:
+    case 0xC1:
+    case 0xC3:
+    case 0xC5:
+    case 0xC7:
+    case 0xC9:
+    case 0xCB:
+    case 0xD7:
+    case 0xDD:
+    case 0xDF:
+    case 0xE3:
+    case 0xE7:
+    case 0xED:
+    case 0xEF:
+    case 0xF3:
+    case 0xF5:
+    case 0xF7:
+    case 0xF9:
+    case 0xFA:
+    case 0xFC:
+    case 0xFD:
+    case 0xFF:
+    case 0x100:
+    case 0x102:
+    case 0x103:
+    case 0x105:
+    case 0x107:
+    case 0x109:
+    case 0x10B:
+    case 0x10D:
+    case 0x10F:
+    case 0x111:
+    case 0x113:
+    case 0x115:
+    case 0x117:
+    case 0x119:
+    case 0x11B:
+    case 0x11D:
+    case 0x11F:
+    case 0x121:
+    case 0x123:
+    case 0x125:
+    case 0x127:
+    case 0x129:
+    case 0x12B:
+    case 0x12D:
+    case 0x12F:
+    case 0x136:
+    case 0x138:
+    case 0x13A:
+    case 0x13C:
+    case 0x13E:
+    case 0x140:
+    case 0x142:
+    case 0x144:
+    case 0x146:
+    case 0x148:
+    case 0x14A:
+        channel = float_track_pool_allocate(g_float_track_pool);
+        break;
+    case 0xB:
+    case 0xD:
+    case 0xF:
+    case 0x10:
+    case 0x12:
+    case 0x13:
+    case 0x15:
+    case 0x16:
+    case 0x18:
+    case 0x1D:
+    case 0x1E:
+    case 0x20:
+    case 0x21:
+    case 0x23:
+    case 0x29:
+    case 0x2C:
+    case 0x2F:
+    case 0x32:
+    case 0x37:
+    case 0x3A:
+    case 0x3D:
+    case 0x40:
+    case 0x43:
+    case 0x48:
+    case 0x4B:
+    case 0x4E:
+    case 0x51:
+    case 0x56:
+    case 0x58:
+    case 0x5A:
+    case 0x5C:
+    case 0x5E:
+    case 0x62:
+    case 0x64:
+    case 0x66:
+    case 0x68:
+    case 0x6A:
+    case 0x74:
+    case 0x76:
+    case 0x78:
+    case 0x7A:
+    case 0x7C:
+    case 0x7E:
+    case 0x80:
+    case 0x86:
+    case 0x8C:
+    case 0x8E:
+    case 0x90:
+    case 0x92:
+    case 0x94:
+    case 0x9C:
+    case 0xA0:
+    case 0xA2:
+    case 0xA4:
+    case 0xA6:
+    case 0xA8:
+    case 0xAA:
+    case 0xAC:
+    case 0xAE:
+    case 0xB0:
+    case 0xB4:
+    case 0xB8:
+    case 0xBC:
+    case 0xBE:
+    case 0xC0:
+    case 0xC2:
+    case 0xC4:
+    case 0xC6:
+    case 0xC8:
+    case 0xCA:
+    case 0xCC:
+    case 0xD8:
+    case 0xDE:
+    case 0xE0:
+    case 0xE4:
+    case 0xE8:
+    case 0xEE:
+    case 0xF0:
+    case 0xF4:
+    case 0xF6:
+    case 0xF8:
+    case 0xFB:
+    case 0xFE:
+    case 0x101:
+    case 0x104:
+    case 0x106:
+    case 0x108:
+    case 0x10A:
+    case 0x10C:
+    case 0x10E:
+    case 0x110:
+    case 0x112:
+    case 0x114:
+    case 0x116:
+    case 0x118:
+    case 0x11A:
+    case 0x11C:
+    case 0x11E:
+    case 0x120:
+    case 0x122:
+    case 0x124:
+    case 0x126:
+    case 0x128:
+    case 0x12A:
+    case 0x12C:
+    case 0x12E:
+    case 0x130:
+    case 0x137:
+    case 0x139:
+    case 0x13B:
+    case 0x13D:
+    case 0x13F:
+    case 0x141:
+    case 0x143:
+    case 0x145:
+    case 0x147:
+    case 0x149:
+    case 0x14B:
+        channel = float_curve_track_pool_allocate(g_float_curve_track_pool);
+        break;
+    case 0x19:
+    case 0x1A:
+        channel = new (0) LibWordTrack;
+        break;
+    case 0x1B:
+        channel = new (0) LibClass1783C0;
+        break;
+    case 0x135:
+        channel = quaternion_track_pool_allocate(g_quaternion_track_pool);
+        break;
+    }
+
+    return channel;
+}
+
+/**
+ * @brief Find a named object in the scene, or else in its linked scene and bind the animation to that scene.
+ * @param object Animation object.
+ * @param scene Scene to search first.
+ * @param name Object name.
+ * @param entry Receives the object, or null.
+ */
+static inline void find_bound_entry(LibAnimation* object, LibEntryManager* scene, const char* name, void** entry)
+{
+    *entry = lib_find_named_entry(scene, name);
+
+    if (!*entry)
+    {
+        LibEntryManager* linked = scene->linked;
+
+        if (linked)
+        {
+            *entry = lib_find_named_entry(linked, name);
+            lib_animation_register_binding(reinterpret_cast<LibAnimationBindingOwner*>(linked), object, 1);
+            object->secondary_binding_owner = reinterpret_cast<LibAnimationBindingOwner*>(linked);
+        }
+    }
+}
+
+/**
+ * @brief Build the animation's channels from its 'SAFH' chunk and bind them to the scene's objects.
+ *
+ * The first call creates the entry table and finds each record's target; later calls keep the
+ * targets and only rebuild the channels.
+ * @param object Animation object.
+ * @param scene Scene the targets are looked up in, or null.
+ * @param slots Source of the slots that kinds 0xF0 to 0xF3 bind to, or null.
+ * @return One on success, or zero when the resource is missing or invalid or a channel can't be made.
+ */
+extern "C" s32 lib_animation_bind_channels(LibAnimation* object, void* scene, void* slots)
+{
+    LibEntryManager* manager = static_cast<LibEntryManager*>(scene);
+    LibAnimationChunk* chunk = static_cast<LibAnimationChunk*>(object->resource_data);
+
+    if (!chunk)
+    {
+        return 0;
+    }
+
+    if (!object->targets_bound)
+    {
+        for (;;)
+        {
+            if (chunk->tag == LIB_ANIMATION_TAG_SAFH)
+            {
+                break;
+            }
+
+            chunk = chunk->next == 0 ? 0 : reinterpret_cast<LibAnimationChunk*>(reinterpret_cast<u8*>(chunk) + chunk->next);
+
+            if (!chunk)
+            {
+                return 0;
+            }
+        }
+
+        if (chunk->version != 8)
+        {
+            return 0;
+        }
+
+        object->node_count = chunk->node_count;
+        object->entry_count = chunk->entry_count;
+        object->unk64 = chunk->unk1c;
+        object->node_offsets = chunk->node_offsets;
+
+        if (object->entries && !object->unk6d)
+        {
+            lib_animation_release_channels(object);
+        }
+
+        delete[] object->entries;
+        object->entries = new (0) LibAnimationEntry14[object->entry_count];
+
+        if (!object->entries)
+        {
+            return 0;
+        }
+
+        s32 count = object->entry_count;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            object->entries[i].channel = 0;
+        }
+    }
+
+    s32 entry_index = 0;
+
+    if (manager)
+    {
+        lib_animation_register_binding(reinterpret_cast<LibAnimationBindingOwner*>(manager), object, 0);
+        object->primary_binding_owner = reinterpret_cast<LibAnimationBindingOwner*>(manager);
+    }
+
+    s32 node_count = object->node_count;
+
+    for (s32 i = 0; i < node_count; i++)
+    {
+        LibAnimationNode* record = reinterpret_cast<LibAnimationNode*>(static_cast<u8*>(object->resource_data) + object->node_offsets[i]);
+        LibModel* target = 0;
+        LibAnimationTrack* track = record->tracks;
+
+        if (track->kind < LIB_ANIMATION_KIND_SLOT)
+        {
+            if (!object->targets_bound)
+            {
+                if (manager)
+                {
+                    target = static_cast<LibModel*>(lib_find_named_entry_cached(manager, record->name, record->checksum));
+
+                    if (!target && track->kind < LIB_ANIMATION_KIND_UNBOUND_FIRST)
+                    {
+                        continue;
+                    }
+                }
+            }
+            else if (!object->entries[entry_index].target)
+            {
+                entry_index += record->track_count;
+                continue;
+            }
+        }
+
+        for (s32 j = 0; j < record->track_count; j++)
+        {
+            u8* data = track->data;
+            LibClass173180* channel = create_channel(track->type);
+
+            if (!channel)
+            {
+                return 0;
+            }
+
+            if (!object->targets_bound)
+            {
+                object->entries[entry_index].type = track->type;
+                object->entries[entry_index].kind = track->kind;
+                object->entries[entry_index].flags = track->flags |
+                                                     ((record->flags & LIB_ANIMATION_ENTRY_SKIP) ? LIB_ANIMATION_ENTRY_SKIP : 0) |
+                                                     (track->looped ? LIB_ANIMATION_ENTRY_RESTART_ONLY : 0);
+                object->entries[entry_index].target = target;
+                object->entries[entry_index].sub_target = 0;
+                object->entries[entry_index].state_name = record->name;
+            }
+
+            object->entries[entry_index].channel = channel;
+            channel->set_before_mode(track->before_mode);
+            channel->set_after_mode(track->after_mode);
+
+            if (track->data_mode == 2)
+            {
+                target = static_cast<LibModel*>(object->entries[entry_index].target);
+
+                switch (track->type)
+                {
+                case 0x1E:
+                case 0x1F:
+                case 0x20:
+                {
+                    s32 first = (reinterpret_cast<LibChannelBinding*>(data))->first;
+                    s32 second = (reinterpret_cast<LibChannelBinding*>(data))->second;
+                    data += sizeof(LibChannelBinding);
+
+                    if (target)
+                    {
+                        LibListSentinel* channel_node = target->get_render_channels()->sentinel.next;
+
+                        for (;;)
+                        {
+                            if (&target->get_render_channels()->sentinel == channel_node)
+                            {
+                                break;
+                            }
+
+                            if (static_cast<LibRenderChannel*>(channel_node)->unk40 == 0)
+                            {
+                                u32 node_first;
+                                u32 node_second;
+                                func_004D5E10(target, static_cast<LibRenderChannel*>(channel_node)->unk38, &node_first, &node_second);
+
+                                if (node_first == first && node_second == second)
+                                {
+                                    object->entries[entry_index].sub_target = channel_node;
+                                    break;
+                                }
+                            }
+
+                            channel_node = channel_node->next;
+                        }
+                    }
+
+                    break;
+                }
+                case 0x21:
+                case 0x22:
+                case 0x23:
+                case 0x24:
+                {
+                    s32 first = (reinterpret_cast<LibChannelBinding*>(data))->first;
+                    s32 second = (reinterpret_cast<LibChannelBinding*>(data))->second;
+                    data += sizeof(LibChannelBinding);
+
+                    if (target)
+                    {
+                        LibListSentinel* channel_node = target->get_render_channels()->sentinel.next;
+
+                        for (;;)
+                        {
+                            if (&target->get_render_channels()->sentinel == channel_node)
+                            {
+                                break;
+                            }
+
+                            if (static_cast<LibRenderChannel*>(channel_node)->unk40 == 1)
+                            {
+                                u32 node_first;
+                                u32 node_second;
+                                func_004D5E10(target, static_cast<LibRenderChannel*>(channel_node)->unk38, &node_first, &node_second);
+
+                                if (node_first == first && node_second == second)
+                                {
+                                    object->entries[entry_index].sub_target = channel_node;
+                                    break;
+                                }
+                            }
+
+                            channel_node = channel_node->next;
+                        }
+                    }
+
+                    break;
+                }
+                case 0x3E:
+                case 0x3F:
+                case 0x40:
+                {
+                    s32 shape = (reinterpret_cast<LibChannelBinding*>(data))->first;
+                    data += sizeof(LibChannelBinding);
+
+                    if (target)
+                    {
+                        LibListSentinel* node = target->children.sentinel.next;
+                        LibListSentinel* end = &target->children.sentinel;
+
+                        for (; !at_end(end, node); node = node->next)
+                        {
+                            LibMorphTarget* morph = static_cast<LibMorphTarget*>(node);
+
+                            if (morph->object_kind == 2 && shape == morph->shape->id)
+                            {
+                                object->entries[entry_index].sub_target = node;
+                                break;
+                            }
+                        }
+                    }
+
+                    break;
+                }
+                case 0x41:
+                case 0x42:
+                case 0x43:
+                    if (target)
+                    {
+                        LibListSentinel* end = &target->children.sentinel;
+                        LibListSentinel* node = end->next;
+
+                        for (; !at_end(end, node); node = node->next)
+                        {
+                            if (static_cast<LibListObject*>(node)->object_kind == 5)
+                            {
+                                object->entries[entry_index].sub_target = node;
+                                break;
+                            }
+                        }
+                    }
+
+                    break;
+                case 0x44:
+                case 0x45:
+                case 0x46:
+                case 0x47:
+                case 0x48:
+                case 0x49:
+                case 0x4A:
+                case 0x4B:
+                    if (target)
+                    {
+                        LibListSentinel* end = &target->children.sentinel;
+                        LibListSentinel* node = end->next;
+
+                        for (; !at_end(end, node); node = node->next)
+                        {
+                            if (static_cast<LibListObject*>(node)->object_kind == 6)
+                            {
+                                object->entries[entry_index].sub_target = node;
+                                break;
+                            }
+                        }
+                    }
+
+                    break;
+                case 0x4C:
+                case 0x4D:
+                case 0x4E:
+                {
+                    s32 first = (reinterpret_cast<LibChannelBinding*>(data))->first;
+                    s32 second = (reinterpret_cast<LibChannelBinding*>(data))->second;
+                    data += sizeof(LibChannelBinding);
+
+                    if (target)
+                    {
+                        LibListSentinel* channel_node = target->get_render_channels()->sentinel.next;
+
+                        for (;;)
+                        {
+                            if (&target->get_render_channels()->sentinel == channel_node)
+                            {
+                                break;
+                            }
+
+                            if (static_cast<LibRenderChannel*>(channel_node)->unk40 == 2)
+                            {
+                                u32 node_first;
+                                u32 node_second;
+                                func_004D5E10(target, static_cast<LibRenderChannel*>(channel_node)->unk38, &node_first, &node_second);
+
+                                if (node_first == first && node_second == second)
+                                {
+                                    object->entries[entry_index].sub_target = channel_node;
+                                    break;
+                                }
+                            }
+
+                            channel_node = channel_node->next;
+                        }
+                    }
+
+                    break;
+                }
+                }
+            }
+            else if (track->kind >= LIB_ANIMATION_KIND_SLOT)
+            {
+                s32 index = (reinterpret_cast<LibChannelBinding*>(data))->first;
+                data += sizeof(LibChannelBinding);
+
+                if (slots)
+                {
+                    u8* slot = reinterpret_cast<u8*>(func_0045AE10(static_cast<FieldClass1515D0*>(slots), record->name, index));
+
+                    switch (track->kind)
+                    {
+                    case LIB_ANIMATION_KIND_SLOT:
+                        object->entries[entry_index].target = slot;
+                        break;
+                    case 0xF1:
+                        object->entries[entry_index].target = slot + 4;
+                        break;
+                    case 0xF2:
+                        object->entries[entry_index].target = slot + 8;
+                        break;
+                    case 0xF3:
+                        object->entries[entry_index].target = slot + 0x1C;
+                        break;
+                    }
+                }
+                else
+                {
+                    object->entries[entry_index].target = 0;
+                }
+            }
+
+            if (track->data_mode != 1)
+            {
+                channel->bind_keys(track->key_count, data);
+            }
+            else
+            {
+                switch (track->type)
+                {
+                case 0x19:
+                    channel->allocate_keys(track->key_count);
+
+                    if (manager)
+                    {
+                        void* value;
+                        find_bound_entry(object, manager, reinterpret_cast<const char*>(data), &value);
+                        channel->append_key(&value, 0, 0, 0.0f);
+                    }
+
+                    break;
+                case 0x1A:
+                    channel->allocate_keys(track->key_count);
+
+                    for (s32 k = 0; k < track->key_count; k++)
+                    {
+                        const char* name = (reinterpret_cast<LibChannelNamedKey*>(data))->name;
+                        float key = (reinterpret_cast<LibChannelNamedKey*>(data))->key;
+                        data += sizeof(LibChannelNamedKey);
+
+                        if (manager)
+                        {
+                            void* value;
+                            find_bound_entry(object, manager, name, &value);
+                            channel->append_key(&value, 0, 0, key);
+                        }
+                    }
+
+                    break;
+                case 0x1B:
+                {
+                    channel->allocate_keys(track->key_count + 1);
+
+                    if (manager)
+                    {
+                        static_cast<LibClass1783C0*>(channel)->unk28 = (u32)lib_find_named_entry(manager, reinterpret_cast<const char*>(data));
+                    }
+
+                    u32 start = (reinterpret_cast<LibChannelRange*>(data))->start;
+                    u32 end = (reinterpret_cast<LibChannelRange*>(data))->end;
+                    channel->append_key(&start, 0, 0, 0.0f);
+                    channel->append_key(&end, 0, 0, 1.0f);
+                    break;
+                }
+                }
+            }
+
+            track = reinterpret_cast<LibAnimationTrack*>(reinterpret_cast<u8*>(track) + track->size);
+            entry_index++;
+        }
+    }
+
+    object->targets_bound = 1;
+    return 1;
+}
+
+#pragma pop
 
 /**
  * @brief Bind an animation's tracks to the parts of a target, by part name.
@@ -922,7 +2634,7 @@ s32 func_004BFE10(void* object, void* target)
                 animation->entries[slot].kind = track->kind;
                 animation->entries[slot].flags = track->flags | ((node->flags & 0x10) ? 0x10 : 0) | (track->looped ? 0x20 : 0);
                 animation->entries[slot].target = part;
-                *reinterpret_cast<u32*>(animation->entries[slot].unk0c) = 0;
+                animation->entries[slot].sub_target = 0;
                 animation->entries[slot].state_name = node->name;
                 track = reinterpret_cast<LibAnimationTrack*>(reinterpret_cast<u8*>(track) + track->size);
             }
@@ -2437,25 +4149,6 @@ void LibAnimationTarget::set_scale(float x, float y, float z)
     scale.z = z;
 }
 
-/** Partial aim settings of a func_004C3590 record. */
-struct LibAimSettings
-{
-    u8 unk00[4];
-    s32 positive;
-    u8 unk08[4];
-    s32 axis;
-};
-
-/** Partial record func_004C3590 aims. */
-struct LibAimRecord
-{
-    u8 unk00[4];
-    LibAimSettings* settings;
-    u8 unk08[0x1C];
-    float roll;
-    LibTransform* target;
-};
-
 /**
  * @brief Dot product of the x, y and z components.
  * @param first First vector.
@@ -2484,11 +4177,12 @@ static inline void lib_cross3(LibVector4* output, const FieldVec4B* first, const
  * @brief Build the rotation that turns a record's aim axis towards its target, seen from an origin in a matrix's
  * space, then rolls it about that axis.
  * @param record Record with the aim settings, roll angle and target transform.
+ * @param key Unused; the animation passes its frame.
  * @param matrix Matrix whose inverse takes the target's position into the origin's space.
  * @param origin Position the axis turns from.
  * @return Quaternion roll, then flip, then turn; the identity when the axis already points at the target.
  */
-extern "C" FieldVec4B func_004C3590(LibAimRecord* record, const LibMatrix44Value* matrix, const FieldVec4B* origin)
+extern "C" FieldVec4B func_004C3590(LibAimRecord* record, float key, const LibMatrix44Value* matrix, const FieldVec4B* origin)
 {
     LibVector4 axis_angle;
     axis_angle.x = 0.0f;
@@ -3379,7 +5073,32 @@ struct LibPanelDrawArgs
     u8 unk8a;
 };
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4B90);
+/** One sprite of a panel frame: two UV corners and the screen points to draw them at. */
+struct LibPanelSprite
+{
+    s16 u0;
+    s16 v0;
+    s16 u1;
+    s16 v1;
+    s16 x0;
+    s16 y0;
+    s16 x1;
+    s16 y1;
+};
+
+extern "C" LibPanelSprite D_00507110[8];
+
+struct LibScreenPoint32
+{
+    LibScreenPoint32()
+    {
+        y = 0;
+        x = 0;
+    }
+
+    s32 x;
+    s32 y;
+};
 
 /**
  * @brief Write a panel's drawing packet.
@@ -3388,7 +5107,122 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4B90);
  * @param args What to draw.
  * @return The end of the packet.
  */
-extern "C" u8* func_004C4B90(LibPanel* panel, u8* packet, const LibPanelDrawArgs* args);
+extern "C" u8* func_004C4B90(LibPanel* panel, u8* packet, const LibPanelDrawArgs* args)
+{
+    LibScreenPoint32 points[6];
+    u64* cursor = reinterpret_cast<u64*>(packet);
+    u32 colors[4];
+    LibPanelSprite* sprite;
+    s32 i;
+    float width;
+
+    const LibVector4* position = args->position;
+    float x = position->x + args->rect->unk00;
+    float y = position->y + args->rect->unk04;
+    float scale_x = g_field_runtime->screen_scale_x;
+    float offset_x = g_field_runtime->screen_offset_x;
+    width = args->rect->unk08;
+    float height = args->rect->unk0c;
+    points[0].x = offset_x + x * scale_x;
+    points[1].x = offset_x + (4.0f + x) * scale_x;
+    points[2].x = offset_x + (24.0f + x) * scale_x;
+    x += width;
+    points[5].x = offset_x + x * scale_x;
+    points[4].x = offset_x + (x - 4.0f) * scale_x;
+    points[3].x = offset_x + (x - 24.0f) * scale_x;
+    float scale_y = g_field_runtime->screen_scale_y;
+    float offset_y = g_field_runtime->screen_offset_y;
+    points[0].y = offset_y + y * scale_y;
+    points[1].y = offset_y + (4.0f + y) * scale_y;
+    points[2].y = offset_y + (24.0f + y) * scale_y;
+    y += height;
+    points[5].y = offset_y + y * scale_y;
+    points[4].y = offset_y + (y - 4.0f) * scale_y;
+    points[3].y = offset_y + (y - 24.0f) * scale_y;
+    u64 zbuf = args->unk8b ? 1ULL << 32 : 0;
+    zbuf |= *reinterpret_cast<const u32*>(&g_display->buffers[0].environment.context1.depth_buffer) & 0xFFFFFFFFULL;
+    cursor[0] = GIF_TAG_NREG(1) | 1;
+    cursor[1] = GIF_REGISTER_AD;
+    cursor[2] = zbuf;
+    cursor[3] = GS_REGISTER_ZBUF_2;
+
+    s32 address = (s32)args->address;
+
+    if (!args->unk8a)
+    {
+        u32 alpha = (u32)((args->alpha * args->unk84) / 128.0f) << 24;
+        const u32* source = args->colors;
+        u32* out = colors;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            u32 color = source[i];
+            out[i] = color | alpha;
+        }
+    }
+    else
+    {
+        float scale = args->unk84 / 128.0f;
+        u32 alpha = args->alpha;
+        const u32* source = args->colors;
+        u32* out = colors;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            u32 color = source[i];
+            out[i] = (u64)(u32)(alpha << 24) | ((s64)(s32)(((color >> 16) & 0xFF) * scale) << 16 |
+                              ((s64)(s32)((color & 0xFF) * scale) | (s64)(s32)(((color >> 8) & 0xFF) * scale) << 8));
+        }
+    }
+
+    u64 z = (u64)address << 32;
+    cursor[4] = 0xA400000000000001ULL;
+    cursor[5] = 0x15151510 | 0xF5ULL << 32;
+    cursor[6] = 0x24C;
+    cursor[7] = colors[0];
+    cursor[8] = z | (points[1].x | (u64)points[1].y << 16);
+    cursor[9] = colors[1];
+    cursor[10] = z | (points[4].x | (u64)points[1].y << 16);
+    cursor[11] = colors[2];
+    cursor[12] = z | (points[1].x | (u64)points[4].y << 16);
+    cursor[13] = colors[3];
+    cursor[14] = z | (points[4].x | (u64)points[4].y << 16);
+    cursor[15] = 0;
+    cursor[16] = GIF_TAG_NREG(1) | 2;
+    cursor[17] = GIF_REGISTER_AD;
+    cursor[18] = *reinterpret_cast<const u32*>(&g_display->buffers[0].environment.context1.depth_buffer) & 0xFFFFFFFFULL;
+    cursor[19] = GS_REGISTER_ZBUF_2;
+    cursor[20] = 1;
+    cursor[21] = GS_REGISTER_TEX1_2;
+    cursor[22] = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | 1;
+    cursor[23] = 0x1077;
+    cursor[24] = 0x8007FF0001300000ULL;
+    cursor[25] = 0x22C10400 | 0x7FF06ULL << 32;
+    cursor[26] = 0x356;
+    cursor[27] = (s64)(s32)args->alpha << 24 | 0x808080;
+    cursor[28] = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | 8;
+    cursor[29] = 0x5353;
+    cursor += 30;
+    sprite = D_00507110;
+    i = 0;
+
+    do
+    {
+        cursor[0] = sprite->u0 | (s64)sprite->v0 << 16;
+        cursor[1] = z | (points[sprite->x0].x | (s64)points[sprite->y0].y << 16);
+        cursor[2] = sprite->u1 | (s64)sprite->v1 << 16;
+        cursor[3] = z | (points[sprite->x1].x | (s64)points[sprite->y1].y << 16);
+        cursor += 4;
+        sprite++;
+        i++;
+    } while (i < 8);
+
+    cursor[0] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    cursor[1] = GIF_REGISTER_AD;
+    cursor[2] = 0x61;
+    cursor[3] = GS_REGISTER_TEX1_2;
+    return reinterpret_cast<u8*>(cursor + 4);
+}
 
 typedef struct LibPanelColorState
 {
@@ -4179,7 +6013,24 @@ extern "C" void func_004C67C0(LibTextWidget* object, s32 slot, s32 key)
     object->needs_redraw = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", draw__14LibClass178720Fv);
+/** @brief Lay the text out in the scratchpad and draw it, once. */
+void LibClass178720::draw()
+{
+    if (unk100 == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        unk70 = reinterpret_cast<u8*>(0x70000000);
+        func_004C74E0(this);
+        draw_records(reinterpret_cast<LibDrawRecord*>(unk70), record_count);
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Set the text widget up for free text: no resource slot, a 1024 by 1024 area and storage for the records.
@@ -4431,7 +6282,47 @@ extern "C" void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, 
     state->redraw = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6E10);
+/**
+ * @brief Lay the text out and draw it, once: in the scratchpad, or in a heap block when it has more than 0x200
+ *        glyphs.
+ */
+void LibTextWidget::draw()
+{
+    if (unk100 == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        if ((u32)unkb4 > 0x200)
+        {
+            unk70 = new (0) u8[unkb4 * sizeof(LibDrawRecord)];
+
+            if (unk70 == 0)
+            {
+                return;
+            }
+        }
+        else
+        {
+            lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+            unk70 = reinterpret_cast<u8*>(0x70000000);
+        }
+
+        func_004C74E0(this);
+        draw_records(reinterpret_cast<LibDrawRecord*>(unk70), record_count);
+        func_004C7010();
+
+        if ((u32)unkb4 > 0x200)
+        {
+            delete[] unk70;
+        }
+
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Step the animation of every glyph that is animated and started before the widget's time.
@@ -5221,130 +7112,18 @@ LibClass178780::~LibClass178780()
     }
 }
 
-/** Model with three owned list objects, with vtables D_1788B0 and D_178964 in main data. */
-class LibClass1788B0 : public LibModel
-{
-public:
-    /** @brief Construct the model with its defaults. */
-    LibClass1788B0();
-
-    /** @brief Destroy the owned list objects, then the model. */
-    virtual ~LibClass1788B0()
-    {
-        for (s32 i = 0; i < 3; i++)
-        {
-            if (unk83c[i] != 0)
-            {
-                unk83c[i]->destroy();
-                unk83c[i] = 0;
-            }
-        }
-    }
-
-    /**
-     * @brief Report no box-culling centre.
-     * @param output Unused.
-     * @return Zero.
-     */
-    virtual s32 get_box_cull_center(void* output);
-
-    /** @brief Destroy the model's attachments, then the model. */
-    virtual void destroy();
-
-    /** @brief Draw the model. */
-    virtual void render();
-
-    virtual const LibVector4* get_bounding_sphere();
-
-    virtual void build_packet(const void* matrix, void* context);
-
-    virtual LibTransformOwner* clone();
-
-    /**
-     * @brief Return the before packet's size.
-     * @return Eleven.
-     */
-    virtual s32 get_before_packet_size();
-
-    /**
-     * @brief Return the after packet's size.
-     * @return One.
-     */
-    virtual s32 get_after_packet_size();
-
-    virtual s32 build_before_packet(s32 block, s32 address);
-
-    /**
-     * @brief Chain the model's after block in with a DMA reference, unless the model has a display manager or
-     *        D_001B65B0 is clear.
-     * @param block Block address (uncached).
-     * @param address Address of the model's draw packet.
-     * @return End of what was written.
-     */
-    virtual s32 build_after_packet(s32 block, s32 address);
-
-    /**
-     * @brief Build from another model of this class, sharing its owner.
-     * @param links Update list for the new model.
-     * @param source Model to copy.
-     * @return Nonzero on success.
-     */
-    virtual s32 func_004C8720(LibUpdateList* links, LibClass1788B0* source);
-
-    /**
-     * @brief Build from a model of the source class, sharing its owner.
-     * @param links Update list for the new model.
-     * @param source Model to copy.
-     * @return Nonzero on success.
-     */
-    virtual s32 func_004C8680(LibUpdateList* links, LibClass173380* source);
-
-    /**
-     * @brief Virtual slot 0x100.
-     * @param index Index.
-     * @param matrix Matrix.
-     * @param context Context.
-     * @param scale Scale.
-     */
-    virtual void func_004C8860(s32 index, void* matrix, void* context, float scale);
-
-    /**
-     * @brief Set the two values at 0x864.
-     * @param first Value at 0x864.
-     * @param second Value at 0x868.
-     */
-    void set_unk864(float first, float second)
-    {
-        unk864 = first;
-        unk868 = second;
-    }
-
-    u8 unk820;
-    u8 unk821;
-    u8 unk822;
-    u8 unk823;
-    u8 unk824;
-    u8 unk825;
-    u8 unk826;
-    u8 unk827;
-    float sphere_radius_scale;
-    float unk82c;
-    float unk830;
-    float unk834;
-    LibModel* unk838;
-    LibTransformOwner* unk83c[3];
-    u8 unk848[8];
-    FieldVec4B unk850;
-    float unk860;
-    float unk864;
-    float unk868;
-    u8 unk86c[4];
-};
-
-/** LibClass1788B0 with vtables D_1787A0 and D_178854 in main data; only its destructor is known. */
+/** Extra shadow model a LibClass1788B0 keeps for each light past its first (vtables D_1787A0 and D_178854). */
 class LibClass1787A0 : public LibClass1788B0
 {
 public:
+    /** @brief Create the shadow model with no light and no lifetime. */
+    LibClass1787A0()
+    {
+        lifetime = 0;
+        light_index = -1;
+        type_id = 0x111;
+    }
+
     /** @brief Destroy the model. */
     virtual ~LibClass1787A0();
 
@@ -5356,6 +7135,33 @@ public:
      * @param channel DMA channel; unused.
      */
     virtual void complete_dma(u32 channel);
+
+    /**
+     * @brief Set the light this shadow is drawn for.
+     * @param index Light number in the caster's shadow light list.
+     */
+    void set_light_index(s8 index)
+    {
+        light_index = index;
+    }
+
+    /**
+     * @brief Count one frame off the shadow's lifetime.
+     * @return True when the lifetime ran out.
+     */
+    bool expire()
+    {
+        if (--lifetime == 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    s8 light_index;
+    s32 lifetime;
+    u8 unk878[8];
 };
 
 /** @brief Destroy the model. */
@@ -5628,7 +7434,187 @@ const LibVector4* LibClass1788B0::get_bounding_sphere()
     return &bounding_sphere;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8860__14LibClass1788B0FiPvPvf);
+/** Ground the second kind of shadow model is cast on, or null for none. */
+extern "C" LibShadowGround* D_001B65AC;
+
+/**
+ * @brief Set this shadow model up for one of the caster's lights: the shadow plane (case 1: a flat plane through the
+ *        caster; case 2: the ground under three projected points), the light's shadow matrix, the shadow's fade, then
+ *        the packet.
+ * @param index Light number in the caster's shadow light list.
+ * @param matrix Camera.
+ * @param context Packet building context.
+ * @param scale Light weight scale.
+ */
+void LibClass1788B0::func_004C8860(s32 index, void* matrix, void* context, float scale)
+{
+    LibModel* caster = unk838;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    switch (unk823)
+    {
+    case 1:
+    {
+        FieldVec4B origin;
+        origin.x = caster->transform.m[0][3];
+        origin.y = caster->transform.m[1][3];
+        origin.z = caster->transform.m[2][3];
+        origin.w = 1.0f;
+        unk850.x = 0.0f;
+        unk850.y = 1.0f;
+        unk850.z = 0.0f;
+        unk850.w = -origin.y + unk860;
+        break;
+    }
+    case 2:
+    {
+        if (D_001B65AC == 0)
+        {
+            break;
+        }
+
+        FieldVec4B origin;
+        FieldVec4B lowered;
+        FieldVec4B first;
+        FieldVec4B second;
+        FieldVec4B third;
+        LibMatrix44Value shadow;
+        FieldVec4B direction;
+        origin.x = caster->transform.m[0][3];
+        origin.y = caster->transform.m[1][3];
+        origin.z = caster->transform.m[2][3];
+        origin.w = 1.0f;
+        lowered.x = origin.x;
+        lowered.y = origin.y - unk868;
+        lowered.z = origin.z;
+        lowered.w = origin.w;
+        unk850.x = 0.0f;
+        unk850.y = -1.0f;
+        unk850.z = 0.0f;
+        unk850.w = D_001B65AC->get_height(&origin, this);
+        LibLight* light = lights->lights[index];
+
+        if (light->kind & 3)
+        {
+            const FieldVec4B* position = reinterpret_cast<const FieldVec4B*>(&light->position);
+            lib_build_projective_shadow_matrix(&shadow, (const FieldVec4A*)position, (const FieldVec4A*)&unk850);
+            direction = origin - *position;
+            lib_normalize_vector3(&direction.x);
+        }
+        else
+        {
+            const FieldVec4B* position = reinterpret_cast<const FieldVec4B*>(&light->direction);
+            lib_build_directional_shadow_matrix(&shadow, (const FieldVec4A*)position, (const FieldVec4A*)&unk850);
+            direction.set(*position);
+        }
+
+        vu0_dot_matrix_rows(&shadow, &origin, &first);
+        // TODO: The game divides by w here and never uses the result.
+        float inverse = 1.0f / first.w;
+        vu0_divide_by_w(&first, &first);
+        vu0_dot_matrix_rows(&shadow, &lowered, &second);
+        inverse = 1.0f / second.w;
+        vu0_divide_by_w(&second, &second);
+        float abs_x = ee_abs(direction.x);
+        third.w = 1.0f;
+        float abs_z = ee_abs(direction.z);
+
+        if (abs_x < 0.000001f && abs_z < 0.000001f)
+        {
+            third.x = first.x + unk864;
+            third.y = 0.0f;
+            third.z = first.z;
+        }
+        else
+        {
+            third.x = first.x + direction.z * unk864;
+            third.y = 0.0f;
+            third.z = first.z - direction.x * unk864;
+        }
+
+        first.y = D_001B65AC->get_height(&first, this) - unk860;
+        second.y = D_001B65AC->get_height(&second, this) - unk860;
+        third.y = D_001B65AC->get_height(&third, this) - unk860;
+        func_004CC7A0(&unk850.x, &first.x, &second.x, &third.x);
+
+        if (unk850.y < 0.0f)
+        {
+            unk850 *= -1.0f;
+        }
+
+        break;
+    }
+    }
+
+    LibMatrix44Value projection;
+    LibLight* light = lights->lights[index];
+
+    if (light->kind & 3)
+    {
+        lib_build_projective_shadow_matrix(&projection, (const FieldVec4A*)&light->position, (const FieldVec4A*)&unk850);
+    }
+    else
+    {
+        lib_build_directional_shadow_matrix(&projection, (const FieldVec4A*)&light->direction, (const FieldVec4A*)&unk850);
+    }
+
+    if (unk821 || unk822)
+    {
+        LibVector4 color;
+        *reinterpret_cast<unsigned __int128*>(&color) = *reinterpret_cast<const unsigned __int128*>(&base_color_factor);
+        float alpha = 1.0f;
+
+        if (unk821)
+        {
+            alpha = 0.01f * (unk82c * (lights->weights[index] * scale));
+
+            if (alpha <= 0.0f)
+            {
+                return;
+            }
+        }
+
+        if (unk822)
+        {
+            FieldVec4B position;
+            position.x = transform.m[0][3];
+            position.y = transform.m[1][3];
+            position.z = transform.m[2][3];
+            position.w = 1.0f;
+            float distance = unk850.w + (unk850.x * position.x + unk850.y * position.y + unk850.z * position.z);
+            float length_squared = unk850.x * unk850.x + unk850.y * unk850.y + unk850.z * unk850.z;
+
+            if (!(distance <= 0.0f) && unk823 != 1)
+            {
+                alpha = 0.0f;
+            }
+            else
+            {
+                float fade = 0.001f * (unk830 * (-distance * ee_rsqrt_in_place(length_squared, 1.0f)));
+
+                if (!(fade <= 1.0f))
+                {
+                    alpha /= fade;
+                }
+            }
+        }
+
+        if (alpha <= 0.001f)
+        {
+            return;
+        }
+
+        alpha = ee_min(alpha, 1.0f);
+        color.w = alpha;
+        *reinterpret_cast<unsigned __int128*>(&base_color_factor) = *reinterpret_cast<const unsigned __int128*>(&color);
+        update_combined_color_factor();
+    }
+
+    vu0_multiply_matrix_output_first(&transform, &projection, &transform);
+    transform_dirty = 1;
+    unk66 = 1;
+    LibModel::build_packet(matrix, context);
+}
 
 /** @brief Destroy the three held objects, then destroy the model. */
 void LibClass1788B0::destroy()
@@ -5645,7 +7631,207 @@ void LibClass1788B0::destroy()
     LibModel::destroy();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", build_packet__14LibClass1788B0FPCvPv);
+/** Most lights a LibClass1788B0 shadow draws shadows for. */
+extern "C" u8 D_001B6294;
+
+/** Frames a LibClass1788B0 shadow's extra child lives without being chosen again. */
+extern "C" s32 D_001B6298;
+
+/**
+ * @brief Pick the caster's strongest lights (up to unk825), keep one child shadow model per extra light, and build the
+ *        shadows of the children and this model.
+ * @param matrix Camera.
+ * @param context Packet building context.
+ */
+void LibClass1788B0::build_packet(const void* matrix, void* context)
+{
+    if (unk838 == 0)
+    {
+        return;
+    }
+
+    if (unk838->type_id == 2)
+    {
+        return;
+    }
+
+    if (!unk838->unk63)
+    {
+        func_004A59D0(unk838, context);
+    }
+
+    LibModel* caster = unk838;
+    s32 count = caster->shadow_lights.count;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    if (count == 0)
+    {
+        return;
+    }
+
+    s32 limit = unk825;
+
+    if (D_001B6294 < limit)
+    {
+        limit = D_001B6294;
+    }
+
+    s32 visible = 0;
+    float total = unk834;
+    s8 order[4];
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (!lights->unk04[i])
+        {
+            continue;
+        }
+
+        if (lights->lights[i]->unk291)
+        {
+            FieldVec4B position;
+            position.x = transform.m[0][3];
+            position.y = transform.m[1][3];
+            position.z = transform.m[2][3];
+            position.w = 1.0f;
+
+            if (!(lights->lights[i]->position.y <= position.y))
+            {
+                continue;
+            }
+        }
+
+        float weight = lights->weights[i];
+
+        if (!(weight <= 0.0f))
+        {
+            order[visible++] = i;
+        }
+
+        if (weight < 0.0f)
+        {
+            total += weight;
+            total = ee_max(0.0f, total);
+        }
+    }
+
+    if (visible == 0)
+    {
+        return;
+    }
+
+    if (total == 0.0f)
+    {
+        return;
+    }
+
+    for (s32 i = 0; i < 3; i++)
+    {
+        if (unk83c[i])
+        {
+            static_cast<LibClass1787A0*>(unk83c[i])->light_index = -1;
+
+            if (static_cast<LibClass1787A0*>(unk83c[i])->expire())
+            {
+                LibClass1788B0* child = static_cast<LibClass1788B0*>(unk83c[i]);
+
+                if (child->unk838)
+                {
+                    if (child->unk838->unk790)
+                    {
+                        child->unk838->unk790--;
+                    }
+
+                    child->unk838 = 0;
+                }
+
+                unk83c[i]->destroy();
+                unk83c[i] = 0;
+            }
+        }
+    }
+
+    if (1 < visible)
+    {
+        for (s32 i = 0; i < visible; i++)
+        {
+            for (s32 j = i + 1; j < visible; j++)
+            {
+                if (lights->weights[order[i]] < lights->weights[order[j]])
+                {
+                    s8 swap = order[i];
+                    order[i] = order[j];
+                    order[j] = swap;
+                }
+            }
+        }
+
+        if (limit < visible)
+        {
+            visible = limit;
+        }
+
+        for (s32 i = 1; i < visible; i++)
+        {
+            if (unk83c[i - 1] == 0)
+            {
+                LibClass1787A0* child = new (0) LibClass1787A0;
+
+                if (child)
+                {
+                    if (child->func_004C8720(0, this))
+                    {
+                        unk83c[i - 1] = child;
+                    }
+                    else
+                    {
+                        child->destroy();
+                    }
+                }
+            }
+
+            if (unk83c[i - 1])
+            {
+                static_cast<LibClass1787A0*>(unk83c[i - 1])->lifetime = D_001B6298;
+                static_cast<LibClass1787A0*>(unk83c[i - 1])->set_light_index(order[i]);
+            }
+        }
+    }
+
+    bool drawn = false;
+
+    for (s32 i = 2; i >= 0; i--)
+    {
+        if (unk83c[i] == 0)
+        {
+            continue;
+        }
+
+        s32 index = static_cast<LibClass1787A0*>(unk83c[i])->light_index;
+        unk83c[i]->unk63 = 0;
+
+        if (index >= 0)
+        {
+            unk83c[i]->unk62 = 0;
+            unk83c[i]->update_transform_matrix();
+            static_cast<LibClass1788B0*>(unk83c[i])->func_004C8860(index, const_cast<void*>(matrix), context, total);
+
+            if (unk83c[i]->unk63)
+            {
+                drawn = true;
+            }
+        }
+    }
+
+    unk826 = 0;
+    func_004C8860(order[0], const_cast<void*>(matrix), context, total);
+
+    if (drawn && !unk63)
+    {
+        unk63 = 1;
+        unk826 = 1;
+    }
+}
 
 extern "C" void func_004C94D0(void* object, const unsigned __int128* value)
 {
@@ -6230,9 +8416,850 @@ extern "C" float func_004CA180(const LibVector4* segment, const LibVector4* poin
     return projection.x;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA270);
+/**
+ * @brief Find the squared distance between two segments and the fractions along them of the closest points.
+ * @param first Aligned first segment: start, then axis.
+ * @param second Aligned second segment: start, then axis.
+ * @param first_fraction Receives the fraction along the first segment.
+ * @param second_fraction Receives the fraction along the second segment.
+ * @return The squared distance.
+ */
+extern "C" float func_004CA270(const LibVector4* first, const LibVector4* second, float* first_fraction,
+                               float* second_fraction)
+{
+    LibVector4 offset;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CAB20);
+    float a00;
+    float a01;
+    float a11;
+    float b0;
+    float det;
+    float b1;
+    float s;
+    float t;
+    float c;
+    float distance;
+    float temp;
+
+    const LibVector4* first_axis = first + 1;
+    const LibVector4* second_axis = second + 1;
+    vu0_segment_pair_dots(first, second, first_axis, second_axis);
+    vu0_segment_pair_store_offset(&offset);
+    a00 = vu0_read_vf12_x();
+    a01 = vu0_read_vf14_x();
+    a11 = vu0_read_vf16_x();
+    vu0_segment_pair_offset_second();
+    b0 = vu0_read_vf18_x();
+    c = vu0_read_vf20_x();
+    det = vu0_read_vf21_x();
+
+    if (!(det < 0.00001f))
+    {
+        vu0_segment_pair_solve();
+        b1 = vu0_read_vf23_x();
+        t = vu0_read_vf25_x();
+        s = vu0_read_vf24_x();
+
+        if (!(s < 0.0f))
+        {
+            if (s <= det)
+            {
+                if (!(t < 0.0f))
+                {
+                    if (t <= det)
+                    {
+                        float inverse = 1.0f / det;
+                        s *= inverse;
+                        t *= inverse;
+                        distance = s * (a00 * s + a01 * t + 2.0f * b0) + t * (a01 * s + a11 * t + 2.0f * b1) + c;
+                    }
+                    else
+                    {
+                        t = 1.0f;
+                        temp = a01 + b0;
+
+                        if (!(temp < 0.0f))
+                        {
+                            s = 0.0f;
+                            distance = a11 + 2.0f * b1 + c;
+                        }
+                        else if (!(-temp < a00))
+                        {
+                            s = 1.0f;
+                            distance = a00 + a11 + c + 2.0f * (b1 + temp);
+                        }
+                        else
+                        {
+                            s = -temp / a00;
+                            distance = temp * s + a11 + 2.0f * b1 + c;
+                        }
+                    }
+                }
+                else
+                {
+                    t = 0.0f;
+
+                    if (!(b0 < 0.0f))
+                    {
+                        s = 0.0f;
+                        distance = c;
+                    }
+                    else if (!(-b0 < a00))
+                    {
+                        s = 1.0f;
+                        distance = a00 + 2.0f * b0 + c;
+                    }
+                    else
+                    {
+                        s = -b0 / a00;
+                        distance = b0 * s + c;
+                    }
+                }
+            }
+            else
+            {
+                if (!(t < 0.0f))
+                {
+                    if (t <= det)
+                    {
+                        s = 1.0f;
+                        temp = a01 + b1;
+
+                        if (!(temp < 0.0f))
+                        {
+                            t = 0.0f;
+                            distance = a00 + 2.0f * b0 + c;
+                        }
+                        else if (!(-temp < a11))
+                        {
+                            t = 1.0f;
+                            distance = a00 + a11 + c + 2.0f * (b0 + temp);
+                        }
+                        else
+                        {
+                            t = -temp / a11;
+                            distance = temp * t + a00 + 2.0f * b0 + c;
+                        }
+                    }
+                    else
+                    {
+                        temp = a01 + b0;
+
+                        if (-temp <= a00)
+                        {
+                            t = 1.0f;
+
+                            if (!(temp < 0.0f))
+                            {
+                                s = 0.0f;
+                                distance = a11 + 2.0f * b1 + c;
+                            }
+                            else
+                            {
+                                s = -temp / a00;
+                                distance = temp * s + a11 + 2.0f * b1 + c;
+                            }
+                        }
+                        else
+                        {
+                            s = 1.0f;
+                            temp = a01 + b1;
+
+                            if (!(temp < 0.0f))
+                            {
+                                t = 0.0f;
+                                distance = a00 + 2.0f * b0 + c;
+                            }
+                            else if (!(-temp < a11))
+                            {
+                                t = 1.0f;
+                                distance = a00 + a11 + c + 2.0f * (b0 + temp);
+                            }
+                            else
+                            {
+                                t = -temp / a11;
+                                distance = temp * t + a00 + 2.0f * b0 + c;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (-b0 < a00)
+                    {
+                        t = 0.0f;
+
+                        if (!(b0 < 0.0f))
+                        {
+                            s = 0.0f;
+                            distance = c;
+                        }
+                        else
+                        {
+                            s = -b0 / a00;
+                            distance = b0 * s + c;
+                        }
+                    }
+                    else
+                    {
+                        s = 1.0f;
+                        temp = a01 + b1;
+
+                        if (!(temp < 0.0f))
+                        {
+                            t = 0.0f;
+                            distance = a00 + 2.0f * b0 + c;
+                        }
+                        else if (!(-temp < a11))
+                        {
+                            t = 1.0f;
+                            distance = a00 + a11 + c + 2.0f * (b0 + temp);
+                        }
+                        else
+                        {
+                            t = -temp / a11;
+                            distance = temp * t + a00 + 2.0f * b0 + c;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (!(t < 0.0f))
+            {
+                if (t <= det)
+                {
+                    s = 0.0f;
+
+                    if (!(b1 < 0.0f))
+                    {
+                        t = 0.0f;
+                        distance = c;
+                    }
+                    else if (!(-b1 < a11))
+                    {
+                        t = 1.0f;
+                        distance = a11 + 2.0f * b1 + c;
+                    }
+                    else
+                    {
+                        t = -b1 / a11;
+                        distance = b1 * t + c;
+                    }
+                }
+                else
+                {
+                    temp = a01 + b0;
+
+                    if (temp < 0.0f)
+                    {
+                        t = 1.0f;
+
+                        if (!(-temp < a00))
+                        {
+                            s = 1.0f;
+                            distance = a00 + a11 + c + 2.0f * (b1 + temp);
+                        }
+                        else
+                        {
+                            s = -temp / a00;
+                            distance = temp * s + a11 + 2.0f * b1 + c;
+                        }
+                    }
+                    else
+                    {
+                        s = 0.0f;
+
+                        if (!(b1 < 0.0f))
+                        {
+                            t = 0.0f;
+                            distance = c;
+                        }
+                        else if (!(-b1 < a11))
+                        {
+                            t = 1.0f;
+                            distance = a11 + 2.0f * b1 + c;
+                        }
+                        else
+                        {
+                            t = -b1 / a11;
+                            distance = b1 * t + c;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (b0 < 0.0f)
+                {
+                    t = 0.0f;
+
+                    if (!(-b0 < a00))
+                    {
+                        s = 1.0f;
+                        distance = a00 + 2.0f * b0 + c;
+                    }
+                    else
+                    {
+                        s = -b0 / a00;
+                        distance = b0 * s + c;
+                    }
+                }
+                else
+                {
+                    s = 0.0f;
+
+                    if (!(b1 < 0.0f))
+                    {
+                        t = 0.0f;
+                        distance = c;
+                    }
+                    else if (!(-b1 < a11))
+                    {
+                        t = 1.0f;
+                        distance = a11 + 2.0f * b1 + c;
+                    }
+                    else
+                    {
+                        t = -b1 / a11;
+                        distance = b1 * t + c;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        if (!(a01 <= 0.0f))
+        {
+            if (!(b0 < 0.0f))
+            {
+                s = 0.0f;
+                t = 0.0f;
+                distance = c;
+            }
+            else if (-b0 <= a00)
+            {
+                s = -b0 / a00;
+                t = 0.0f;
+                distance = b0 * s + c;
+            }
+            else
+            {
+                b1 = -(offset.x * second_axis->x + offset.y * second_axis->y + offset.z * second_axis->z);
+                s = 1.0f;
+                temp = a00 + b0;
+
+                if (!(-temp < a01))
+                {
+                    t = 1.0f;
+                    distance = a00 + a11 + c + 2.0f * (a01 + b0 + b1);
+                }
+                else
+                {
+                    t = -temp / a01;
+                    distance = a00 + 2.0f * b0 + c + t * (a11 * t + 2.0f * (a01 + b1));
+                }
+            }
+        }
+        else
+        {
+            if (!(-b0 < a00))
+            {
+                s = 1.0f;
+                t = 0.0f;
+                distance = a00 + 2.0f * b0 + c;
+            }
+            else if (b0 <= 0.0f)
+            {
+                s = -b0 / a00;
+                t = 0.0f;
+                distance = b0 * s + c;
+            }
+            else
+            {
+                b1 = -(offset.x * second_axis->x + offset.y * second_axis->y + offset.z * second_axis->z);
+                s = 0.0f;
+
+                if (!(b0 < -a01))
+                {
+                    t = 1.0f;
+                    distance = a11 + 2.0f * b1 + c;
+                }
+                else
+                {
+                    t = -b0 / a01;
+                    distance = c + t * (2.0f * b1 + a11 * t);
+                }
+            }
+        }
+    }
+
+    *first_fraction = s;
+    *second_fraction = t;
+    return ee_abs(distance);
+}
+
+/**
+ * @brief Test an oriented box against a projection volume with separating axes: the volume's depth range and side
+ *        planes, the box's own axes, and the cross products of both sets of axes.
+ * @param volume Projection volume.
+ * @param box Oriented box.
+ * @return Zero when an axis separates them, else one.
+ */
+extern "C" s32 func_004CAB20(const LibProjectionVolume* volume, const LibCullBox* box)
+{
+    LibVector4 rows[4];
+    float low;
+    float high;
+    float limit;
+
+    vu0_box_cull_step0(box, volume);
+    vu0_box_cull_step1(box->axes, &box->half_extents);
+    vu0_box_cull_step2(&volume->z_axis);
+    vu0_box_cull_step3(rows, &volume->x_axis, &volume->near_half_width);
+    limit = volume->near_distance;
+
+    if (rows[0].z + rows[1].x < limit || !((high = rows[0].z - rows[1].x) <= volume->far_distance))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step4();
+    limit = volume->unk54;
+    vu0_box_cull_step5(rows);
+
+    if (rows[1].x + rows[0].x < limit || !(rows[1].x <= rows[0].x))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step6();
+    vu0_box_cull_step7(rows);
+
+    if (rows[0].x + rows[1].x < limit || !(rows[1].x <= rows[0].x))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step8(&volume->y_axis);
+    limit = volume->unk58;
+    vu0_box_cull_step9(rows);
+
+    if (rows[1].y + rows[0].x < limit || !(rows[1].y <= rows[0].x))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step10();
+    vu0_box_cull_step11(rows);
+
+    if (rows[1].x + rows[0].x < limit || !(rows[1].x <= rows[0].x))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step12();
+    vu0_box_cull_step13(rows);
+    low = rows[1].x;
+    high = rows[2].x;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].x + rows[3].x < low || !(rows[0].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[1].y;
+    high = rows[2].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].y + rows[3].y < low || !(rows[0].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[1].z;
+    high = rows[2].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].z + rows[3].z < low || !(rows[0].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step14();
+    vu0_box_cull_step15(rows);
+    low = rows[1].x;
+    high = rows[2].x;
+    vu0_box_cull_step16(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].x + rows[3].x < low || !(rows[0].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[1].y;
+    high = rows[2].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].y + rows[3].y < low || !(rows[0].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[1].z;
+    high = rows[2].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].z + rows[3].z < low || !(rows[0].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step17();
+    vu0_box_cull_step18(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step19(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step20();
+    vu0_box_cull_step21(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step22(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step23();
+    vu0_box_cull_step24(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step25(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step26();
+    vu0_box_cull_step27(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step28(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step29();
+    vu0_box_cull_step30(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step31(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    return 1;
+}
 
 /** @brief Recompute the derived perspective-volume coefficients. */
 void LibProjectionVolume::update_coefficients()
@@ -6242,9 +9269,169 @@ void LibProjectionVolume::update_coefficients()
     unk58 = (-2.0f * near_half_height) * far_distance;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_matrix_to_quaternion);
+/**
+ * @brief Point at one row of a matrix.
+ * @param matrix Matrix.
+ * @param row Row index.
+ * @return The row's four components.
+ */
+static inline const float* lib_matrix_row(const LibMatrix44Value* matrix, s32 row)
+{
+    return matrix->m[row];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_matrix_look_at);
+/**
+ * @brief Convert a rotation matrix to a quaternion.
+ * @param output Receives the quaternion.
+ * @param input Rotation matrix.
+ */
+void lib_matrix_to_quaternion(FieldVec4B* output, const LibMatrix44Value* input)
+{
+    float* q = &output->x;
+    float trace = input->m[0][0] + input->m[1][1] + input->m[2][2] + input->m[3][3];
+
+    if (trace >= 1.0f)
+    {
+        float s = 2.0f * ee_sqrt(trace);
+        q[3] = 0.25f * s;
+        s = 1.0f / s;
+        q[0] = s * (lib_matrix_row(input, 1)[2] - lib_matrix_row(input, 2)[1]);
+        q[1] = s * (lib_matrix_row(input, 2)[0] - lib_matrix_row(input, 0)[2]);
+        q[2] = s * (lib_matrix_row(input, 0)[1] - lib_matrix_row(input, 1)[0]);
+    }
+    else
+    {
+        s32 i = input->m[0][0] > input->m[1][1] ? 0 : 1;
+
+        if (input->m[2][2] > lib_matrix_row(input, i)[i])
+        {
+            i = 2;
+        }
+
+        s32 j = i + 1;
+        s32 k = j + 1;
+
+        if (j > 2)
+        {
+            j -= 3;
+        }
+
+        if (k > 2)
+        {
+            k -= 3;
+        }
+
+        float sum = 1.0f + (lib_matrix_row(input, i)[i] - lib_matrix_row(input, j)[j] - lib_matrix_row(input, k)[k]);
+        float s = 2.0f * ee_sqrt(sum);
+        q[i] = 0.25f * s;
+        s = 1.0f / s;
+        q[j] = s * (lib_matrix_row(input, i)[j] + lib_matrix_row(input, j)[i]);
+        q[k] = s * (lib_matrix_row(input, i)[k] + lib_matrix_row(input, k)[i]);
+        q[3] = s * (lib_matrix_row(input, j)[k] - lib_matrix_row(input, k)[j]);
+    }
+}
+
+/**
+ * @brief Scale three components to unit length.
+ * @param value Three components, changed in place.
+ */
+static inline void normalize_vector3(float* value)
+{
+    float scale = ee_rsqrt(1.0f, value[0] * value[0] + value[1] * value[1] + value[2] * value[2]);
+    value[0] *= scale;
+    value[1] *= scale;
+    value[2] *= scale;
+}
+
+/**
+ * @brief Set a matrix to the identity, written out in place.
+ * @param matrix Matrix to set.
+ */
+static inline void set_identity_matrix(LibMatrix44Value* matrix)
+{
+    ((unsigned __int128*)matrix)[0] = 0;
+    ((unsigned __int128*)matrix)[1] = 0;
+    ((unsigned __int128*)matrix)[2] = 0;
+    ((unsigned __int128*)matrix)[3] = 0;
+    matrix->m[0][0] = 1.0f;
+    matrix->m[1][1] = 1.0f;
+    matrix->m[2][2] = 1.0f;
+    matrix->m[3][3] = 1.0f;
+}
+
+/**
+ * @brief Return a matrix row as a vector.
+ * @param matrix Matrix to read.
+ * @param row Row index.
+ * @return The row.
+ */
+static inline LibVector4* matrix_row_vector(LibMatrix44Value* matrix, s32 row)
+{
+    return reinterpret_cast<LibVector4*>(matrix->m[row]);
+}
+
+/**
+ * @brief Cross product of the x, y and z components with w set to one.
+ * @param output Receives first cross second.
+ * @param first First vector.
+ * @param second Second vector.
+ */
+static inline void cross_vector3_w1(LibVector4* output, const FieldVec4B* first, const LibVector4* second)
+{
+    output->x = first->y * second->z - first->z * second->y;
+    output->y = first->z * second->x - first->x * second->z;
+    output->z = first->x * second->y - first->y * second->x;
+    output->w = 1.0f;
+}
+
+/**
+ * @brief Build a camera-style matrix: the z axis along the direction, the x axis from the direction and a down
+ *        vector (or one along z when the direction is nearly vertical), the position as translation; then invert it
+ *        and roll it about z.
+ * @param output Receives the matrix.
+ * @param position Translation.
+ * @param direction Direction the z axis points along.
+ * @param roll Roll angle.
+ */
+void lib_matrix_look_at(LibMatrix44Value* output, const FieldVec4B* position, const FieldVec4B* direction, float roll)
+{
+    LibMatrix44Value basis;
+    LibVector4 up;
+    LibVector4 pair;
+    LibMatrix44Value rotation;
+
+    set_identity_matrix(&basis);
+    up.y = -1.0f;
+    up.w = 1.0f;
+    up.x = 0.0f;
+    up.z = 0.0f;
+    LibVector4* z_axis = reinterpret_cast<LibVector4*>(basis.m[2]);
+    *(unsigned __int128*)z_axis = *(const unsigned __int128*)direction;
+    normalize_vector3(&z_axis->x);
+
+    // TODO: Read through a row view; plain basis.m[2][1] folds into the reload below and the abs gets its own register.
+    if (!(ee_abs(reinterpret_cast<const LibVector4*>(&basis.m[2][0])->y) <= 0.999f))
+    {
+        up.y = 0.0f;
+        up.z = basis.m[2][1];
+    }
+
+    cross_vector3_w1(matrix_row_vector(&basis, 0), direction, &up);
+    normalize_vector3(&matrix_row_vector(&basis, 0)->x);
+    cross_vector3_w1(matrix_row_vector(&basis, 1), reinterpret_cast<const FieldVec4B*>(matrix_row_vector(&basis, 2)),
+                     matrix_row_vector(&basis, 0));
+    basis.m[0][3] = position->x;
+    basis.m[1][3] = position->y;
+    basis.m[2][3] = position->z;
+    lib_compute_sine_cosine_pair(roll, &pair);
+    set_identity_matrix(&rotation);
+    rotation.m[0][0] = pair.z;
+    rotation.m[1][1] = pair.z;
+    rotation.m[0][1] = pair.w;
+    rotation.m[1][0] = -pair.w;
+    basis = func_004CF0B0(basis);
+    vu0_multiply_matrix(output, &basis, &rotation);
+}
 
 extern "C" LibTrigQuotients D_0050CD20;
 
@@ -6502,7 +9689,32 @@ extern "C" float lib_dot_point_offset(const LibVector4* point, const LibVector4*
     return result.x;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC7A0);
+/**
+ * @brief Build the plane through three points: the normal is the cross product of the normalized directions from the
+ *        origin to the other two points, and the fourth component is minus the normal dotted with the origin.
+ * @param plane Receives the normal and the distance term.
+ * @param origin Point on the plane the two directions start from.
+ * @param first Second point.
+ * @param second Third point.
+ */
+extern "C" void func_004CC7A0(float* plane, const float* origin, const float* first, const float* second)
+{
+    float u[3];
+    float v[3];
+
+    u[0] = first[0] - origin[0];
+    u[1] = first[1] - origin[1];
+    u[2] = first[2] - origin[2];
+    normalize_vector3(u);
+    v[0] = second[0] - origin[0];
+    v[1] = second[1] - origin[1];
+    v[2] = second[2] - origin[2];
+    normalize_vector3(v);
+    plane[0] = u[1] * v[2] - u[2] * v[1];
+    plane[1] = -(u[0] * v[2] - u[2] * v[0]);
+    plane[2] = u[0] * v[1] - u[1] * v[0];
+    plane[3] = -(plane[0] * origin[0] + plane[1] * origin[1] + plane[2] * origin[2]);
+}
 
 /**
  * @brief Build a directional shadow projection onto a plane.
@@ -6718,7 +9930,74 @@ extern "C" void func_004CCEE0(FieldVec4B* output, const FieldVec4B* from, const 
     vu0_quaternion_norm_begin();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CD010);
+extern "C" float D_0050CC40[];
+extern "C" float D_0050CC7C[];
+
+/**
+ * @brief Evaluate the clamped arc-cosine approximation.
+ *
+ * fdlibm's acosf on VU0: the table at D_0050CC40 holds the constants, and the argument and result pass through its
+ * last lane (D_0050CC7C).
+ * @param value Cosine argument.
+ * @return Approximated angle in radians.
+ */
+float func_004CD010(float value)
+{
+    s32 bits = ee_acos_clear_bits();
+    s32 one = 0x3F800000;
+    bits = ee_acos_float_bits(value);
+    s32 magnitude = bits & 0x7FFFFFFF;
+
+    if (magnitude >= one)
+    {
+        if (bits > 0)
+        {
+            return 0.0f;
+        }
+
+        return 3.1415927f;
+    }
+
+    D_0050CC7C[0] = value;
+    vu0_acos_load(D_0050CC40);
+
+    if (magnitude < 0x3F000000)
+    {
+        if (magnitude < 0x23000001)
+        {
+            return 1.5707964f;
+        }
+
+        vu0_acos_small(D_0050CC40);
+        return D_0050CC7C[0];
+    }
+
+    if (bits < 0)
+    {
+        vu0_acos_negative(D_0050CC40);
+        return D_0050CC7C[0];
+    }
+
+    vu0_acos_positive_begin(D_0050CC40);
+    union
+    {
+        float f;
+        s32 i;
+    } root;
+    root.f = D_0050CC7C[0];
+    s32 root_bits = root.i;
+    vu0_acos_positive_numerator();
+    union
+    {
+        float f;
+        s32 i;
+    } truncated;
+    truncated.i = root_bits & 0xFFFFF000;
+    D_0050CC7C[0] = truncated.f;
+    vu0_acos_positive_scale();
+    vu0_acos_positive_finish(D_0050CC40);
+    return D_0050CC7C[0];
+}
 
 /**
  * @brief Start the native three-angle trigonometric approximation, leaving its result in VU0 vf13.
